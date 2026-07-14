@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { progressData } from "../data";
+import { useAuth } from "../AuthContext";
 
 export default function ProfilePage() {
-  const [role, setRole] = useState("student"); // 'student' অথবা 'teacher'
-  const [teacherVerified, setTeacherVerified] = useState(false);
+  const { role, setRole, teacherVerified, setTeacherVerified } = useAuth();
   const weakest = [...progressData.subjects].sort(
     (a, b) => a.strength - b.strength,
   )[0];

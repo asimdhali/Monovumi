@@ -23,6 +23,8 @@ import {
   moralQuotes,
 } from "./data";
 
+import { useAuth } from "./AuthContext";
+
 const subjectIcons = {
   সব: LayoutGrid,
   বাংলা: BookText,
@@ -152,9 +154,100 @@ function PostCard({ post }) {
   );
 }
 
+function NewPostModal({ onClose, onSubmit }) {
+  const [subject, setSubject] = useState(subjects[0]);
+  const [type, setType] = useState(Object.keys(postTypes)[0]);
+  const [content, setContent] = useState("");
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (content.trim().length < 5) {
+      alert("লেখাটা একটু বড় করে লিখুন");
+      return;
+    }
+    onSubmit({ subject, type, content: content.trim() });
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+      <div className="bg-white rounded-2xl w-full max-w-md p-6">
+        <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[#23291F] mb-4">
+          নতুন পোস্ট লিখুন
+        </h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs font-medium text-[#5b5647] block mb-1">
+              বিষয়
+            </label>
+            <select
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="w-full p-2.5 rounded-lg border border-[#E3DDD0] text-sm"
+            >
+              {subjects.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-[#5b5647] block mb-1">
+              ধরন
+            </label>
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="w-full p-2.5 rounded-lg border border-[#E3DDD0] text-sm"
+            >
+              {Object.keys(postTypes).map((t) => (
+                <option key={t} value={t}>
+                  {postTypes[t]} {t}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-[#5b5647] block mb-1">
+              লেখা
+            </label>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={4}
+              placeholder="এখানে আপনার নোট, ট্রিক বা পরামর্শ লিখুন..."
+              className="w-full p-2.5 rounded-lg border border-[#E3DDD0] text-sm resize-none"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2.5 rounded-full text-sm font-medium border border-[#E3DDD0] text-[#5b5647]"
+            >
+              বাতিল
+            </button>
+            <button
+              type="submit"
+              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white bg-[#3B6255] hover:bg-[#2c4a40]"
+            >
+              পোস্ট করুন
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
-  const [posts] = useState(initialPosts);
+  const { teacherVerified } = useAuth();
+  const [posts, setPosts] = useState(initialPosts);
   const [activeSubject, setActiveSubject] = useState("সব");
+  const [showForm, setShowForm] = useState(false);
 
   const filteredPosts = posts.filter(
     (post) => activeSubject === "সব" || post.subject === activeSubject,
@@ -265,6 +358,17 @@ export default function Home() {
           </div>
 
           {/* পোস্ট তালিকা */}
+          {teacherVerified && (
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={() => setShowForm(true)}
+                className="flex items-center gap-1.5 bg-[#3B6255] text-white text-sm font-medium px-4 py-2 rounded-full hover:bg-[#2c4a40] transition-colors"
+              >
+                <span className="text-base leading-none">+</span> নতুন পোস্ট
+              </button>
+            </div>
+          )}
+
           <div className="space-y-5">
             {filteredPosts.length > 0 ? (
               filteredPosts.map((post) => (
@@ -312,6 +416,30 @@ export default function Home() {
       <footer className="mt-16 text-center text-[#9c9686] text-sm">
         © ২০২৬ মনোভূমি। সর্বস্বত্ব সংরক্ষিত।
       </footer>
+
+      {showForm && (
+        <NewPostModal
+          onClose={() => setShowForm(false)}
+          onSubmit={({ subject, type, content }) => {
+            const newPost = {
+              id: Date.now(),
+              name: "আপনি",
+              date: "আজ",
+              avatar: "https://i.pravatar.cc/150?img=13",
+              type,
+              subject,
+              verified: true,
+              content,
+              likes: 0,
+            };
+            setPosts((prev) => [newPost, ...prev]);
+            setShowForm(false);
+          }}
+        />
+      )}
+    </div>
+  );
+}
     </div>
   );
 }

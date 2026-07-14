@@ -1,6 +1,12 @@
-import { Geist, Geist_Mono, Hind_Siliguri, Tiro_Bangla } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  Hind_Siliguri,
+  Tiro_Bangla,
+} from "next/font/google";
 import "./globals.css";
 import Navbar from "./navbar";
+import { AuthProvider } from "./AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,7 +29,8 @@ const tiroBangla = Tiro_Bangla({
 
 export const metadata = {
   title: "মনোভূমি — নৈতিক শিক্ষা ও জ্ঞানের ঠিকানা",
-  description: "বাংলাদেশীদের নৈতিক শিক্ষা, দক্ষতা ও জ্ঞান-বিজ্ঞান অর্জনের ফ্রি প্ল্যাটফর্ম",
+  description:
+    "বাংলাদেশীদের নৈতিক শিক্ষা, দক্ষতা ও জ্ঞান-বিজ্ঞান অর্জনের ফ্রি প্ল্যাটফর্ম",
 };
 
 export default function RootLayout({ children }) {
@@ -33,13 +40,13 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} ${hindSiliguri.variable} ${tiroBangla.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[var(--color-app-bg)] text-[var(--color-app-text)]">
-        <Navbar />
-        {children}
+        <AuthProvider>
+          <Navbar />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
 }
-
-
 
 // write a javascript function to check prime number
