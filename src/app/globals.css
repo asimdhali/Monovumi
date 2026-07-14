@@ -9,3 +9,15 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
+
+:root {
+  --color-app-bg: #FBF9F4;
+  --color-app-surface: #FFFFFF;
+  --color-app-text: #23291F;
+  --color-app-muted: #8b8577;
+  --color-app-border: #E7E1D2;
+  --color-app-primary: #3B6255;
+  --color-app-primary-soft: #EDF2EE;
+  --color-app-accent: #C9A227;
+  --color-app-accent-soft: #FDF4DD;
+}

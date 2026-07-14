@@ -22,8 +22,8 @@ const tiroBangla = Tiro_Bangla({
 });
 
 export const metadata = {
-  title: "MonoVumi",
-  description: "এক টুকরো চিন্তার জায়গা",
+  title: "মনোভূমি — নৈতিক শিক্ষা ও জ্ঞানের ঠিকানা",
+  description: "বাংলাদেশীদের নৈতিক শিক্ষা, দক্ষতা ও জ্ঞান-বিজ্ঞান অর্জনের ফ্রি প্ল্যাটফর্ম",
 };
 
 export default function RootLayout({ children }) {
@@ -32,10 +32,14 @@ export default function RootLayout({ children }) {
       lang="bn"
       className={`${geistSans.variable} ${geistMono.variable} ${hindSiliguri.variable} ${tiroBangla.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#FBF9F4]">
+      <body className="min-h-full flex flex-col bg-[var(--color-app-bg)] text-[var(--color-app-text)]">
         <Navbar />
         {children}
       </body>
     </html>
   );
 }
+
+
+
+// write a javascript function to check prime number
