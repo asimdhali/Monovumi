@@ -7,6 +7,7 @@ import {
 import "./globals.css";
 import Navbar from "./navbar";
 import { AuthProvider } from "./AuthContext";
+import { BookDetailedProvider } from "./BookDetailedContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,8 +42,10 @@ export default function RootLayout({ children }) {
     >
       <body className="min-h-full flex flex-col bg-[var(--color-app-bg)] text-[var(--color-app-text)]">
         <AuthProvider>
-          <Navbar />
-          {children}
+          <BookDetailedProvider>
+            <Navbar />
+            {children}
+          </BookDetailedProvider>
         </AuthProvider>
       </body>
     </html>
