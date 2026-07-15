@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { progressData } from "../data";
-import { useAuth } from "../AuthContext";
+import { useAuth, TEACHER_PASSWORD } from "../AuthContext";
 
 export default function ProfilePage() {
   const { role, setRole, teacherVerified, setTeacherVerified } = useAuth();

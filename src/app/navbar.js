@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
+import { useAuth, TEACHER_PASSWORD } from "./AuthContext";
 
 const navLinks = [
   {
@@ -40,6 +41,91 @@ const drawerLinks = [
     icon: "M12 6.25C10.5 5 8.5 4.5 6 4.5c-1 0-2 .1-3 .4v13.5c1-.3 2-.4 3-.4 2.5 0 4.5.5 6 1.75m0-13.5c1.5-1.25 3.5-1.75 6-1.75 1 0 2 .1 3 .4v13.5c-1-.3-2-.4-3-.4-2.5 0-4.5.5-6 1.75m0-13.5v13.5",
   },
 ];
+
+function RoleSwitch() {
+  const { role, setRole, setTeacherVerified } = useAuth();
+  const [showBox, setShowBox] = useState(false);
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  function handleClick() {
+    if (role === "teacher") {
+      setRole("student");
+    } else {
+      setShowBox(true);
+    }
+  }
+
+  function checkPassword() {
+    if (password === TEACHER_PASSWORD) {
+      setRole("teacher");
+      setTeacherVerified(true);
+      setShowBox(false);
+      setPassword("");
+      setError("");
+    } else {
+      setError("পাসওয়ার্ড সঠিক নয়");
+    }
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={handleClick}
+        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors"
+        style={{
+          borderColor: "var(--color-app-primary)",
+          color: role === "teacher" ? "white" : "var(--color-app-primary)",
+          background:
+            role === "teacher" ? "var(--color-app-primary)" : "transparent",
+        }}
+      >
+        {role === "teacher" ? "👑 শিক্ষক মোড" : "🎓 শিক্ষার্থী মোড"}
+      </button>
+
+      {showBox && (
+        <div
+          className="absolute right-0 mt-2 w-64 rounded-xl shadow-lg border p-4 z-[80]"
+          style={{
+            background: "var(--color-app-surface)",
+            borderColor: "var(--color-app-border)",
+          }}
+        >
+          <p className="text-xs mb-2 text-[var(--color-app-muted)]">
+            শিক্ষক পাসওয়ার্ড দিন
+          </p>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setError("");
+            }}
+            onKeyDown={(e) => e.key === "Enter" && checkPassword()}
+            autoFocus
+            className="w-full p-2 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+          />
+          {error && <p className="text-xs mt-1.5 text-red-500">{error}</p>}
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={checkPassword}
+              className="flex-1 py-1.5 rounded-full text-xs font-semibold text-white"
+              style={{ background: "var(--color-app-primary)" }}
+            >
+              যাচাই করুন
+            </button>
+            <button
+              onClick={() => setShowBox(false)}
+              className="px-3 py-1.5 rounded-full text-xs font-medium text-[var(--color-app-muted)] border border-[var(--color-app-border)]"
+            >
+              বাতিল
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -101,24 +187,27 @@ export default function Navbar() {
               মনোভূমি
             </Link>
           </div>
-          <nav className="flex gap-8">
-            {navLinks.map((link) => {
-              const active = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-sm font-medium transition-colors ${
-                    active
-                      ? "text-[var(--color-app-primary)]"
-                      : "text-[var(--color-app-muted)] hover:text-[var(--color-app-primary)]"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </nav>
+          <div className="flex items-center gap-8">
+            <nav className="flex gap-8">
+              {navLinks.map((link) => {
+                const active = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`text-sm font-medium transition-colors ${
+                      active
+                        ? "text-[var(--color-app-primary)]"
+                        : "text-[var(--color-app-muted)] hover:text-[var(--color-app-primary)]"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
+            <RoleSwitch />
+          </div>
         </div>
       </header>
 
@@ -147,6 +236,9 @@ export default function Navbar() {
           <span className="text-lg font-bold text-[var(--color-app-primary)]">
             মনোভূমি
           </span>
+          <div className="ml-auto">
+            <RoleSwitch />
+          </div>
         </div>
       </header>
 

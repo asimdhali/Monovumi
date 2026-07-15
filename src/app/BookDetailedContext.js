@@ -49,9 +49,20 @@ export function BookDetailedProvider({ children }) {
     });
   }
 
+  async function deleteTopic(subject, paperId, topicId) {
+    const subjectData = content[subject];
+    const updatedPapers = subjectData.papers.map((paper) => {
+      if (paper.id !== paperId) return paper;
+      return { ...paper, topics: paper.topics.filter((t) => t.id !== topicId) };
+    });
+    await updateDoc(doc(db, "bookDetailedContent", subject), {
+      papers: updatedPapers,
+    });
+  }
+
   return (
     <BookDetailedContext.Provider
-      value={{ content, addTopic, editTopic, loading }}
+      value={{ content, addTopic, editTopic, deleteTopic, loading }}
     >
       {children}
     </BookDetailedContext.Provider>
