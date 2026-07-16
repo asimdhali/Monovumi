@@ -24,6 +24,7 @@ import {
 } from "./data";
 
 import { useAuth } from "./AuthContext";
+import { usePosts } from "./PostsContext";
 
 const subjectIcons = {
   সব: LayoutGrid,
@@ -245,7 +246,7 @@ function NewPostModal({ onClose, onSubmit }) {
 
 export default function Home() {
   const { teacherVerified } = useAuth();
-  const [posts, setPosts] = useState(initialPosts);
+  const { posts, addPost } = usePosts();
   const [activeSubject, setActiveSubject] = useState("সব");
   const [showForm, setShowForm] = useState(false);
 
@@ -421,7 +422,7 @@ export default function Home() {
         <NewPostModal
           onClose={() => setShowForm(false)}
           onSubmit={({ subject, type, content }) => {
-            const newPost = {
+            addPost({
               id: Date.now(),
               name: "আপনি",
               date: "আজ",
@@ -431,8 +432,7 @@ export default function Home() {
               verified: true,
               content,
               likes: 0,
-            };
-            setPosts((prev) => [newPost, ...prev]);
+            });
             setShowForm(false);
           }}
         />

@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useBookDetailed } from "./BookDetailedContext";
 import { useAuth } from "./AuthContext";
+import { usePosts } from "./PostsContext";
+import { subjects, postTypes } from "./data";
 
 const subjectIcons = {
   বাংলা:
@@ -385,6 +387,157 @@ function FeaturedCard({ topic, onOpen, canManage }) {
   );
 }
 
+function PostComposer() {
+  const { addPost } = usePosts();
+  const { role, teacherVerified } = useAuth();
+  const canPost = role === "teacher" && teacherVerified;
+  const [content, setContent] = useState("");
+  const [showOptions, setShowOptions] = useState(false);
+  const [subject, setSubject] = useState(subjects[0]);
+  const [type, setType] = useState(Object.keys(postTypes)[0]);
+  const [image, setImage] = useState("");
+  const optionsRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (optionsRef.current && !optionsRef.current.contains(e.target)) {
+        setShowOptions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function handlePost() {
+    if (!content.trim()) return;
+    addPost({
+      id: Date.now(),
+      name: "আপনি",
+      date: "আজ",
+      avatar: "https://i.pravatar.cc/150?img=13",
+      type,
+      subject,
+      verified: true,
+      content: content.trim(),
+      image: image.trim() || null,
+      likes: 0,
+    });
+    setContent("");
+    setImage("");
+    setShowOptions(false);
+  }
+
+  if (!canPost) {
+    return (
+      <div className="mt-3 pt-3 border-t border-[var(--color-app-border)] flex items-center justify-center gap-2 text-xs text-[var(--color-app-muted)] py-1">
+        <span>🔒</span>
+        <span>পোস্ট করতে "👑 শিক্ষক মোড"-এ যান</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 pt-3 border-t border-[var(--color-app-border)]">
+      <div className="rounded-xl border bg-[var(--color-app-surface)] border-[var(--color-app-border)] p-2.5 shadow-sm">
+        <div className="flex items-center gap-2.5">
+          <img
+            src="https://i.pravatar.cc/150?img=13"
+            alt="আপনি"
+            className="w-8 h-8 rounded-full flex-shrink-0 ring-1 ring-[var(--color-app-border)]"
+          />
+          <input
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handlePost()}
+            placeholder="আপনার পছন্দের বিষয় সম্পর্কে পোস্ট করুন..."
+            className="flex-1 min-w-0 py-2 px-3.5 rounded-full border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-app-primary)]/30 focus:border-[var(--color-app-primary)] transition-all"
+          />
+        </div>
+
+        <div className="flex items-center justify-between mt-2.5 pt-2.5 border-t border-[var(--color-app-border)]">
+          <div className="relative" ref={optionsRef}>
+            <button
+              onClick={() => setShowOptions(!showOptions)}
+              className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
+              style={{
+                background: showOptions
+                  ? "var(--color-app-primary-soft)"
+                  : "transparent",
+                color: "var(--color-app-primary)",
+              }}
+            >
+              <span className="text-base leading-none">+</span>
+              অপশন
+              {(image ||
+                subject !== subjects[0] ||
+                type !== Object.keys(postTypes)[0]) && (
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: "var(--color-app-accent)" }}
+                />
+              )}
+            </button>
+
+            {showOptions && (
+              <div className="absolute left-0 bottom-full mb-2 w-64 bg-[var(--color-app-surface)] rounded-xl shadow-lg border border-[var(--color-app-border)] p-3 z-30 space-y-2">
+                <p className="text-[11px] font-semibold text-[var(--color-app-muted)] mb-1">
+                  পোস্ট অপশন
+                </p>
+                <select
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="w-full p-2 rounded-lg border text-xs bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+                >
+                  {subjects.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  className="w-full p-2 rounded-lg border text-xs bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+                >
+                  {Object.keys(postTypes).map((t) => (
+                    <option key={t} value={t}>
+                      {postTypes[t]} {t}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  value={image}
+                  onChange={(e) => setImage(e.target.value)}
+                  placeholder="🖼️ ছবির লিংক (ঐচ্ছিক)"
+                  className="w-full p-2 rounded-lg border text-xs bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span
+              className="flex-shrink-0 text-[10px] font-semibold px-2.5 py-1 rounded-full text-white whitespace-nowrap"
+              style={{ background: "var(--color-app-primary)" }}
+            >
+              {role === "teacher" ? "👑 শিক্ষক" : "🎓 শিক্ষার্থী"}
+            </span>
+
+            <button
+              onClick={handlePost}
+              disabled={!content.trim()}
+              className="flex-shrink-0 text-xs font-semibold px-4 py-1.5 rounded-full text-white whitespace-nowrap transition-opacity disabled:opacity-40"
+              style={{ background: "var(--color-app-primary)" }}
+            >
+              পোস্ট করুন
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function FeaturedBar() {
   const pathname = usePathname();
   const { content, loading } = useBookDetailed();
@@ -395,7 +548,7 @@ export default function FeaturedBar() {
   const scrollRef = useRef(null);
 
   if (loading) return null;
-  if (pathname.startsWith("/book-detailed")) return null;
+  if (pathname !== "/") return null;
 
   const featuredTopics = [];
   Object.entries(content).forEach(([subject, subjectData]) => {
@@ -518,6 +671,7 @@ export default function FeaturedBar() {
             </svg>
           </button>
         </div>
+        <PostComposer />
       </div>
 
       {showModal && <FeaturedManageModal onClose={() => setShowModal(false)} />}
