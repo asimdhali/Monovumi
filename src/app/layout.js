@@ -8,6 +8,7 @@ import "./globals.css";
 import Navbar from "./navbar";
 import { AuthProvider } from "./AuthContext";
 import { BookDetailedProvider } from "./BookDetailedContext";
+import FeaturedBar from "./FeaturedBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,6 +45,7 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <BookDetailedProvider>
             <Navbar />
+            <FeaturedBar />
             {children}
           </BookDetailedProvider>
         </AuthProvider>
@@ -51,5 +53,3 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
-
-// write a javascript function to check prime number

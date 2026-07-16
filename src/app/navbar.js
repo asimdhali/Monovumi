@@ -5,6 +5,33 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { useAuth, TEACHER_PASSWORD } from "./AuthContext";
 
+const taglines = [
+  "শিক্ষা, জ্ঞান-বিজ্ঞান অর্জনের ফ্রি প্ল্যাটফর্ম",
+  "বাণিজ্যমুক্ত শিক্ষা সরবরাহ",
+  "যাচাইকৃত শিক্ষকদের হাত ধরে জ্ঞানার্জন",
+  "নৈতিক শিক্ষা, দক্ষতা ও মূল্যবোধের ঠিকানা",
+];
+
+function RotatingTagline() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % taglines.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <span
+      key={index}
+      className="tagline-animate text-[10px] lg:text-[11px] text-[var(--color-app-muted)] whitespace-nowrap overflow-hidden text-ellipsis max-w-[160px] lg:max-w-[220px]"
+    >
+      {taglines[index]}
+    </span>
+  );
+}
+
 const navLinks = [
   {
     href: "/",
@@ -180,12 +207,15 @@ export default function Navbar() {
                 />
               </svg>
             </button>
-            <Link
-              href="/"
-              className="text-xl font-bold text-[var(--color-app-primary)] tracking-wide"
-            >
-              মনোভূমি
-            </Link>
+            <div className="flex flex-col leading-tight">
+              <Link
+                href="/"
+                className="text-xl font-bold text-[var(--color-app-primary)] tracking-wide"
+              >
+                মনোভূমি
+              </Link>
+              <RotatingTagline />
+            </div>
           </div>
           <div className="flex items-center gap-8">
             <nav className="flex gap-8">
@@ -233,9 +263,14 @@ export default function Navbar() {
               />
             </svg>
           </button>
-          <span className="text-lg font-bold text-[var(--color-app-primary)]">
-            মনোভূমি
-          </span>
+
+          <div className="flex flex-col leading-tight">
+            <span className="text-lg font-bold text-[var(--color-app-primary)]">
+              মনোভূমি
+            </span>
+            <RotatingTagline />
+          </div>
+
           <div className="ml-auto">
             <RoleSwitch />
           </div>

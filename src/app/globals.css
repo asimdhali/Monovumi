@@ -11,13 +11,44 @@
 }
 
 :root {
-  --color-app-bg: #FBF9F4;
-  --color-app-surface: #FFFFFF;
-  --color-app-text: #23291F;
+  --color-app-bg: #fbf9f4;
+  --color-app-surface: #ffffff;
+  --color-app-text: #23291f;
   --color-app-muted: #8b8577;
-  --color-app-border: #E7E1D2;
-  --color-app-primary: #3B6255;
-  --color-app-primary-soft: #EDF2EE;
-  --color-app-accent: #C9A227;
-  --color-app-accent-soft: #FDF4DD;
+  --color-app-border: #e7e1d2;
+  --color-app-primary: #3b6255;
+  --color-app-primary-soft: #edf2ee;
+  --color-app-accent: #c9a227;
+  --color-app-accent-soft: #fdf4dd;
+}
+
+@keyframes taglineIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.tagline-animate {
+  animation: taglineIn 4s ease-in-out;
 }

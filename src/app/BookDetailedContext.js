@@ -60,9 +60,30 @@ export function BookDetailedProvider({ children }) {
     });
   }
 
+  async function toggleFeatured(subject, paperId, topicId) {
+    const subjectData = content[subject];
+    const updatedPapers = subjectData.papers.map((paper) => {
+      if (paper.id !== paperId) return paper;
+      const topics = paper.topics.map((t) =>
+        t.id === topicId ? { ...t, featured: !t.featured } : t,
+      );
+      return { ...paper, topics };
+    });
+    await updateDoc(doc(db, "bookDetailedContent", subject), {
+      papers: updatedPapers,
+    });
+  }
+
   return (
     <BookDetailedContext.Provider
-      value={{ content, addTopic, editTopic, deleteTopic, loading }}
+      value={{
+        content,
+        addTopic,
+        editTopic,
+        deleteTopic,
+        toggleFeatured,
+        loading,
+      }}
     >
       {children}
     </BookDetailedContext.Provider>
