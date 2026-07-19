@@ -337,7 +337,7 @@ function FeaturedCard({ topic, onOpen, canManage }) {
   return (
     <div
       className="relative flex-shrink-0 rounded-2xl p-3.5 bg-[var(--color-app-surface)] border border-[var(--color-app-border)]"
-      style={{ width: 250, scrollSnapAlign: "start" }}
+      style={{ width: "min(250px, 78vw)", scrollSnapAlign: "start" }}
     >
       <div className="absolute top-2 right-2">
         <ThreeDotMenu topic={topic} canManage={canManage} />
@@ -407,7 +407,7 @@ function FeaturedCarousel({ featuredTopics, canManage, onOpenPreview }) {
       <div
         ref={trackRef}
         onScroll={handleScroll}
-        className="flex gap-3 overflow-x-auto no-scrollbar pb-1.5"
+        className="flex gap-3 overflow-x-auto no-scrollbar pb-1.5 min-w-0"
         style={{ scrollSnapType: "x mandatory" }}
       >
         {featuredTopics.map((topic) => (
@@ -633,7 +633,6 @@ export default function FeaturedBar() {
   const { role, teacherVerified } = useAuth();
   const canManage = role === "teacher" && teacherVerified;
   const canPost = canManage;
-  const [showManageModal, setShowManageModal] = useState(false);
   const [previewTopic, setPreviewTopic] = useState(null);
   const [showComposer, setShowComposer] = useState(false);
 
@@ -651,73 +650,19 @@ export default function FeaturedBar() {
   });
 
   return (
-    <div className="max-w-3xl mx-auto px-4 lg:px-6 pt-5">
-      {(featuredTopics.length > 0 || canManage) && (
-        <>
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="min-w-0">
-              <div
-                className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide mb-0.5"
-                style={{ color: "var(--color-app-accent)" }}
-              >
-                📌 ফিচার্ড
-              </div>
-              <h2 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)]">
-                চাকরির এডভান্স বই
-              </h2>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {canManage && (
-                <button
-                  onClick={() => setShowManageModal(true)}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-full text-white"
-                  style={{ background: "var(--color-app-primary)" }}
-                >
-                  + ফিচার্ড
-                </button>
-              )}
-              <Link
-                href="/book-detailed"
-                className="flex items-center gap-1 text-[12.5px] font-bold"
-                style={{ color: "var(--color-app-primary)" }}
-              >
-                See All
-                <svg
-                  className="w-3 h-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2.5"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </Link>
-            </div>
-          </div>
-
-          {featuredTopics.length === 0 ? (
-            <p className="text-xs text-[var(--color-app-muted)] mb-2">
-              এখনো কোনো ফিচার্ড টপিক নেই
-            </p>
-          ) : (
-            <FeaturedCarousel
-              featuredTopics={featuredTopics}
-              canManage={canManage}
-              onOpenPreview={setPreviewTopic}
-            />
-          )}
-        </>
-      )}
-
+    <div className="max-w-3xl mx-auto px-4 lg:px-6 pt-3 overflow-x-hidden">
       <ComposerTrigger onOpen={() => setShowComposer(true)} canPost={canPost} />
 
-      {showManageModal && (
-        <FeaturedManageModal onClose={() => setShowManageModal(false)} />
+      {featuredTopics.length > 0 && (
+        <div className="mt-[18px]">
+          <FeaturedCarousel
+            featuredTopics={featuredTopics}
+            canManage={canManage}
+            onOpenPreview={setPreviewTopic}
+          />
+        </div>
       )}
+
       {previewTopic && (
         <FeaturedPreviewModal
           topic={previewTopic}

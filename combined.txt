@@ -1,0 +1,1825 @@
+===== src/app/page.js =====
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
+import { MoreHorizontal, Heart, MessageCircle, Share2 } from "lucide-react";
+
+import { subjects, postTypes } from "./data";
+import { useAuth } from "./AuthContext";
+import { usePosts } from "./PostsContext";
+
+function PostCard({ post }) {
+  const [expanded, setExpanded] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [followed, setFollowed] = useState(false);
+  const textRef = useRef(null);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const el = textRef.current;
+    if (el) setIsOverflowing(el.scrollHeight > el.clientHeight);
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="bg-[var(--color-app-surface)] rounded-2xl border border-[var(--color-app-border)] p-4">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start gap-2.5">
+          <div className="relative flex-shrink-0">
+            <div
+              className="relative w-[46px] h-[46px] rounded-full overflow-hidden bg-[var(--color-app-border)]"
+              style={{ boxShadow: "0 0 0 2px var(--color-app-accent)" }}
+            >
+              <Image
+                src={post.avatar}
+                alt={post.name}
+                width={46}
+                height={46}
+                className="object-cover w-full h-full"
+              />
+            </div>
+            {post.verified && (
+              <span
+                className="absolute -bottom-0.5 -left-0.5 w-[17px] h-[17px] rounded-full flex items-center justify-center text-[10px]"
+                style={{
+                  background: "var(--color-app-accent)",
+                  border: "2px solid var(--color-app-surface)",
+                }}
+              >
+                ✓
+              </span>
+            )}
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[14.5px] font-bold text-[var(--color-app-text)]">
+                {post.name}
+              </span>
+              <button
+                onClick={() => setFollowed(!followed)}
+                className="text-[12.5px] font-bold"
+                style={{ color: "var(--color-app-primary)" }}
+              >
+                {followed ? "✓ ফলো করছেন" : "· ফলো"}
+              </button>
+              <span
+                className="text-xs font-semibold"
+                style={{ color: "var(--color-app-accent)" }}
+              >
+                {post.subject}
+              </span>
+            </div>
+            <p className="text-xs text-[var(--color-app-muted)] mt-0.5">
+              {post.date}
+            </p>
+          </div>
+        </div>
+
+        <div className="relative flex-shrink-0" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors"
+            aria-label="আরও অপশন"
+          >
+            <MoreHorizontal className="w-5 h-5 text-[var(--color-app-muted)]" />
+          </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 mt-1 w-40 bg-[var(--color-app-surface)] rounded-lg shadow-lg border border-[var(--color-app-border)] py-1 z-10">
+              <button className="w-full text-left px-4 py-2 text-sm text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)]">
+                রিপোর্ট করুন
+              </button>
+              <button className="w-full text-left px-4 py-2 text-sm text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)]">
+                সংরক্ষণ করুন
+              </button>
+              <button className="w-full text-left px-4 py-2 text-sm text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)]">
+                কপি লিংক
+              </button>
+              <button className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[var(--color-app-primary-soft)]">
+                লুকিয়ে রাখুন
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <p
+        ref={textRef}
+        className={`text-[14px] leading-relaxed text-[var(--color-app-text)] mb-1 ${expanded ? "" : "line-clamp-3"}`}
+      >
+        {post.content}
+      </p>
+
+      {isOverflowing && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="mb-2.5 text-[13px] font-bold block"
+          style={{ color: "var(--color-app-accent)" }}
+        >
+          {expanded ? "কম দেখুন" : "আরও দেখুন"}
+        </button>
+      )}
+
+      {post.image && (
+        <img
+          src={post.image}
+          alt="পোস্ট ছবি"
+          className="w-full rounded-xl mb-3 max-h-[280px] object-cover"
+        />
+      )}
+
+      <div className="flex items-center justify-between pt-3 border-t border-[var(--color-app-border)]">
+        <button
+          onClick={() => setLiked(!liked)}
+          className="flex items-center gap-1.5 text-sm font-medium transition-colors"
+          style={{ color: liked ? "#e0637a" : "var(--color-app-muted)" }}
+        >
+          <Heart
+            className="w-[17px] h-[17px]"
+            fill={liked ? "currentColor" : "none"}
+          />
+          {post.likes + (liked ? 1 : 0)}
+        </button>
+        <button className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-app-muted)] hover:text-[var(--color-app-primary)] transition-colors">
+          <MessageCircle className="w-[17px] h-[17px]" />
+          মন্তব্য
+        </button>
+        <button className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-app-muted)] hover:text-[var(--color-app-accent)] transition-colors">
+          <Share2 className="w-[17px] h-[17px]" />
+          শেয়ার
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function Home() {
+  const { teacherVerified } = useAuth();
+  const { posts } = usePosts();
+  const [activeSubject, setActiveSubject] = useState("সব");
+
+  const filteredPosts = posts.filter(
+    (post) => activeSubject === "সব" || post.subject === activeSubject,
+  );
+
+  return (
+    <div className="min-h-screen font-[family-name:var(--font-bengali-sans)] px-6 pb-16">
+      {/* মূল ফিড */}
+      <div className="max-w-xl mx-auto">
+        <div className="space-y-3.5">
+          {filteredPosts.length > 0 ? (
+            filteredPosts.map((post) => <PostCard key={post.id} post={post} />)
+          ) : (
+            <p className="text-center text-[var(--color-app-muted)] text-sm py-8">
+              এই বিষয়ে কোনো পোস্ট পাওয়া যায়নি।
+            </p>
+          )}
+        </div>
+      </div>
+
+      <footer className="mt-16 text-center text-[var(--color-app-muted)] text-sm">
+        © ২০২৬ মনোভূমি। সর্বস্বত্ব সংরক্ষিত।
+      </footer>
+    </div>
+  );
+}
+
+===== src/app/navbar.js =====
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { useAuth, TEACHER_PASSWORD } from "./AuthContext";
+
+const taglines = [
+  "শিক্ষা, জ্ঞান-বিজ্ঞান অর্জনের ফ্রি প্ল্যাটফর্ম",
+  "বাণিজ্যমুক্ত শিক্ষা সরবরাহ",
+  "যাচাইকৃত শিক্ষকদের হাত ধরে জ্ঞানার্জন",
+  "নৈতিক শিক্ষা, দক্ষতা ও মূল্যবোধের ঠিকানা",
+];
+
+function RotatingTagline() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % taglines.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <span
+      key={index}
+      className="tagline-animate text-[11px] text-[var(--color-app-muted)] whitespace-nowrap overflow-hidden text-ellipsis max-w-[220px]"
+    >
+      {taglines[index]}
+    </span>
+  );
+}
+
+const navLinks = [
+  {
+    href: "/",
+    label: "হোম",
+    icon: "M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4a1 1 0 001-1v-4a1 1 0 011-1h0a1 1 0 011 1v4a1 1 0 001 1h4a1 1 0 001-1V10",
+  },
+  {
+    href: "/books",
+    label: "বই",
+    icon: "M12 6.25C10.5 5 8.5 4.5 6 4.5c-1 0-2 .1-3 .4v13.5c1-.3 2-.4 3-.4 2.5 0 4.5.5 6 1.75m0-13.5c1.5-1.25 3.5-1.75 6-1.75 1 0 2 .1 3 .4v13.5c-1-.3-2-.4-3-.4-2.5 0-4.5.5-6 1.75m0-13.5v13.5",
+  },
+  {
+    href: "/competitions",
+    label: "প্রতিযোগিতা",
+    icon: "M8 21h8m-4-4v4M7 4h10v3a5 5 0 01-10 0V4zM7 5H4a2 2 0 002 2h1V5zm10 0h3a2 2 0 01-2 2h-1V5z",
+  },
+  {
+    href: "/qa",
+    label: "প্রশ্ন",
+    icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z",
+  },
+  {
+    href: "/profile",
+    label: "প্রোফাইল",
+    icon: "M12 12a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 0114 0",
+  },
+];
+
+// সাইড ড্রয়ারের ভেতরের অতিরিক্ত অপশন
+const drawerLinks = [
+  {
+    href: "/book-detailed",
+    label: "বই বিস্তারিত",
+    icon: "M12 6.25C10.5 5 8.5 4.5 6 4.5c-1 0-2 .1-3 .4v13.5c1-.3 2-.4 3-.4 2.5 0 4.5.5 6 1.75m0-13.5c1.5-1.25 3.5-1.75 6-1.75 1 0 2 .1 3 .4v13.5c-1-.3-2-.4-3-.4-2.5 0-4.5.5-6 1.75m0-13.5v13.5",
+  },
+];
+
+function ProfileMenu() {
+  const { role, setRole, teacherVerified, setTeacherVerified } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [showPasswordBox, setShowPasswordBox] = useState(false);
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+        setShowPasswordBox(false);
+        setError("");
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function handleSwitchClick() {
+    if (role === "teacher") {
+      setRole("student");
+    } else {
+      setShowPasswordBox(true);
+    }
+  }
+
+  function checkPassword() {
+    if (password === TEACHER_PASSWORD) {
+      setRole("teacher");
+      setTeacherVerified(true);
+      setShowPasswordBox(false);
+      setPassword("");
+      setError("");
+      setOpen(false);
+    } else {
+      setError("পাসওয়ার্ড সঠিক নয়");
+    }
+  }
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden"
+        style={{ boxShadow: "0 0 0 1.5px var(--color-app-accent)" }}
+        aria-label="প্রোফাইল মেনু"
+      >
+        <img
+          src="https://i.pravatar.cc/150?img=13"
+          alt="প্রোফাইল"
+          className="w-full h-full object-cover"
+        />
+      </button>
+
+      {open && (
+        <div
+          className="absolute right-0 mt-2 w-64 rounded-xl shadow-lg border p-3 z-[80]"
+          style={{
+            background: "var(--color-app-surface)",
+            borderColor: "var(--color-app-border)",
+          }}
+        >
+          <div className="flex items-center gap-2.5 px-1 pb-3 mb-2 border-b border-[var(--color-app-border)]">
+            <img
+              src="https://i.pravatar.cc/150?img=13"
+              alt="প্রোফাইল"
+              className="w-9 h-9 rounded-full object-cover"
+            />
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-app-text)]">
+                আপনি
+              </p>
+              <p className="text-[11px] text-[var(--color-app-muted)]">
+                {role === "teacher" ? "👑 শিক্ষক মোড" : "🎓 শিক্ষার্থী মোড"}
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/profile"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)] transition-colors"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="var(--color-app-primary)"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 12a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 0114 0"
+              />
+            </svg>
+            প্রোফাইল দেখুন
+          </Link>
+
+          {!showPasswordBox ? (
+            <button
+              onClick={handleSwitchClick}
+              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)] transition-colors"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="var(--color-app-primary)"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4"
+                />
+              </svg>
+              {role === "teacher" ? "শিক্ষার্থী মোডে যান" : "শিক্ষক মোডে যান"}
+            </button>
+          ) : (
+            <div className="px-2 py-2">
+              <p className="text-xs mb-2 text-[var(--color-app-muted)]">
+                শিক্ষক পাসওয়ার্ড দিন
+              </p>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError("");
+                }}
+                onKeyDown={(e) => e.key === "Enter" && checkPassword()}
+                autoFocus
+                className="w-full p-2 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+              />
+              {error && <p className="text-xs mt-1.5 text-red-400">{error}</p>}
+              <div className="flex gap-2 mt-2.5">
+                <button
+                  onClick={checkPassword}
+                  className="flex-1 py-1.5 rounded-full text-xs font-semibold text-white"
+                  style={{ background: "var(--color-app-primary)" }}
+                >
+                  যাচাই করুন
+                </button>
+                <button
+                  onClick={() => setShowPasswordBox(false)}
+                  className="px-3 py-1.5 rounded-full text-xs font-medium text-[var(--color-app-muted)] border border-[var(--color-app-border)]"
+                >
+                  বাতিল
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NavIcons() {
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        onClick={() => alert("সার্চ খুব শীঘ্রই আসছে")}
+        className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors flex-shrink-0"
+        aria-label="খুঁজুন"
+      >
+        <svg
+          className="w-[19px] h-[19px]"
+          fill="none"
+          stroke="var(--color-app-text)"
+          viewBox="0 0 24 24"
+        >
+          <circle cx="11" cy="11" r="7" strokeWidth="2" strokeLinecap="round" />
+          <path d="M21 21l-4.35-4.35" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </button>
+      <button
+        onClick={() => alert("নোটিফিকেশন খুব শীঘ্রই আসছে")}
+        className="relative w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors flex-shrink-0"
+        aria-label="নোটিফিকেশন"
+      >
+        <svg
+          className="w-[19px] h-[19px]"
+          fill="none"
+          stroke="var(--color-app-text)"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+          />
+        </svg>
+        <span
+          className="absolute top-1.5 right-1.5 w-[7px] h-[7px] rounded-full"
+          style={{
+            background: "var(--color-app-accent)",
+            border: "2px solid var(--color-app-bg)",
+          }}
+        />
+      </button>
+      <ProfileMenu />
+    </div>
+  );
+}
+
+export default function Navbar() {
+  const pathname = usePathname();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const touchStartX = useRef(null);
+
+  // বাম কিনারা থেকে সোয়াইপ করলে ড্রয়ার খুলবে
+  useEffect(() => {
+    function handleTouchStart(e) {
+      const x = e.touches[0].clientX;
+      if (x < 24) touchStartX.current = x;
+      else touchStartX.current = null;
+    }
+    function handleTouchMove(e) {
+      if (touchStartX.current === null) return;
+      const x = e.touches[0].clientX;
+      if (x - touchStartX.current > 60) {
+        setDrawerOpen(true);
+        touchStartX.current = null;
+      }
+    }
+    document.addEventListener("touchstart", handleTouchStart);
+    document.addEventListener("touchmove", handleTouchMove);
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, []);
+
+  return (
+    <>
+      {/* ডেস্কটপ টপ নেভ */}
+      <header className="hidden lg:block sticky top-0 z-50 bg-[var(--color-app-bg)]/95 backdrop-blur-md border-b border-[var(--color-app-border)]">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="p-2 -ml-2 rounded-full hover:bg-[var(--color-app-primary-soft)] transition-colors"
+              aria-label="মেনু খুলুন"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="var(--color-app-text)"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+            <div className="flex flex-col leading-tight">
+              <Link
+                href="/"
+                className="font-[family-name:var(--font-bengali-serif)] text-xl font-bold text-[var(--color-app-primary)] tracking-wide"
+              >
+                মনোভূমি
+              </Link>
+              <RotatingTagline />
+            </div>
+          </div>
+          <div className="flex items-center gap-8">
+            <nav className="flex gap-8">
+              {navLinks.map((link) => {
+                const active = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`text-sm font-medium transition-colors ${
+                      active
+                        ? "text-[var(--color-app-primary)]"
+                        : "text-[var(--color-app-muted)] hover:text-[var(--color-app-primary)]"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
+            <NavIcons />
+          </div>
+        </div>
+      </header>
+
+      {/* মোবাইল টপ বার */}
+      <header className="lg:hidden sticky top-0 z-40 bg-[var(--color-app-bg)]/95 backdrop-blur-md border-b border-[var(--color-app-border)]">
+        <div className="px-4 h-14 flex items-center gap-2">
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="w-9 h-9 -ml-1 rounded-full flex items-center justify-center active:bg-[var(--color-app-primary-soft)] transition-colors flex-shrink-0"
+            aria-label="মেনু খুলুন"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="var(--color-app-text)"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+
+          <span className="flex-1 font-[family-name:var(--font-bengali-serif)] text-[19px] font-bold text-[var(--color-app-primary)]">
+            মনোভূমি
+          </span>
+
+          <NavIcons />
+        </div>
+      </header>
+
+      {/* মোবাইল বটম নেভ */}
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-[var(--color-app-surface)]/95 backdrop-blur-md border-t border-[var(--color-app-border)]">
+        <div className="flex items-stretch h-16">
+          {navLinks.map((link) => {
+            const active = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="flex-1 flex flex-col items-center justify-center gap-0.5"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke={
+                    active
+                      ? "var(--color-app-primary)"
+                      : "var(--color-app-muted)"
+                  }
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d={link.icon}
+                  />
+                </svg>
+                <span
+                  className="text-[10px] font-medium"
+                  style={{
+                    color: active
+                      ? "var(--color-app-primary)"
+                      : "var(--color-app-muted)",
+                  }}
+                >
+                  {link.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      <div className="lg:hidden h-16" aria-hidden="true"></div>
+
+      {/* সাইড ড্রয়ার */}
+      <div
+        onClick={() => setDrawerOpen(false)}
+        className={`fixed inset-0 bg-black/40 z-[60] transition-opacity duration-300 ${
+          drawerOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+      />
+      <aside
+        className={`fixed top-0 left-0 bottom-0 z-[70] w-72 bg-[var(--color-app-surface)] shadow-2xl transition-transform duration-300 ${
+          drawerOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="p-5 border-b border-[var(--color-app-border)] flex items-center justify-between">
+          <span className="font-[family-name:var(--font-bengali-serif)] text-lg font-bold text-[var(--color-app-primary)]">
+            মনোভূমি
+          </span>
+          <button
+            onClick={() => setDrawerOpen(false)}
+            className="p-1.5 rounded-full hover:bg-[var(--color-app-primary-soft)] transition-colors"
+            aria-label="মেনু বন্ধ করুন"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="var(--color-app-text)"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <nav className="p-3">
+          {drawerLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setDrawerOpen(false)}
+              className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)] transition-colors"
+            >
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                stroke="var(--color-app-primary)"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d={link.icon}
+                />
+              </svg>
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+      </aside>
+    </>
+  );
+}
+
+===== src/app/PostsContext.js =====
+"use client";
+
+import { createContext, useContext, useState, useEffect } from "react";
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
+import { db } from "./firebase";
+
+const PostsContext = createContext(null);
+
+export function PostsProvider({ children }) {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const q = query(collection(db, "posts"), orderBy("id", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedPosts = snapshot.docs.map((d) => ({
+        docId: d.id,
+        ...d.data(),
+      }));
+      setPosts(loadedPosts);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  async function addPost(newPost) {
+    await addDoc(collection(db, "posts"), newPost);
+  }
+
+  return (
+    <PostsContext.Provider value={{ posts, addPost, loading }}>
+      {children}
+    </PostsContext.Provider>
+  );
+}
+
+export function usePosts() {
+  return useContext(PostsContext);
+}
+
+===== src/app/data.js =====
+export const subjects = [
+  "বাংলা",
+  "গণিত",
+  "বিজ্ঞান",
+  "ইংরেজি",
+  "নৈতিক শিক্ষা",
+  "ইতিহাস",
+];
+
+export const postTypes = {
+  রুটিন: "📅",
+  নোট: "📝",
+  ট্রিক: "💡",
+  গল্প: "📖",
+  ভিডিও: "🎥",
+};
+
+export const moralQuotes = [
+  {
+    text: "শিক্ষকই একমাত্র মানুষ, যিনি প্রদীপের মতো নিজে জ্বলে অন্যকে আলো দেন।",
+    author: "রবীন্দ্রনাথ ঠাকুর",
+  },
+  {
+    text: "জ্ঞানার্জনের কোনো বয়স নেই, প্রয়োজন শুধু আগ্রহ আর নিষ্ঠা।",
+    author: "মনোভূমি",
+  },
+  {
+    text: "নৈতিকতাহীন শিক্ষা মানুষকে চতুর করে, মহৎ করে না।",
+    author: "কাজী নজরুল ইসলাম",
+  },
+];
+export const books = [
+  {
+    id: 1,
+    title: "বাংলা সাহিত্য",
+    subject: "বাংলা",
+    cover: "📖",
+    chapters: [
+      {
+        id: 11,
+        title: "১ম অধ্যায়: গদ্য পরিচিতি",
+        notes: [
+          "গদ্য হলো ছন্দ-অন্ত্যমিল ছাড়া স্বাভাবিক ভাষারীতিতে লেখা রচনা। এটি মানুষের মনের ভাব সহজ ও সরলভাবে প্রকাশের প্রধান মাধ্যম।",
+        ],
+        qa: [
+          {
+            q: "গদ্য কাকে বলে?",
+            a: "ছন্দ-অন্ত্যমিল ছাড়া স্বাভাবিক ভাষায় লেখা রচনাকে গদ্য বলে।",
+            teacher: "রাকিব হাসান",
+          },
+        ],
+        mcqs: [
+          {
+            q: "গদ্যের প্রধান বৈশিষ্ট্য কোনটি?",
+            options: [
+              "ছন্দ",
+              "অন্ত্যমিল",
+              "স্বাভাবিক ভাষারীতি",
+              "পঙ্‌ক্তি বিন্যাস",
+            ],
+            correct: 2,
+            explain:
+              "গদ্য স্বাভাবিক ভাষারীতিতে লেখা হয়, এতে ছন্দ বা অন্ত্যমিলের প্রয়োজন হয় না।",
+          },
+        ],
+      },
+      {
+        id: 12,
+        title: "২য় অধ্যায়: পদ্য পরিচিতি",
+        notes: [],
+        qa: [],
+        mcqs: [],
+      },
+      {
+        id: 13,
+        title: "৩য় অধ্যায়: নাটক পরিচিতি",
+        notes: [],
+        qa: [],
+        mcqs: [],
+      },
+    ],
+  },
+  {
+    id: 2,
+    title: "সাধারণ বিজ্ঞান",
+    subject: "বিজ্ঞান",
+    cover: "🔬",
+    chapters: [
+      {
+        id: 21,
+        title: "১ম অধ্যায়: জীবজগৎ",
+        notes: ["জীবজগৎকে প্রধানত উদ্ভিদ ও প্রাণী — এই দুই ভাগে ভাগ করা হয়।"],
+        qa: [],
+        mcqs: [
+          {
+            q: "উদ্ভিদকোষে থাকে কিন্তু প্রাণীকোষে থাকে না — এমন অংশ কোনটি?",
+            options: [
+              "নিউক্লিয়াস",
+              "কোষপ্রাচীর",
+              "মাইটোকন্ড্রিয়া",
+              "সাইটোপ্লাজম",
+            ],
+            correct: 1,
+            explain:
+              "কোষপ্রাচীর (Cell wall) উদ্ভিদকোষের নিজস্ব বৈশিষ্ট্য, প্রাণীকোষে এটি অনুপস্থিত।",
+          },
+        ],
+      },
+      { id: 22, title: "২য় অধ্যায়: বলবিদ্যা", notes: [], qa: [], mcqs: [] },
+    ],
+  },
+  {
+    id: 3,
+    title: "গণিত অনুশীলন",
+    subject: "গণিত",
+    cover: "🧮",
+    chapters: [
+      {
+        id: 31,
+        title: "১ম অধ্যায়: বীজগণিতের সূত্রাবলি",
+        notes: [],
+        qa: [],
+        mcqs: [
+          {
+            q: "(a+b)² এর সঠিক বিস্তৃতি কোনটি?",
+            options: ["a²+b²", "a²+2ab+b²", "a²-2ab+b²", "2ab"],
+            correct: 1,
+            explain: "(a+b)² = a² + 2ab + b² — এটি একটি মৌলিক বীজগাণিতিক অভেদ।",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+export const competitions = [
+  {
+    id: 1,
+    title: "জাতীয় গণিত অলিম্পিয়াড",
+    subject: "গণিত",
+    deadline: "৩০ জুলাই, ২০২৬",
+    participants: 842,
+    icon: "🧮",
+    desc: "সারাদেশের মেধাবী শিক্ষার্থীদের জন্য একটি জাতীয় পর্যায়ের গাণিতিক প্রতিযোগিতা।",
+  },
+  {
+    id: 2,
+    title: "নৈতিক গল্প লিখন প্রতিযোগিতা",
+    subject: "নৈতিক শিক্ষা",
+    deadline: "৫ আগস্ট, ২০২৬",
+    participants: 310,
+    icon: "✍️",
+    desc: "মানবিক মূল্যবোধ নিয়ে একটি মৌলিক গল্প লিখে জমা দাও।",
+  },
+  {
+    id: 3,
+    title: "বিজ্ঞান প্রকল্প প্রদর্শনী",
+    subject: "বিজ্ঞান",
+    deadline: "১২ আগস্ট, ২০২৬",
+    participants: 156,
+    icon: "🔬",
+    desc: "নিজের হাতে তৈরি একটি বিজ্ঞান প্রকল্প জমা দিয়ে অংশ নাও।",
+  },
+];
+
+export const questions = [
+  {
+    id: 1,
+    subject: "গণিত",
+    student: "তানভীর",
+    text: "দ্বিঘাত সমীকরণের মূল বের করার সহজ উপায় কী?",
+    answers: [
+      {
+        teacher: "রাকিব হাসান",
+        text: "সমীকরণটি ax²+bx+c=0 রূপে আনুন, তারপর discriminant (b²-4ac) হিসাব করে সূত্র প্রয়োগ করুন।",
+      },
+    ],
+  },
+  {
+    id: 2,
+    subject: "বিজ্ঞান",
+    student: "ইশা",
+    text: "সালোকসংশ্লেষণ প্রক্রিয়া উদ্ভিদের কোন অংশে ঘটে?",
+    answers: [],
+  },
+];
+
+export const posts = [
+  {
+    id: 1,
+    name: "রাকিব হাসান",
+    date: "১২ জুলাই, ২০২৬",
+    avatar: "https://i.pravatar.cc/150?img=5",
+    type: "নোট",
+    subject: "বাংলা",
+    verified: true,
+    content:
+      "গদ্য শেখানোর সময় শিক্ষার্থীদের আগে মূলভাব বুঝিয়ে তারপর শব্দার্থে যাওয়া উচিত।",
+    likes: 24,
+  },
+  {
+    id: 2,
+    name: "নুসরাত জাহান",
+    date: "১১ জুলাই, ২০২৬",
+    avatar: "https://i.pravatar.cc/150?img=2",
+    type: "ট্রিক",
+    subject: "গণিত",
+    verified: true,
+    content:
+      "বর্গের সূত্র মুখস্থ করানোর বদলে ছোট ছোট উদাহরণ দিয়ে প্র্যাকটিস করালে শিক্ষার্থীরা দ্রুত আত্মস্থ করে।",
+    likes: 37,
+  },
+  {
+    id: 3,
+    name: "আরিফুল ইসলাম",
+    date: "১০ জুলাই, ২০২৬",
+    avatar: "https://i.pravatar.cc/150?img=4",
+    type: "রুটিন",
+    subject: "নৈতিক শিক্ষা",
+    verified: true,
+    content:
+      "প্রতিদিন ক্লাস শুরুর আগে ৫ মিনিট একটি নৈতিক গল্প বলার অভ্যাস শিক্ষার্থীদের চরিত্র গঠনে দারুণ প্রভাব ফেলে।",
+    likes: 52,
+  },
+];
+
+export const progressData = {
+  studyMinutesToday: 95,
+  streakDays: 6,
+  subjects: [
+    { name: "গণিত", strength: 42 },
+    { name: "বাংলা", strength: 78 },
+    { name: "বিজ্ঞান", strength: 60 },
+    { name: "ইংরেজি", strength: 35 },
+  ],
+};
+
+export const bookDetailedSubjects = ["বাংলা", "ইংরেজি", "গণিত", "বিজ্ঞান"];
+
+export const bookDetailedContent = {
+  বাংলা: {
+    papers: [
+      {
+        id: "first",
+        title: "বাংলা প্রথম পত্র",
+        topics: [
+          {
+            id: 1,
+            era: "প্রাচীনকাল",
+            title: "প্রাচীন বাংলা সাহিত্যের সূচনা",
+            content:
+              "বাংলা সাহিত্যের ইতিহাস প্রায় হাজার বছরেরও বেশি পুরনো। এই যুগের সাহিত্যের মূল উৎস ছিল ধর্মীয় ভাবধারা, বিশেষত বৌদ্ধ সহজিয়া মতবাদ।",
+          },
+          {
+            id: 2,
+            era: "প্রাচীনকাল",
+            title: "চর্যাপদ",
+            content:
+              "চর্যাপদ বাংলা ভাষার প্রাচীনতম নিদর্শন, আনুমানিক দশম থেকে দ্বাদশ শতাব্দীর মধ্যে রচিত। এটি বৌদ্ধ সহজিয়া সাধকদের রচিত পদের সংকলন। ১৯০৭ সালে হরপ্রসাদ শাস্ত্রী নেপালের রাজদরবার থেকে এর পুঁথি আবিষ্কার করেন।",
+          },
+          {
+            id: 3,
+            era: "প্রাচীনকাল",
+            title: "সেক শুভদয়া",
+            content:
+              "সেক শুভদয়া হালায়ুধ মিশ্র রচিত একটি সংস্কৃত-বাংলা মিশ্র গদ্য-পদ্য গ্রন্থ, যেখানে সুফি সাধক শেখ জালালউদ্দিন তাবরিজির অলৌকিক কাহিনি বর্ণিত হয়েছে।",
+          },
+          {
+            id: 4,
+            era: "মধ্যযুগ",
+            title: "মধ্যযুগের সূচনা ও বৈশিষ্ট্য",
+            content:
+              "মধ্যযুগের বাংলা সাহিত্য মূলত বৈষ্ণব পদাবলি ও মঙ্গলকাব্য ধারায় বিকশিত হয়। এই যুগে ধর্মীয় ভাবধারার পাশাপাশি লৌকিক জীবনের চিত্রও ফুটে উঠতে থাকে।",
+          },
+          {
+            id: 5,
+            era: "মধ্যযুগ",
+            title: "আলাওল",
+            content:
+              'আলাওল সপ্তদশ শতাব্দীর আরাকান রাজসভার একজন বিখ্যাত কবি। তাঁর উল্লেখযোগ্য রচনা "পদ্মাবতী" ও "সয়ফুলমুলুক বদিউজ্জামাল"।',
+          },
+        ],
+      },
+      { id: "second", title: "বাংলা দ্বিতীয় পত্র", topics: [] },
+    ],
+  },
+  ইংরেজি: { papers: [{ id: "general", title: "সাধারণ", topics: [] }] },
+  গণিত: { papers: [{ id: "general", title: "সাধারণ", topics: [] }] },
+  বিজ্ঞান: { papers: [{ id: "general", title: "সাধারণ", topics: [] }] },
+};
+
+===== src/app/FeaturedBar.js =====
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { useBookDetailed } from "./BookDetailedContext";
+import { useAuth } from "./AuthContext";
+import { usePosts } from "./PostsContext";
+import { subjects, postTypes } from "./data";
+
+function ThreeDotMenu({ topic, canManage }) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const menuRef = useRef(null);
+  const { editTopic, toggleFeatured } = useBookDetailed();
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function copyLink() {
+    const url = `${window.location.origin}/book-detailed/${encodeURIComponent(topic.subject)}/${topic.paperId}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+    setOpen(false);
+  }
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(!open);
+        }}
+        className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
+        aria-label="আরও অপশন"
+      >
+        <svg
+          className="w-3.5 h-3.5"
+          fill="none"
+          stroke="var(--color-app-muted)"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M12 6h.01M12 12h.01M12 18h.01"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="absolute right-0 mt-1 w-40 bg-[var(--color-app-surface)] rounded-lg shadow-lg border border-[var(--color-app-border)] py-1 z-20"
+        >
+          <button
+            onClick={copyLink}
+            className="w-full text-left px-3 py-2 text-xs text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)]"
+          >
+            {copied ? "✓ কপি হয়েছে" : "🔗 কপি লিংক"}
+          </button>
+          {canManage && (
+            <>
+              <button
+                onClick={() => {
+                  setEditing(true);
+                  setOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 text-xs text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)]"
+              >
+                ✏️ আপডেট করুন
+              </button>
+              <button
+                onClick={() => {
+                  toggleFeatured(topic.subject, topic.paperId, topic.id);
+                  setOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-[var(--color-app-primary-soft)]"
+              >
+                ✕ ফিচার্ড থেকে বাদ দিন
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {editing && (
+        <EditFeaturedModal
+          topic={topic}
+          onClose={() => setEditing(false)}
+          onSave={(fields) => {
+            editTopic(topic.subject, topic.paperId, topic.id, fields);
+            setEditing(false);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function EditFeaturedModal({ topic, onClose, onSave }) {
+  const [form, setForm] = useState({
+    era: topic.era,
+    title: topic.title,
+    content: topic.content,
+  });
+
+  function handleSubmit() {
+    if (!form.title.trim() || !form.content.trim()) return;
+    onSave(form);
+  }
+
+  return (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[95] px-4"
+    >
+      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-lg p-6">
+        <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)] mb-4">
+          টপিক আপডেট করুন
+        </h3>
+        <div className="space-y-3">
+          <input
+            value={form.era}
+            onChange={(e) => setForm({ ...form, era: e.target.value })}
+            placeholder="যুগ"
+            className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+          />
+          <input
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            placeholder="শিরোনাম"
+            className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+          />
+          <textarea
+            value={form.content}
+            onChange={(e) => setForm({ ...form, content: e.target.value })}
+            rows={6}
+            className="w-full p-2.5 rounded-lg border text-sm resize-none bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+          />
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={handleSubmit}
+              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white"
+              style={{ background: "var(--color-app-primary)" }}
+            >
+              সংরক্ষণ করুন
+            </button>
+            <button
+              onClick={onClose}
+              className="px-4 py-2.5 rounded-full text-sm font-medium border border-[var(--color-app-border)] text-[var(--color-app-muted)]"
+            >
+              বাতিল
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FeaturedManageModal({ onClose }) {
+  const { content, toggleFeatured } = useBookDetailed();
+  const subjectKeys = Object.keys(content);
+  const [selectedSubject, setSelectedSubject] = useState(subjectKeys[0] || "");
+  const [selectedPaperId, setSelectedPaperId] = useState("");
+
+  const subjectData = content[selectedSubject];
+  const papers = subjectData?.papers || [];
+  const paper = papers.find((p) => p.id === selectedPaperId) || papers[0];
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[90] px-4">
+      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)]">
+            ফিচার্ড টপিক নির্বাচন করুন
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-full hover:bg-[var(--color-app-primary-soft)]"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="var(--color-app-text)"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <select
+            value={selectedSubject}
+            onChange={(e) => {
+              setSelectedSubject(e.target.value);
+              setSelectedPaperId("");
+            }}
+            className="p-2 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+          >
+            {subjectKeys.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          <select
+            value={paper?.id || ""}
+            onChange={(e) => setSelectedPaperId(e.target.value)}
+            className="p-2 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+          >
+            {papers.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          {(!paper || paper.topics.length === 0) && (
+            <p className="text-sm text-center text-[var(--color-app-muted)] py-6">
+              এই পত্রে কোনো টপিক নেই।
+            </p>
+          )}
+          {paper?.topics.map((topic) => (
+            <div
+              key={topic.id}
+              className="flex items-center justify-between rounded-xl border p-3 border-[var(--color-app-border)]"
+            >
+              <div>
+                <p className="text-sm font-medium text-[var(--color-app-text)]">
+                  {topic.title}
+                </p>
+                <p className="text-[11px] text-[var(--color-app-muted)]">
+                  {topic.era}
+                </p>
+              </div>
+              <button
+                onClick={() =>
+                  toggleFeatured(selectedSubject, paper.id, topic.id)
+                }
+                className="px-3 py-1.5 rounded-full text-xs font-semibold flex-shrink-0"
+                style={{
+                  background: topic.featured
+                    ? "var(--color-app-primary)"
+                    : "var(--color-app-bg)",
+                  color: topic.featured ? "white" : "var(--color-app-muted)",
+                  border: topic.featured
+                    ? "none"
+                    : "1px solid var(--color-app-border)",
+                }}
+              >
+                {topic.featured ? "⭐ ফিচার্ড" : "ফিচার্ড করুন"}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FeaturedPreviewModal({ topic, onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[90] px-4">
+      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto p-6">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div>
+            <span
+              className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mb-2"
+              style={{
+                background: "var(--color-app-primary-soft)",
+                color: "var(--color-app-primary)",
+              }}
+            >
+              📄 {topic.subject} · {topic.era}
+            </span>
+            <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)]">
+              {topic.title}
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-full hover:bg-[var(--color-app-primary-soft)] flex-shrink-0"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="var(--color-app-text)"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <p className="text-sm leading-relaxed text-[var(--color-app-muted)] whitespace-pre-wrap mb-5">
+          {topic.content}
+        </p>
+
+        <Link
+          href={`/book-detailed/${encodeURIComponent(topic.subject)}/${topic.paperId}`}
+          className="block text-center py-2.5 rounded-full text-sm font-semibold text-white"
+          style={{ background: "var(--color-app-primary)" }}
+        >
+          সম্পূর্ণ পত্রে দেখুন →
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function FeaturedCard({ topic, onOpen, canManage }) {
+  return (
+    <div
+      className="relative flex-shrink-0 rounded-2xl p-3.5 bg-[var(--color-app-surface)] border border-[var(--color-app-border)]"
+      style={{ width: 250, scrollSnapAlign: "start" }}
+    >
+      <div className="absolute top-2 right-2">
+        <ThreeDotMenu topic={topic} canManage={canManage} />
+      </div>
+
+      <div className="flex items-center gap-1.5 mb-2 pr-5">
+        <span className="text-[14.5px] font-bold text-[var(--color-app-text)] truncate min-w-0">
+          {topic.title}
+        </span>
+        <span
+          className="text-[11.5px] font-bold flex-shrink-0"
+          style={{ color: "var(--color-app-primary)" }}
+        >
+          {topic.subject}
+        </span>
+        <Link
+          href={`/book-detailed/${encodeURIComponent(topic.subject)}/${topic.paperId}`}
+          className="ml-auto flex-shrink-0 flex items-center gap-0.5 text-xs font-bold"
+          style={{ color: "var(--color-app-accent)" }}
+        >
+          সব
+          <svg
+            className="w-3 h-3"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </Link>
+      </div>
+
+      <button onClick={onOpen} className="text-left w-full">
+        <p className="text-[12.5px] leading-relaxed text-[var(--color-app-muted)] line-clamp-2">
+          {topic.content}{" "}
+          <span
+            className="font-bold"
+            style={{ color: "var(--color-app-accent)" }}
+          >
+            ...আরও
+          </span>
+        </p>
+      </button>
+    </div>
+  );
+}
+
+function FeaturedCarousel({ featuredTopics, canManage, onOpenPreview }) {
+  const trackRef = useRef(null);
+  const [activeDot, setActiveDot] = useState(0);
+
+  function handleScroll() {
+    const el = trackRef.current;
+    if (!el || !el.children.length) return;
+    const cardWidth = el.children[0].offsetWidth + 12;
+    const idx = Math.round(el.scrollLeft / cardWidth);
+    setActiveDot(idx);
+  }
+
+  return (
+    <div className="relative">
+      <div
+        ref={trackRef}
+        onScroll={handleScroll}
+        className="flex gap-3 overflow-x-auto no-scrollbar pb-1.5"
+        style={{ scrollSnapType: "x mandatory" }}
+      >
+        {featuredTopics.map((topic) => (
+          <FeaturedCard
+            key={topic.id}
+            topic={topic}
+            canManage={canManage}
+            onOpen={() => onOpenPreview(topic)}
+          />
+        ))}
+      </div>
+      {featuredTopics.length > 1 && (
+        <div className="flex justify-center gap-1.5 mt-3">
+          {featuredTopics.map((_, i) => (
+            <span
+              key={i}
+              className="rounded-full transition-all duration-200"
+              style={{
+                width: i === activeDot ? 16 : 5,
+                height: 5,
+                background:
+                  i === activeDot
+                    ? "var(--color-app-primary)"
+                    : "var(--color-app-border)",
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ComposerTrigger({ onOpen, canPost }) {
+  if (!canPost) {
+    return (
+      <div className="flex items-center gap-2.5 rounded-full px-3.5 py-3 mt-4 bg-[var(--color-app-surface)] border border-[var(--color-app-border)] opacity-70">
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{ background: "var(--color-app-border)" }}
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="var(--color-app-muted)"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
+          </svg>
+        </div>
+        <span className="flex-1 text-[13px] text-[var(--color-app-muted)]">
+          পোস্ট করতে "শিক্ষক মোড"-এ যান
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={onOpen}
+      className="w-full flex items-center gap-2.5 rounded-full px-3.5 py-3 mt-4 bg-[var(--color-app-surface)] border border-[var(--color-app-border)] text-left"
+    >
+      <div
+        className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden"
+        style={{ background: "var(--color-app-border)" }}
+      >
+        <img
+          src="https://i.pravatar.cc/150?img=13"
+          alt="আপনি"
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <span className="flex-1 text-[13px] text-[var(--color-app-muted)]">
+        শিক্ষক হিসেবে আপনার জ্ঞান শেয়ার করুন...
+      </span>
+      <div
+        className="w-7 h-7 flex-shrink-0 flex items-center justify-center"
+        style={{ color: "var(--color-app-primary)" }}
+      >
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"
+          />
+        </svg>
+      </div>
+    </button>
+  );
+}
+
+function ComposerModal({ onClose }) {
+  const { addPost } = usePosts();
+  const [content, setContent] = useState("");
+  const [subject, setSubject] = useState(subjects[0]);
+  const [type, setType] = useState(Object.keys(postTypes)[0]);
+  const [image, setImage] = useState("");
+
+  function handlePost() {
+    if (!content.trim()) return;
+    addPost({
+      id: Date.now(),
+      name: "আপনি",
+      date: "আজ",
+      avatar: "https://i.pravatar.cc/150?img=13",
+      type,
+      subject,
+      verified: true,
+      content: content.trim(),
+      image: image.trim() || null,
+      likes: 0,
+    });
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[95] px-4">
+      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)]">
+            পোস্ট লিখুন
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-full hover:bg-[var(--color-app-primary-soft)]"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="var(--color-app-text)"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2.5 mb-3">
+          <img
+            src="https://i.pravatar.cc/150?img=13"
+            alt="আপনি"
+            className="w-9 h-9 rounded-full object-cover"
+            style={{ boxShadow: "0 0 0 1.5px var(--color-app-accent)" }}
+          />
+          <span className="text-sm font-semibold text-[var(--color-app-text)]">
+            আপনি
+          </span>
+        </div>
+
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          rows={4}
+          autoFocus
+          placeholder="আপনার মনে কী চলছে..."
+          className="w-full p-3 rounded-xl border text-sm resize-none bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)] mb-3"
+        />
+
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <select
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            className="p-2 rounded-lg border text-xs bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+          >
+            {subjects.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="p-2 rounded-lg border text-xs bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+          >
+            {Object.keys(postTypes).map((t) => (
+              <option key={t} value={t}>
+                {postTypes[t]} {t}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <input
+          value={image}
+          onChange={(e) => setImage(e.target.value)}
+          placeholder="🖼️ ছবির লিংক (ঐচ্ছিক)"
+          className="w-full p-2.5 rounded-lg border text-xs bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)] mb-4"
+        />
+
+        <button
+          onClick={handlePost}
+          disabled={!content.trim()}
+          className="w-full py-2.5 rounded-full text-sm font-semibold text-white disabled:opacity-40"
+          style={{ background: "var(--color-app-primary)" }}
+        >
+          পোস্ট করুন
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function FeaturedBar() {
+  const pathname = usePathname();
+  const { content, loading } = useBookDetailed();
+  const { role, teacherVerified } = useAuth();
+  const canManage = role === "teacher" && teacherVerified;
+  const canPost = canManage;
+  const [previewTopic, setPreviewTopic] = useState(null);
+  const [showComposer, setShowComposer] = useState(false);
+
+  if (loading) return null;
+  if (pathname !== "/") return null;
+
+  const featuredTopics = [];
+  Object.entries(content).forEach(([subject, subjectData]) => {
+    subjectData.papers?.forEach((paper) => {
+      paper.topics.forEach((topic) => {
+        if (topic.featured)
+          featuredTopics.push({ ...topic, subject, paperId: paper.id });
+      });
+    });
+  });
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 lg:px-6 pt-3">
+      <ComposerTrigger onOpen={() => setShowComposer(true)} canPost={canPost} />
+
+      {featuredTopics.length > 0 && (
+        <div className="mt-[18px]">
+          <FeaturedCarousel
+            featuredTopics={featuredTopics}
+            canManage={canManage}
+            onOpenPreview={setPreviewTopic}
+          />
+        </div>
+      )}
+
+      {previewTopic && (
+        <FeaturedPreviewModal
+          topic={previewTopic}
+          onClose={() => setPreviewTopic(null)}
+        />
+      )}
+      {showComposer && <ComposerModal onClose={() => setShowComposer(false)} />}
+    </div>
+  );
+}
+
+===== src/app/BookDetailedContext.js =====
+"use client";
+
+import { createContext, useContext, useState, useEffect } from "react";
+import { doc, onSnapshot, updateDoc, arrayUnion } from "firebase/firestore";
+import { db } from "./firebase";
+
+const BookDetailedContext = createContext(null);
+
+const subjectList = ["বাংলা", "ইংরেজি", "গণিত", "বিজ্ঞান"];
+
+export function BookDetailedProvider({ children }) {
+  const [content, setContent] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribers = subjectList.map((subject) =>
+      onSnapshot(doc(db, "bookDetailedContent", subject), (snap) => {
+        if (snap.exists()) {
+          setContent((prev) => ({ ...prev, [subject]: snap.data() }));
+        }
+        setLoading(false);
+      }),
+    );
+    return () => unsubscribers.forEach((unsub) => unsub());
+  }, []);
+
+  async function addTopic(subject, paperId, newTopic) {
+    const subjectData = content[subject];
+    const updatedPapers = subjectData.papers.map((paper) => {
+      if (paper.id !== paperId) return paper;
+      return { ...paper, topics: [...paper.topics, newTopic] };
+    });
+    await updateDoc(doc(db, "bookDetailedContent", subject), {
+      papers: updatedPapers,
+    });
+  }
+
+  async function editTopic(subject, paperId, topicId, updatedFields) {
+    const subjectData = content[subject];
+    const updatedPapers = subjectData.papers.map((paper) => {
+      if (paper.id !== paperId) return paper;
+      const topics = paper.topics.map((t) =>
+        t.id === topicId ? { ...t, ...updatedFields } : t,
+      );
+      return { ...paper, topics };
+    });
+    await updateDoc(doc(db, "bookDetailedContent", subject), {
+      papers: updatedPapers,
+    });
+  }
+
+  async function deleteTopic(subject, paperId, topicId) {
+    const subjectData = content[subject];
+    const updatedPapers = subjectData.papers.map((paper) => {
+      if (paper.id !== paperId) return paper;
+      return { ...paper, topics: paper.topics.filter((t) => t.id !== topicId) };
+    });
+    await updateDoc(doc(db, "bookDetailedContent", subject), {
+      papers: updatedPapers,
+    });
+  }
+
+  async function toggleFeatured(subject, paperId, topicId) {
+    const subjectData = content[subject];
+    const updatedPapers = subjectData.papers.map((paper) => {
+      if (paper.id !== paperId) return paper;
+      const topics = paper.topics.map((t) =>
+        t.id === topicId ? { ...t, featured: !t.featured } : t,
+      );
+      return { ...paper, topics };
+    });
+    await updateDoc(doc(db, "bookDetailedContent", subject), {
+      papers: updatedPapers,
+    });
+  }
+
+  return (
+    <BookDetailedContext.Provider
+      value={{
+        content,
+        addTopic,
+        editTopic,
+        deleteTopic,
+        toggleFeatured,
+        loading,
+      }}
+    >
+      {children}
+    </BookDetailedContext.Provider>
+  );
+}
+
+export function useBookDetailed() {
+  return useContext(BookDetailedContext);
+}
+

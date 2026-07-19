@@ -40,9 +40,9 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="bn"
-      className={`${geistSans.variable} ${geistMono.variable} ${hindSiliguri.variable} ${tiroBangla.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${hindSiliguri.variable} ${tiroBangla.variable} h-full antialiased overflow-x-hidden`}
     >
-      <body className="min-h-full flex flex-col bg-[var(--color-app-bg)] text-[var(--color-app-text)]">
+      <body className="min-h-full flex flex-col overflow-x-hidden bg-[var(--color-app-bg)] text-[var(--color-app-text)]">
         <AuthProvider>
           <BookDetailedProvider>
             <PostsProvider>
