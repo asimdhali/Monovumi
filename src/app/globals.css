@@ -11,15 +11,15 @@
 }
 
 :root {
-  --color-app-bg: #fbf9f4;
-  --color-app-surface: #ffffff;
-  --color-app-text: #23291f;
-  --color-app-muted: #8b8577;
-  --color-app-border: #e7e1d2;
-  --color-app-primary: #3b6255;
-  --color-app-primary-soft: #edf2ee;
-  --color-app-accent: #c9a227;
-  --color-app-accent-soft: #fdf4dd;
+  --color-app-bg: #12140f;
+  --color-app-surface: #1b1e17;
+  --color-app-text: #f1eee4;
+  --color-app-muted: #9a9686;
+  --color-app-border: #2e3226;
+  --color-app-primary: #7ebe9f;
+  --color-app-primary-soft: #1f2a22;
+  --color-app-accent: #e4c158;
+  --color-app-accent-soft: #2a2515;
 }
 
 @keyframes taglineIn {

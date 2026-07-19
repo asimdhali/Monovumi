@@ -8,15 +8,6 @@ import { useAuth } from "./AuthContext";
 import { usePosts } from "./PostsContext";
 import { subjects, postTypes } from "./data";
 
-const subjectIcons = {
-  বাংলা:
-    "M12 6.25C10.5 5 8.5 4.5 6 4.5c-1 0-2 .1-3 .4v13.5c1-.3 2-.4 3-.4 2.5 0 4.5.5 6 1.75m0-13.5c1.5-1.25 3.5-1.75 6-1.75 1 0 2 .1 3 .4v13.5c-1-.3-2-.4-3-.4-2.5 0-4.5.5-6 1.75m0-13.5v13.5",
-  ইংরেজি:
-    "M4 19.5A2.5 2.5 0 016.5 17H20M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15z",
-  গণিত: "M9 7h6m-6 4h6m-6 4h3M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z",
-  বিজ্ঞান: "M9 3v7.5L4 20a1 1 0 001 1h14a1 1 0 001-1l-5-9.5V3M9 3h6",
-};
-
 function ThreeDotMenu({ topic, canManage }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -49,11 +40,11 @@ function ThreeDotMenu({ topic, canManage }) {
           e.stopPropagation();
           setOpen(!open);
         }}
-        className="p-1 rounded-full hover:bg-[var(--color-app-primary-soft)]"
+        className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
         aria-label="আরও অপশন"
       >
         <svg
-          className="w-4 h-4"
+          className="w-3.5 h-3.5"
           fill="none"
           stroke="var(--color-app-muted)"
           viewBox="0 0 24 24"
@@ -94,7 +85,7 @@ function ThreeDotMenu({ topic, canManage }) {
                   toggleFeatured(topic.subject, topic.paperId, topic.id);
                   setOpen(false);
                 }}
-                className="w-full text-left px-3 py-2 text-xs text-red-500 hover:bg-[var(--color-app-primary-soft)]"
+                className="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-[var(--color-app-primary-soft)]"
               >
                 ✕ ফিচার্ড থেকে বাদ দিন
               </button>
@@ -132,7 +123,7 @@ function EditFeaturedModal({ topic, onClose, onSave }) {
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[95] px-4"
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[95] px-4"
     >
       <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-lg p-6">
         <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)] mb-4">
@@ -180,8 +171,8 @@ function EditFeaturedModal({ topic, onClose, onSave }) {
 
 function FeaturedManageModal({ onClose }) {
   const { content, toggleFeatured } = useBookDetailed();
-  const subjects = Object.keys(content);
-  const [selectedSubject, setSelectedSubject] = useState(subjects[0] || "");
+  const subjectKeys = Object.keys(content);
+  const [selectedSubject, setSelectedSubject] = useState(subjectKeys[0] || "");
   const [selectedPaperId, setSelectedPaperId] = useState("");
 
   const subjectData = content[selectedSubject];
@@ -189,7 +180,7 @@ function FeaturedManageModal({ onClose }) {
   const paper = papers.find((p) => p.id === selectedPaperId) || papers[0];
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[90] px-4">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[90] px-4">
       <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)]">
@@ -224,7 +215,7 @@ function FeaturedManageModal({ onClose }) {
             }}
             className="p-2 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
           >
-            {subjects.map((s) => (
+            {subjectKeys.map((s) => (
               <option key={s} value={s}>
                 {s}
               </option>
@@ -289,7 +280,7 @@ function FeaturedManageModal({ onClose }) {
 
 function FeaturedPreviewModal({ topic, onClose }) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[90] px-4">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[90] px-4">
       <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto p-6">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div>
@@ -343,70 +334,188 @@ function FeaturedPreviewModal({ topic, onClose }) {
 }
 
 function FeaturedCard({ topic, onOpen, canManage }) {
-  const iconPath = subjectIcons[topic.subject] || subjectIcons["বাংলা"];
+  return (
+    <div
+      className="relative flex-shrink-0 rounded-2xl p-3.5 bg-[var(--color-app-surface)] border border-[var(--color-app-border)]"
+      style={{ width: 250, scrollSnapAlign: "start" }}
+    >
+      <div className="absolute top-2 right-2">
+        <ThreeDotMenu topic={topic} canManage={canManage} />
+      </div>
+
+      <div className="flex items-center gap-1.5 mb-2 pr-5">
+        <span className="text-[14.5px] font-bold text-[var(--color-app-text)] truncate min-w-0">
+          {topic.title}
+        </span>
+        <span
+          className="text-[11.5px] font-bold flex-shrink-0"
+          style={{ color: "var(--color-app-primary)" }}
+        >
+          {topic.subject}
+        </span>
+        <Link
+          href={`/book-detailed/${encodeURIComponent(topic.subject)}/${topic.paperId}`}
+          className="ml-auto flex-shrink-0 flex items-center gap-0.5 text-xs font-bold"
+          style={{ color: "var(--color-app-accent)" }}
+        >
+          সব
+          <svg
+            className="w-3 h-3"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </Link>
+      </div>
+
+      <button onClick={onOpen} className="text-left w-full">
+        <p className="text-[12.5px] leading-relaxed text-[var(--color-app-muted)] line-clamp-2">
+          {topic.content}{" "}
+          <span
+            className="font-bold"
+            style={{ color: "var(--color-app-accent)" }}
+          >
+            ...আরও
+          </span>
+        </p>
+      </button>
+    </div>
+  );
+}
+
+function FeaturedCarousel({ featuredTopics, canManage, onOpenPreview }) {
+  const trackRef = useRef(null);
+  const [activeDot, setActiveDot] = useState(0);
+
+  function handleScroll() {
+    const el = trackRef.current;
+    if (!el || !el.children.length) return;
+    const cardWidth = el.children[0].offsetWidth + 12;
+    const idx = Math.round(el.scrollLeft / cardWidth);
+    setActiveDot(idx);
+  }
 
   return (
-    <div className="flex-shrink-0 w-56 rounded-xl p-3 bg-[var(--color-app-surface)] border border-[var(--color-app-border)] hover:border-[var(--color-app-primary)] transition-colors">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-1.5 min-w-0">
+    <div className="relative">
+      <div
+        ref={trackRef}
+        onScroll={handleScroll}
+        className="flex gap-3 overflow-x-auto no-scrollbar pb-1.5"
+        style={{ scrollSnapType: "x mandatory" }}
+      >
+        {featuredTopics.map((topic) => (
+          <FeaturedCard
+            key={topic.id}
+            topic={topic}
+            canManage={canManage}
+            onOpen={() => onOpenPreview(topic)}
+          />
+        ))}
+      </div>
+      {featuredTopics.length > 1 && (
+        <div className="flex justify-center gap-1.5 mt-3">
+          {featuredTopics.map((_, i) => (
+            <span
+              key={i}
+              className="rounded-full transition-all duration-200"
+              style={{
+                width: i === activeDot ? 16 : 5,
+                height: 5,
+                background:
+                  i === activeDot
+                    ? "var(--color-app-primary)"
+                    : "var(--color-app-border)",
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ComposerTrigger({ onOpen, canPost }) {
+  if (!canPost) {
+    return (
+      <div className="flex items-center gap-2.5 rounded-full px-3.5 py-3 mt-4 bg-[var(--color-app-surface)] border border-[var(--color-app-border)] opacity-70">
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{ background: "var(--color-app-border)" }}
+        >
           <svg
-            className="w-3.5 h-3.5 flex-shrink-0"
+            className="w-4 h-4"
             fill="none"
-            stroke="var(--color-app-primary)"
+            stroke="var(--color-app-muted)"
             viewBox="0 0 24 24"
           >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="2"
-              d={iconPath}
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
             />
           </svg>
-          <span className="text-[10px] font-semibold text-[var(--color-app-primary)] truncate">
-            {topic.subject}
-          </span>
         </div>
-        <ThreeDotMenu topic={topic} canManage={canManage} />
-      </div>
-
-      <button onClick={onOpen} className="text-left w-full">
-        <p className="text-xs font-semibold text-[var(--color-app-text)] line-clamp-1 mb-1">
-          {topic.title}
-        </p>
-        <p className="text-[11px] leading-snug text-[var(--color-app-muted)] line-clamp-2 mb-1.5">
-          {topic.content}
-        </p>
-        <span
-          className="text-[10px] font-bold underline underline-offset-2"
-          style={{ color: "var(--color-app-accent)" }}
-        >
-          ...আরও দেখুন
+        <span className="flex-1 text-[13px] text-[var(--color-app-muted)]">
+          পোস্ট করতে "শিক্ষক মোড"-এ যান
         </span>
-      </button>
-    </div>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={onOpen}
+      className="w-full flex items-center gap-2.5 rounded-full px-3.5 py-3 mt-4 bg-[var(--color-app-surface)] border border-[var(--color-app-border)] text-left"
+    >
+      <div
+        className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden"
+        style={{ background: "var(--color-app-border)" }}
+      >
+        <img
+          src="https://i.pravatar.cc/150?img=13"
+          alt="আপনি"
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <span className="flex-1 text-[13px] text-[var(--color-app-muted)]">
+        শিক্ষক হিসেবে আপনার জ্ঞান শেয়ার করুন...
+      </span>
+      <div
+        className="w-7 h-7 flex-shrink-0 flex items-center justify-center"
+        style={{ color: "var(--color-app-primary)" }}
+      >
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"
+          />
+        </svg>
+      </div>
+    </button>
   );
 }
 
-function PostComposer() {
+function ComposerModal({ onClose }) {
   const { addPost } = usePosts();
-  const { role, teacherVerified } = useAuth();
-  const canPost = role === "teacher" && teacherVerified;
   const [content, setContent] = useState("");
-  const [showOptions, setShowOptions] = useState(false);
   const [subject, setSubject] = useState(subjects[0]);
   const [type, setType] = useState(Object.keys(postTypes)[0]);
   const [image, setImage] = useState("");
-  const optionsRef = useRef(null);
-
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (optionsRef.current && !optionsRef.current.contains(e.target)) {
-        setShowOptions(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   function handlePost() {
     if (!content.trim()) return;
@@ -422,117 +531,97 @@ function PostComposer() {
       image: image.trim() || null,
       likes: 0,
     });
-    setContent("");
-    setImage("");
-    setShowOptions(false);
-  }
-
-  if (!canPost) {
-    return (
-      <div className="mt-3 pt-3 border-t border-[var(--color-app-border)] flex items-center justify-center gap-2 text-xs text-[var(--color-app-muted)] py-1">
-        <span>🔒</span>
-        <span>পোস্ট করতে "👑 শিক্ষক মোড"-এ যান</span>
-      </div>
-    );
+    onClose();
   }
 
   return (
-    <div className="mt-3 pt-3 border-t border-[var(--color-app-border)]">
-      <div className="rounded-xl border bg-[var(--color-app-surface)] border-[var(--color-app-border)] p-2.5 shadow-sm">
-        <div className="flex items-center gap-2.5">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[95] px-4">
+      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)]">
+            পোস্ট লিখুন
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-full hover:bg-[var(--color-app-primary-soft)]"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="var(--color-app-text)"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2.5 mb-3">
           <img
             src="https://i.pravatar.cc/150?img=13"
             alt="আপনি"
-            className="w-8 h-8 rounded-full flex-shrink-0 ring-1 ring-[var(--color-app-border)]"
+            className="w-9 h-9 rounded-full object-cover"
+            style={{ boxShadow: "0 0 0 1.5px var(--color-app-accent)" }}
           />
-          <input
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handlePost()}
-            placeholder="আপনার পছন্দের বিষয় সম্পর্কে পোস্ট করুন..."
-            className="flex-1 min-w-0 py-2 px-3.5 rounded-full border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-app-primary)]/30 focus:border-[var(--color-app-primary)] transition-all"
-          />
+          <span className="text-sm font-semibold text-[var(--color-app-text)]">
+            আপনি
+          </span>
         </div>
 
-        <div className="flex items-center justify-between mt-2.5 pt-2.5 border-t border-[var(--color-app-border)]">
-          <div className="relative" ref={optionsRef}>
-            <button
-              onClick={() => setShowOptions(!showOptions)}
-              className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
-              style={{
-                background: showOptions
-                  ? "var(--color-app-primary-soft)"
-                  : "transparent",
-                color: "var(--color-app-primary)",
-              }}
-            >
-              <span className="text-base leading-none">+</span>
-              অপশন
-              {(image ||
-                subject !== subjects[0] ||
-                type !== Object.keys(postTypes)[0]) && (
-                <span
-                  className="w-1.5 h-1.5 rounded-full"
-                  style={{ background: "var(--color-app-accent)" }}
-                />
-              )}
-            </button>
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          rows={4}
+          autoFocus
+          placeholder="আপনার মনে কী চলছে..."
+          className="w-full p-3 rounded-xl border text-sm resize-none bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)] mb-3"
+        />
 
-            {showOptions && (
-              <div className="absolute left-0 bottom-full mb-2 w-64 bg-[var(--color-app-surface)] rounded-xl shadow-lg border border-[var(--color-app-border)] p-3 z-30 space-y-2">
-                <p className="text-[11px] font-semibold text-[var(--color-app-muted)] mb-1">
-                  পোস্ট অপশন
-                </p>
-                <select
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="w-full p-2 rounded-lg border text-xs bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
-                >
-                  {subjects.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className="w-full p-2 rounded-lg border text-xs bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
-                >
-                  {Object.keys(postTypes).map((t) => (
-                    <option key={t} value={t}>
-                      {postTypes[t]} {t}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  placeholder="🖼️ ছবির লিংক (ঐচ্ছিক)"
-                  className="w-full p-2 rounded-lg border text-xs bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span
-              className="flex-shrink-0 text-[10px] font-semibold px-2.5 py-1 rounded-full text-white whitespace-nowrap"
-              style={{ background: "var(--color-app-primary)" }}
-            >
-              {role === "teacher" ? "👑 শিক্ষক" : "🎓 শিক্ষার্থী"}
-            </span>
-
-            <button
-              onClick={handlePost}
-              disabled={!content.trim()}
-              className="flex-shrink-0 text-xs font-semibold px-4 py-1.5 rounded-full text-white whitespace-nowrap transition-opacity disabled:opacity-40"
-              style={{ background: "var(--color-app-primary)" }}
-            >
-              পোস্ট করুন
-            </button>
-          </div>
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <select
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            className="p-2 rounded-lg border text-xs bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+          >
+            {subjects.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="p-2 rounded-lg border text-xs bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+          >
+            {Object.keys(postTypes).map((t) => (
+              <option key={t} value={t}>
+                {postTypes[t]} {t}
+              </option>
+            ))}
+          </select>
         </div>
+
+        <input
+          value={image}
+          onChange={(e) => setImage(e.target.value)}
+          placeholder="🖼️ ছবির লিংক (ঐচ্ছিক)"
+          className="w-full p-2.5 rounded-lg border text-xs bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)] mb-4"
+        />
+
+        <button
+          onClick={handlePost}
+          disabled={!content.trim()}
+          className="w-full py-2.5 rounded-full text-sm font-semibold text-white disabled:opacity-40"
+          style={{ background: "var(--color-app-primary)" }}
+        >
+          পোস্ট করুন
+        </button>
       </div>
     </div>
   );
@@ -543,9 +632,10 @@ export default function FeaturedBar() {
   const { content, loading } = useBookDetailed();
   const { role, teacherVerified } = useAuth();
   const canManage = role === "teacher" && teacherVerified;
-  const [showModal, setShowModal] = useState(false);
+  const canPost = canManage;
+  const [showManageModal, setShowManageModal] = useState(false);
   const [previewTopic, setPreviewTopic] = useState(null);
-  const scrollRef = useRef(null);
+  const [showComposer, setShowComposer] = useState(false);
 
   if (loading) return null;
   if (pathname !== "/") return null;
@@ -554,133 +644,87 @@ export default function FeaturedBar() {
   Object.entries(content).forEach(([subject, subjectData]) => {
     subjectData.papers?.forEach((paper) => {
       paper.topics.forEach((topic) => {
-        if (topic.featured) {
+        if (topic.featured)
           featuredTopics.push({ ...topic, subject, paperId: paper.id });
-        }
       });
     });
   });
 
-  if (featuredTopics.length === 0 && !canManage) return null;
-
-  function scroll(direction) {
-    const el = scrollRef.current;
-    if (!el) return;
-    const maxScroll = el.scrollWidth - el.clientWidth;
-
-    if (direction === "left") {
-      if (el.scrollLeft <= 5) {
-        el.scrollTo({ left: maxScroll, behavior: "auto" });
-      } else {
-        el.scrollBy({ left: -240, behavior: "smooth" });
-      }
-    } else {
-      if (el.scrollLeft >= maxScroll - 5) {
-        el.scrollTo({ left: 0, behavior: "auto" });
-      } else {
-        el.scrollBy({ left: 240, behavior: "smooth" });
-      }
-    }
-  }
-
   return (
-    <div className="bg-[var(--color-app-accent-soft)] border-b border-[var(--color-app-border)]">
-      <div className="max-w-6xl mx-auto px-4 lg:px-6 py-2.5">
-        <div className="grid grid-cols-3 items-center mb-2">
-          <div />
-          <span className="text-center text-xs font-bold text-[var(--color-app-text)]">
-            📌 চাকরির এডভান্স বই
-          </span>
-          <div className="flex justify-end items-center gap-2">
-            <Link
-              href="/book-detailed"
-              className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border border-[var(--color-app-primary)] text-[var(--color-app-primary)] hover:bg-[var(--color-app-primary-soft)] transition-colors"
-            >
-              See All
-            </Link>
-            {canManage && (
-              <button
-                onClick={() => setShowModal(true)}
-                className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full text-white"
-                style={{ background: "var(--color-app-primary)" }}
+    <div className="max-w-3xl mx-auto px-4 lg:px-6 pt-5">
+      {(featuredTopics.length > 0 || canManage) && (
+        <>
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="min-w-0">
+              <div
+                className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide mb-0.5"
+                style={{ color: "var(--color-app-accent)" }}
               >
-                + ফিচার্ড যোগ করুন
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => scroll("left")}
-            className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center bg-[var(--color-app-surface)] border border-[var(--color-app-border)] hover:border-[var(--color-app-primary)] transition-colors"
-            aria-label="বামে স্ক্রল করুন"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="var(--color-app-text)"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-
-          <div
-            ref={scrollRef}
-            className="flex-1 overflow-x-auto flex gap-2 scroll-smooth no-scrollbar"
-          >
-            {featuredTopics.length === 0 ? (
-              <span className="text-xs text-[var(--color-app-muted)] py-1">
-                এখনো কোনো ফিচার্ড টপিক নেই
-              </span>
-            ) : (
-              featuredTopics.map((topic) => (
-                <FeaturedCard
-                  key={topic.id}
-                  topic={topic}
-                  canManage={canManage}
-                  onOpen={() => setPreviewTopic(topic)}
-                />
-              ))
-            )}
+                📌 ফিচার্ড
+              </div>
+              <h2 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)]">
+                চাকরির এডভান্স বই
+              </h2>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {canManage && (
+                <button
+                  onClick={() => setShowManageModal(true)}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-full text-white"
+                  style={{ background: "var(--color-app-primary)" }}
+                >
+                  + ফিচার্ড
+                </button>
+              )}
+              <Link
+                href="/book-detailed"
+                className="flex items-center gap-1 text-[12.5px] font-bold"
+                style={{ color: "var(--color-app-primary)" }}
+              >
+                See All
+                <svg
+                  className="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2.5"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </Link>
+            </div>
           </div>
 
-          <button
-            onClick={() => scroll("right")}
-            className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center bg-[var(--color-app-surface)] border border-[var(--color-app-border)] hover:border-[var(--color-app-primary)] transition-colors"
-            aria-label="ডানে স্ক্রল করুন"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="var(--color-app-text)"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
-        </div>
-        <PostComposer />
-      </div>
+          {featuredTopics.length === 0 ? (
+            <p className="text-xs text-[var(--color-app-muted)] mb-2">
+              এখনো কোনো ফিচার্ড টপিক নেই
+            </p>
+          ) : (
+            <FeaturedCarousel
+              featuredTopics={featuredTopics}
+              canManage={canManage}
+              onOpenPreview={setPreviewTopic}
+            />
+          )}
+        </>
+      )}
 
-      {showModal && <FeaturedManageModal onClose={() => setShowModal(false)} />}
+      <ComposerTrigger onOpen={() => setShowComposer(true)} canPost={canPost} />
+
+      {showManageModal && (
+        <FeaturedManageModal onClose={() => setShowManageModal(false)} />
+      )}
       {previewTopic && (
         <FeaturedPreviewModal
           topic={previewTopic}
           onClose={() => setPreviewTopic(null)}
         />
       )}
+      {showComposer && <ComposerModal onClose={() => setShowComposer(false)} />}
     </div>
   );
 }
