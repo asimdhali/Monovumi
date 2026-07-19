@@ -174,10 +174,10 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen font-[family-name:var(--font-bengali-sans)] px-6 pb-16">
+    <div className="min-h-screen font-[family-name:var(--font-bengali-sans)] px-4 pb-16">
       {/* মূল ফিড */}
       <div className="max-w-xl mx-auto">
-        <div className="space-y-3.5">
+        <div className="space-y-1.5">
           {filteredPosts.length > 0 ? (
             filteredPosts.map((post) => <PostCard key={post.id} post={post} />)
           ) : (

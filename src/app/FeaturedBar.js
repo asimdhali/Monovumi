@@ -337,7 +337,7 @@ function FeaturedCard({ topic, onOpen, canManage }) {
   return (
     <div
       className="relative flex-shrink-0 rounded-2xl p-3.5 bg-[var(--color-app-surface)] border border-[var(--color-app-border)]"
-      style={{ width: "min(250px, 78vw)", scrollSnapAlign: "start" }}
+      style={{ width: 250, scrollSnapAlign: "start" }}
     >
       <div className="absolute top-2 right-2">
         <ThreeDotMenu topic={topic} canManage={canManage} />
@@ -407,7 +407,7 @@ function FeaturedCarousel({ featuredTopics, canManage, onOpenPreview }) {
       <div
         ref={trackRef}
         onScroll={handleScroll}
-        className="flex gap-3 overflow-x-auto no-scrollbar pb-1.5 min-w-0"
+        className="flex gap-3 overflow-x-auto no-scrollbar pb-1 min-w-0"
         style={{ scrollSnapType: "x mandatory" }}
       >
         {featuredTopics.map((topic) => (
@@ -420,7 +420,7 @@ function FeaturedCarousel({ featuredTopics, canManage, onOpenPreview }) {
         ))}
       </div>
       {featuredTopics.length > 1 && (
-        <div className="flex justify-center gap-1.5 mt-3">
+        <div className="flex justify-center gap-1.5 mt-1">
           {featuredTopics.map((_, i) => (
             <span
               key={i}
@@ -444,7 +444,7 @@ function FeaturedCarousel({ featuredTopics, canManage, onOpenPreview }) {
 function ComposerTrigger({ onOpen, canPost }) {
   if (!canPost) {
     return (
-      <div className="flex items-center gap-2.5 rounded-full px-3.5 py-3 mt-4 bg-[var(--color-app-surface)] border border-[var(--color-app-border)] opacity-70">
+      <div className="flex items-center gap-2.5 rounded-full px-3.5 py-3 mt-0 bg-[var(--color-app-surface)] border border-[var(--color-app-border)] opacity-70">
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
           style={{ background: "var(--color-app-border)" }}
@@ -473,7 +473,7 @@ function ComposerTrigger({ onOpen, canPost }) {
   return (
     <button
       onClick={onOpen}
-      className="w-full flex items-center gap-2.5 rounded-full px-3.5 py-3 mt-4 bg-[var(--color-app-surface)] border border-[var(--color-app-border)] text-left"
+      className="w-full flex items-center gap-2.5 rounded-full px-3.5 py-3 mt-1 bg-[var(--color-app-surface)] border border-[var(--color-app-border)] text-left"
     >
       <div
         className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden"
@@ -650,26 +650,33 @@ export default function FeaturedBar() {
   });
 
   return (
-    <div className="max-w-3xl mx-auto px-4 lg:px-6 pt-3 overflow-x-hidden">
-      <ComposerTrigger onOpen={() => setShowComposer(true)} canPost={canPost} />
-
-      {featuredTopics.length > 0 && (
-        <div className="mt-[18px]">
-          <FeaturedCarousel
-            featuredTopics={featuredTopics}
-            canManage={canManage}
-            onOpenPreview={setPreviewTopic}
-          />
-        </div>
-      )}
-
-      {previewTopic && (
-        <FeaturedPreviewModal
-          topic={previewTopic}
-          onClose={() => setPreviewTopic(null)}
+    <div className="px-4 pt-0 pb-1 overflow-x-hidden">
+      <div className="max-w-xl mx-auto">
+        <ComposerTrigger
+          onOpen={() => setShowComposer(true)}
+          canPost={canPost}
         />
-      )}
-      {showComposer && <ComposerModal onClose={() => setShowComposer(false)} />}
+
+        {featuredTopics.length > 0 && (
+          <div className="mt-1">
+            <FeaturedCarousel
+              featuredTopics={featuredTopics}
+              canManage={canManage}
+              onOpenPreview={setPreviewTopic}
+            />
+          </div>
+        )}
+
+        {previewTopic && (
+          <FeaturedPreviewModal
+            topic={previewTopic}
+            onClose={() => setPreviewTopic(null)}
+          />
+        )}
+        {showComposer && (
+          <ComposerModal onClose={() => setShowComposer(false)} />
+        )}
+      </div>
     </div>
   );
 }

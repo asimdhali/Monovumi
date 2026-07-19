@@ -441,8 +441,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      <div className="lg:hidden h-16" aria-hidden="true"></div>
-
       {/* সাইড ড্রয়ার */}
       <div
         onClick={() => setDrawerOpen(false)}
