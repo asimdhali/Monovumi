@@ -42,7 +42,7 @@ function TopicPreviewModal({ topic, subject, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[95] px-4">
-      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto p-6">
+      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-md sm:max-w-lg max-h-[90vh] sm:max-h-[80vh] overflow-y-auto p-4 sm:p-6 mx-2">
         <div className="flex items-start justify-between gap-3 mb-3">
           <span
             className="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full"
@@ -164,7 +164,7 @@ function TopicFormModal({ initial, onClose, onSubmit, onDelete }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[95] px-4">
-      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
+      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-md sm:max-w-lg p-4 sm:p-6 max-h-[90vh] sm:max-h-[85vh] overflow-y-auto mx-2">
         <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)] mb-4">
           {initial ? "টপিক আপডেট করুন" : "নতুন টপিক যোগ করুন"}
         </h3>
@@ -273,7 +273,7 @@ export default function PaperPage({ params }) {
     ch.topics.push({ ...topic, num: counter });
   });
 
-  // সার্চ ফিল্টার (খণ্ড, অধ্যায়, শিরোনাম — যেকোনোটায় মিললে)
+  // সার্চ ফিল্টার (খণ্ড, অধ্যায়, শিরোনাম — যেকোনোটাই মিললে)
   const filteredVolumes = volumeGroups
     .map((vol) => {
       if (!q) return vol;
@@ -308,240 +308,244 @@ export default function PaperPage({ params }) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 lg:px-6 pt-5 pb-16">
-      {/* হেডার */}
-      <div className="flex items-center gap-2 mb-5">
-        <Link
-          href={`/book-detailed/${encodeURIComponent(subject)}`}
-          className="p-1.5 -ml-1.5 rounded-full hover:bg-[var(--color-app-primary-soft)] transition-colors flex-shrink-0"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="var(--color-app-text)"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </Link>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)] truncate">
-            {paper.title}
-          </h1>
-          <p className="text-[11.5px] text-[var(--color-app-muted)]">
-            {subject} · {paper.topics.length}টি টপিক
-          </p>
-        </div>
-        {canManage && (
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="flex-shrink-0 flex items-center gap-1 rounded-full text-white text-xs font-semibold px-3 py-1.5"
-            style={{ background: "var(--color-app-primary)" }}
-          >
-            <svg
-              className="w-3 h-3"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              viewBox="0 0 24 24"
+    <div className="w-full min-h-screen bg-[var(--color-app-bg)]">
+      {/* মূল কন্টেন্ট — মোবাইলে ফুল-উইডথ, বড় স্ক্রিনে সেন্টার্ড */}
+      <div className="w-full max-w-3xl mx-auto px-3 sm:px-4 lg:px-6 pt-4 pb-20 sm:pb-16">
+        {/* হেডার — ছবির মতো */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/book-detailed/${encodeURIComponent(subject)}`}
+              className="w-9 h-9 rounded-full bg-[var(--color-app-surface)] border border-[var(--color-app-border)] flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors flex-shrink-0"
             >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            নতুন
-          </button>
-        )}
-      </div>
-
-      {/* সার্চ */}
-      <div className="relative mb-2">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-app-muted)]">
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            viewBox="0 0 24 24"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <path d="M21 21l-4.35-4.35" />
-          </svg>
-        </span>
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="টপিক, অধ্যায় বা খণ্ডের নাম লিখে খুঁজুন..."
-          className="w-full pl-10 pr-9 py-3 rounded-xl border text-sm outline-none bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
-        />
-        {query && (
-          <button
-            onClick={() => setQuery("")}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center bg-[var(--color-app-border)] text-[var(--color-app-muted)]"
-          >
-            <svg
-              className="w-3 h-3"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              viewBox="0 0 24 24"
-            >
-              <path d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
-      </div>
-      {q && !noResults && (
-        <p className="text-xs text-[var(--color-app-muted)] mb-4 pl-1">
-          {totalMatches}টি টপিক পাওয়া গেছে
-        </p>
-      )}
-      {!q && <div className="mb-4" />}
-
-      {noResults && (
-        <div className="text-center py-14">
-          <p className="text-3xl mb-2">🔍</p>
-          <p className="text-sm text-[var(--color-app-muted)]">
-            কোনো টপিক পাওয়া যায়নি — অন্য কোনো শব্দ দিয়ে খুঁজে দেখুন।
-          </p>
-        </div>
-      )}
-
-      {paper.topics.length === 0 && !q && (
-        <p className="text-sm text-[var(--color-app-muted)] py-8 text-center">
-          এই পত্রে এখনো কোনো টপিক যোগ হয়নি।
-        </p>
-      )}
-
-      {/* খণ্ড-ভিত্তিক একর্ডিয়ন */}
-      {filteredVolumes.map((vol) => {
-        const open = isVolOpen(vol.era);
-        return (
-          <div
-            key={vol.era}
-            className="rounded-2xl border mb-3 overflow-hidden bg-[var(--color-app-surface)] border-[var(--color-app-border)]"
-          >
-            <button
-              onClick={() => toggleVol(vol.era)}
-              className="w-full flex items-center justify-between px-4 py-3.5"
-              style={{ borderLeft: "3px solid var(--color-app-primary)" }}
-            >
-              <div className="text-left">
-                <h2 className="font-[family-name:var(--font-bengali-serif)] text-[15px] font-bold text-[var(--color-app-text)]">
-                  {highlightMatch(vol.era, q)}
-                </h2>
-                <p className="text-[11px] text-[var(--color-app-muted)] mt-0.5">
-                  {vol.chapters.reduce((s, c) => s + c.topics.length, 0)}টি টপিক
-                </p>
-              </div>
               <svg
-                className="w-4 h-4 flex-shrink-0 transition-transform"
-                style={{
-                  transform: open ? "rotate(180deg)" : "rotate(0deg)",
-                  color: "var(--color-app-muted)",
-                }}
+                className="w-4 h-4"
+                fill="none"
+                stroke="var(--color-app-text)"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </Link>
+            <div>
+              <h1 className="font-[family-name:var(--font-bengali-serif)] text-[17px] font-bold text-[var(--color-app-text)] leading-tight">
+                {paper.title}
+              </h1>
+              <p className="text-[11px] text-[var(--color-app-muted)] mt-0.5">
+                {subject} · {paper.topics.length}টি খণ্ড
+              </p>
+            </div>
+          </div>
+          {canManage && (
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="flex items-center gap-1.5 rounded-full text-[var(--color-app-text)] text-xs font-semibold px-4 py-2 border border-[var(--color-app-border)] bg-[var(--color-app-surface)] hover:bg-[var(--color-app-primary-soft)] transition-colors"
+            >
+              <svg
+                className="w-3.5 h-3.5"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2.2"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 viewBox="0 0 24 24"
               >
-                <path d="M6 9l6 6 6-6" />
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              নতুন
+            </button>
+          )}
+        </div>
+        {/* সার্চ */}
+        <div className="relative mb-2">
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-app-muted)]">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              viewBox="0 0 24 24"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="টপিক, অধ্যায় বা খণ্ডের নাম লিখে খুঁজুন..."
+            className="w-full pl-10 pr-9 py-2.5 sm:py-3 rounded-xl border text-sm outline-none bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center bg-[var(--color-app-border)] text-[var(--color-app-muted)]"
+            >
+              <svg
+                className="w-3 h-3"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                viewBox="0 0 24 24"
+              >
+                <path d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
+          )}
+        </div>
+        {q && !noResults && (
+          <p className="text-xs text-[var(--color-app-muted)] mb-4 pl-1">
+            {totalMatches}টি টপিক পাওয়া গেছে
+          </p>
+        )}
+        {!q && <div className="mb-4" />}
 
-            {open && (
-              <div className="px-4 pb-4 pt-1 border-t border-[var(--color-app-border)]">
-                {vol.chapters.map((ch) => (
-                  <div key={ch.key} className="mt-4 first:mt-3">
-                    {ch.title && (
-                      <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-dashed border-[var(--color-app-border)]">
-                        <h3
-                          className="text-[13px] font-bold"
-                          style={{ color: "var(--color-app-primary)" }}
-                        >
-                          {highlightMatch(ch.title, q)}
-                        </h3>
-                        {ch.topics[0]?.contributor && (
-                          <span className="flex items-center gap-1.5 flex-shrink-0">
-                            {ch.topics[0].contributorAvatar && (
-                              <img
-                                src={ch.topics[0].contributorAvatar}
-                                alt={ch.topics[0].contributor}
-                                className="w-5 h-5 rounded-full object-cover"
-                                style={{
-                                  boxShadow:
-                                    "0 0 0 1.5px var(--color-app-accent)",
-                                }}
-                              />
-                            )}
-                            <span className="text-[10.5px] text-[var(--color-app-muted)] whitespace-nowrap">
-                              {ch.topics[0].contributor}
-                            </span>
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    <ul className="space-y-2">
-                      {ch.topics.map((topic) => (
-                        <li
-                          key={topic.id}
-                          onClick={() => setPreviewTopic(topic)}
-                          className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 cursor-pointer transition-colors bg-[var(--color-app-bg)] border border-[var(--color-app-border)] hover:border-[var(--color-app-primary)]"
-                        >
-                          <span
-                            className="font-[family-name:var(--font-bengali-serif)] text-xs flex-shrink-0 w-6"
-                            style={{ color: "var(--color-app-accent)" }}
-                          >
-                            {toBengaliNum(topic.num)}
-                          </span>
-                          <span className="text-[13.5px] flex-1 min-w-0 text-[var(--color-app-text)]">
-                            {highlightMatch(topic.title, q)}
-                          </span>
-                          {canManage && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingTopic(topic);
-                              }}
-                              className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
-                            >
-                              <svg
-                                className="w-3.5 h-3.5"
-                                fill="none"
-                                stroke="var(--color-app-primary)"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                viewBox="0 0 24 24"
-                              >
-                                <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5" />
-                                <path d="M17.5 3.5a2.12 2.12 0 013 3L11 16l-4 1 1-4 9.5-9.5z" />
-                              </svg>
-                            </button>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            )}
+        {noResults && (
+          <div className="text-center py-14">
+            <p className="text-3xl mb-2">🔍</p>
+            <p className="text-sm text-[var(--color-app-muted)]">
+              কোনো টপিক পাওয়া যায়নি — অন্য কোনো শব্দ দিয়ে খুঁজে দেখুন।
+            </p>
           </div>
-        );
-      })}
+        )}
 
-      <p className="text-center text-[11px] text-[var(--color-app-muted)] mt-6 tracking-wide">
-        মনোভূমি · {paper.title}
-      </p>
+        {paper.topics.length === 0 && !q && (
+          <p className="text-sm text-[var(--color-app-muted)] py-8 text-center">
+            এই পত্রে এখনো কোনো টপিক যোগ হয়নি।
+          </p>
+        )}
 
-      {/* মডালসমূহ */}
+        {/* খণ্ড-ভিত্তিক অ্যাকর্ডিয়ন */}
+        {filteredVolumes.map((vol) => {
+          const open = isVolOpen(vol.era);
+          return (
+            <div
+              key={vol.era}
+              className="rounded-2xl border mb-3 overflow-hidden bg-[var(--color-app-surface)] border-[var(--color-app-border)]"
+            >
+              <button
+                onClick={() => toggleVol(vol.era)}
+                className="w-full flex items-center justify-between px-4 py-3.5"
+                style={{ borderLeft: "3px solid var(--color-app-primary)" }}
+              >
+                <div className="text-left">
+                  <h2 className="font-[family-name:var(--font-bengali-serif)] text-[15px] font-bold text-[var(--color-app-text)]">
+                    {highlightMatch(vol.era, q)}
+                  </h2>
+                  <p className="text-[11px] text-[var(--color-app-muted)] mt-0.5">
+                    {vol.chapters.reduce((s, c) => s + c.topics.length, 0)}টি
+                    টপিক
+                  </p>
+                </div>
+                <svg
+                  className="w-4 h-4 flex-shrink-0 transition-transform"
+                  style={{
+                    transform: open ? "rotate(180deg)" : "rotate(0deg)",
+                    color: "var(--color-app-muted)",
+                  }}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+
+              {open && (
+                <div className="px-4 pb-4 pt-1 border-t border-[var(--color-app-border)]">
+                  {vol.chapters.map((ch) => (
+                    <div key={ch.key} className="mt-4 first:mt-3">
+                      {ch.title && (
+                        <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-dashed border-[var(--color-app-border)]">
+                          <h3
+                            className="text-[13px] font-bold"
+                            style={{ color: "var(--color-app-primary)" }}
+                          >
+                            {highlightMatch(ch.title, q)}
+                          </h3>
+                          {ch.topics[0]?.contributor && (
+                            <span className="flex items-center gap-1.5 flex-shrink-0">
+                              {ch.topics[0].contributorAvatar && (
+                                <img
+                                  src={ch.topics[0].contributorAvatar}
+                                  alt={ch.topics[0].contributor}
+                                  className="w-5 h-5 rounded-full object-cover"
+                                  style={{
+                                    boxShadow:
+                                      "0 0 0 1.5px var(--color-app-accent)",
+                                  }}
+                                />
+                              )}
+                              <span className="text-[10.5px] text-[var(--color-app-muted)] whitespace-nowrap">
+                                {ch.topics[0].contributor}
+                              </span>
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      <ul className="space-y-2">
+                        {ch.topics.map((topic) => (
+                          <li
+                            key={topic.id}
+                            onClick={() => setPreviewTopic(topic)}
+                            className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 cursor-pointer transition-colors bg-[var(--color-app-bg)] border border-[var(--color-app-border)] hover:border-[var(--color-app-primary)]"
+                          >
+                            <span
+                              className="font-[family-name:var(--font-bengali-serif)] text-xs flex-shrink-0 w-6"
+                              style={{ color: "var(--color-app-accent)" }}
+                            >
+                              {toBengaliNum(topic.num)}
+                            </span>
+                            <span className="text-[13.5px] flex-1 min-w-0 text-[var(--color-app-text)]">
+                              {highlightMatch(topic.title, q)}
+                            </span>
+                            {canManage && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingTopic(topic);
+                                }}
+                                className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
+                              >
+                                <svg
+                                  className="w-3.5 h-3.5"
+                                  fill="none"
+                                  stroke="var(--color-app-primary)"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5" />
+                                  <path d="M17.5 3.5a2.12 2.12 0 013 3L11 16l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                              </button>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        <p className="text-center text-[11px] text-[var(--color-app-muted)] mt-6 tracking-wide">
+          মনোভূমি · {paper.title}
+        </p>
+      </div>
+
+      {/* মোডালসমূহ */}
       {previewTopic && (
         <TopicPreviewModal
           topic={previewTopic}
