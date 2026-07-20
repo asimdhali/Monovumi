@@ -5,200 +5,180 @@ import Link from "next/link";
 import { useBookDetailed } from "../../../BookDetailedContext";
 import { useAuth } from "../../../AuthContext";
 
-function TopicCard({ topic, canEdit, onOpen }) {
+function toBengaliNum(n) {
+  const digits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+  return String(n)
+    .split("")
+    .map((d) => digits[parseInt(d, 10)])
+    .join("")
+    .padStart(2, "০");
+}
+
+function highlightMatch(text, query) {
+  if (!query) return text;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return text;
   return (
-    <button
-      onClick={onOpen}
-      className="text-left rounded-xl border p-4 bg-[var(--color-app-surface)] border-[var(--color-app-border)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 flex flex-col h-full"
-    >
-      <p className="text-sm font-semibold mb-1.5 text-[var(--color-app-text)] line-clamp-2">
-        {topic.title}
-      </p>
-      <p className="text-xs leading-relaxed text-[var(--color-app-muted)] line-clamp-3 flex-1">
-        {topic.content}
-      </p>
-      <div className="flex items-center justify-between mt-3 pt-2 border-t border-[var(--color-app-border)]">
-        <span className="text-[10px] font-medium text-[var(--color-app-primary)]">
-          বিস্তারিত পড়ুন →
-        </span>
-        {canEdit && (
-          <svg
-            className="w-3.5 h-3.5"
-            fill="none"
-            stroke="var(--color-app-muted)"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-            />
-          </svg>
-        )}
-      </div>
-    </button>
+    <>
+      {text.slice(0, idx)}
+      <mark
+        style={{
+          background: "var(--color-app-accent)",
+          color: "#1a1a12",
+          padding: "0 2px",
+          borderRadius: "2px",
+        }}
+      >
+        {text.slice(idx, idx + query.length)}
+      </mark>
+      {text.slice(idx + query.length)}
+    </>
   );
 }
 
-function TopicModal({ topic, canEdit, onClose, onSave, onDelete }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [form, setForm] = useState({
-    era: topic.era,
-    title: topic.title,
-    content: topic.content,
-  });
-  const [confirmDelete, setConfirmDelete] = useState(false);
-
-  function handleSave() {
-    if (!form.title.trim() || !form.content.trim()) return;
-    onSave(form);
-    setIsEditing(false);
-  }
+function TopicPreviewModal({ topic, subject, onClose }) {
+  const [liked, setLiked] = useState(false);
+  const [likeCount] = useState(() => Math.floor(Math.random() * 25) + 4);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-6">
-        {isEditing ? (
-          <div className="space-y-3">
-            <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)] mb-2">
-              টপিক সম্পাদনা
-            </h3>
-            <input
-              value={form.era}
-              onChange={(e) => setForm({ ...form, era: e.target.value })}
-              placeholder="যুগ"
-              className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
-            />
-            <input
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="শিরোনাম"
-              className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
-            />
-            <textarea
-              value={form.content}
-              onChange={(e) => setForm({ ...form, content: e.target.value })}
-              rows={6}
-              className="w-full p-2.5 rounded-lg border text-sm resize-none bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
-            />
-            <div className="flex gap-2 pt-1">
-              <button
-                onClick={handleSave}
-                className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white"
-                style={{ background: "var(--color-app-primary)" }}
-              >
-                সংরক্ষণ করুন
-              </button>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="px-4 py-2.5 rounded-full text-sm font-medium border border-[var(--color-app-border)] text-[var(--color-app-muted)]"
-              >
-                বাতিল
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div>
-                <span
-                  className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mb-2"
-                  style={{
-                    background: "var(--color-app-primary-soft)",
-                    color: "var(--color-app-primary)",
-                  }}
-                >
-                  {topic.era}
-                </span>
-                <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)]">
-                  {topic.title}
-                </h3>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-1.5 rounded-full hover:bg-[var(--color-app-primary-soft)] flex-shrink-0"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="var(--color-app-text)"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[95] px-4">
+      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto p-6">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <span
+            className="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full"
+            style={{
+              background: "var(--color-app-accent-soft)",
+              color: "var(--color-app-accent)",
+            }}
+          >
+            {subject} · {topic.chapter || topic.era}
+          </span>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-full hover:bg-[var(--color-app-primary-soft)] flex-shrink-0"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="var(--color-app-text)"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
 
-            <p className="text-sm leading-relaxed text-[var(--color-app-muted)] whitespace-pre-wrap">
-              {topic.content}
-            </p>
-
-            {canEdit && (
-              <div className="flex gap-2 mt-5 pt-4 border-t border-[var(--color-app-border)]">
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="flex-1 py-2 rounded-full text-sm font-semibold text-white"
-                  style={{ background: "var(--color-app-primary)" }}
-                >
-                  ✏️ সম্পাদনা করুন
-                </button>
-                {!confirmDelete ? (
-                  <button
-                    onClick={() => setConfirmDelete(true)}
-                    className="px-4 py-2 rounded-full text-sm font-medium border border-red-300 text-red-500"
-                  >
-                    🗑️ মুছুন
-                  </button>
-                ) : (
-                  <div className="flex gap-1.5">
-                    <button
-                      onClick={onDelete}
-                      className="px-3 py-2 rounded-full text-sm font-semibold text-white bg-red-500"
-                    >
-                      নিশ্চিত?
-                    </button>
-                    <button
-                      onClick={() => setConfirmDelete(false)}
-                      className="px-3 py-2 rounded-full text-sm font-medium border border-[var(--color-app-border)] text-[var(--color-app-muted)]"
-                    >
-                      না
-                    </button>
-                  </div>
-                )}
-              </div>
+        {topic.contributor && (
+          <div className="flex items-center gap-2 mb-3">
+            {topic.contributorAvatar && (
+              <img
+                src={topic.contributorAvatar}
+                alt={topic.contributor}
+                className="w-6 h-6 rounded-full object-cover"
+                style={{ boxShadow: "0 0 0 1.5px var(--color-app-accent)" }}
+              />
             )}
-          </>
+            <span className="text-xs font-semibold text-[var(--color-app-muted)]">
+              👑 {topic.contributor}
+            </span>
+          </div>
         )}
+
+        <h3 className="font-[family-name:var(--font-bengali-serif)] text-xl text-[var(--color-app-text)] mb-3">
+          {topic.title}
+        </h3>
+        <p className="text-sm leading-[1.9] text-[var(--color-app-text)] whitespace-pre-wrap mb-5">
+          {topic.content}
+        </p>
+
+        <div className="flex items-center justify-between pt-4 border-t border-[var(--color-app-border)]">
+          <button
+            onClick={() => setLiked(!liked)}
+            className="flex items-center gap-1.5 text-sm font-medium"
+            style={{ color: liked ? "#e0637a" : "var(--color-app-muted)" }}
+          >
+            <svg
+              className="w-[17px] h-[17px]"
+              fill={liked ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            {likeCount + (liked ? 1 : 0)}
+          </button>
+          <button
+            onClick={() => alert("মন্তব্য সেকশন শীঘ্রই আসছে")}
+            className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-app-muted)]"
+          >
+            <svg
+              className="w-[17px] h-[17px]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
+            </svg>
+            মন্তব্য
+          </button>
+          <button
+            onClick={() => alert("শেয়ার শীঘ্রই আসছে")}
+            className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-app-muted)]"
+          >
+            <svg
+              className="w-[17px] h-[17px]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+            </svg>
+            শেয়ার
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-function AddTopicModal({ onClose, onAdd }) {
-  const [form, setForm] = useState({ era: "", title: "", content: "" });
+function TopicFormModal({ initial, onClose, onSubmit, onDelete }) {
+  const [form, setForm] = useState(
+    initial || { era: "", chapter: "", title: "", content: "" },
+  );
 
   function handleSubmit() {
     if (!form.era.trim() || !form.title.trim() || !form.content.trim()) return;
-    onAdd(form);
+    onSubmit(form);
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-lg p-6">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[95] px-4">
+      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
         <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)] mb-4">
-          + নতুন টপিক যোগ করুন
+          {initial ? "টপিক আপডেট করুন" : "নতুন টপিক যোগ করুন"}
         </h3>
         <div className="space-y-3">
           <input
             value={form.era}
             onChange={(e) => setForm({ ...form, era: e.target.value })}
-            placeholder="যুগ (যেমন: প্রাচীনকাল, মধ্যযুগ, আধুনিক যুগ)"
+            placeholder="খণ্ড / যুগ (যেমন: প্রথম খণ্ড: প্রাচীন যুগ)"
+            className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+          />
+          <input
+            value={form.chapter || ""}
+            onChange={(e) => setForm({ ...form, chapter: e.target.value })}
+            placeholder="অধ্যায় (ঐচ্ছিক, যেমন: অধ্যায় ১.১ · চর্যাপদ)"
             className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
           />
           <input
@@ -220,7 +200,7 @@ function AddTopicModal({ onClose, onAdd }) {
               className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white"
               style={{ background: "var(--color-app-primary)" }}
             >
-              যোগ করুন
+              সংরক্ষণ করুন
             </button>
             <button
               onClick={onClose}
@@ -229,6 +209,17 @@ function AddTopicModal({ onClose, onAdd }) {
               বাতিল
             </button>
           </div>
+          {onDelete && (
+            <button
+              onClick={() => {
+                if (confirm("এই টপিকটি স্থায়ীভাবে মুছে যাবে, নিশ্চিত?"))
+                  onDelete();
+              }}
+              className="w-full text-center py-2 text-xs font-semibold text-red-400"
+            >
+              🗑️ টপিক ডিলিট করুন
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -240,17 +231,20 @@ export default function PaperPage({ params }) {
   const subject = decodeURIComponent(rawSubject);
   const { content, addTopic, editTopic, deleteTopic } = useBookDetailed();
   const { role, teacherVerified } = useAuth();
-  const canEdit = role === "teacher" && teacherVerified;
+  const canManage = role === "teacher" && teacherVerified;
 
-  const [selectedTopic, setSelectedTopic] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [query, setQuery] = useState("");
+  const [openEras, setOpenEras] = useState({});
+  const [previewTopic, setPreviewTopic] = useState(null);
+  const [editingTopic, setEditingTopic] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
 
-  const subjectData = content[subject];
-  const paper = subjectData?.papers.find((p) => p.id === paperId);
+  const subjectData = content?.[subject];
+  const paper = subjectData?.papers?.find((p) => p.id === paperId);
 
   if (!subjectData || !paper) {
     return (
-      <div className="max-w-3xl mx-auto px-4 lg:px-6 pt-6">
+      <div className="max-w-2xl mx-auto px-4 lg:px-6 pt-6">
         <p className="text-[var(--color-app-muted)]">
           পত্রটি খুঁজে পাওয়া যায়নি।
         </p>
@@ -258,130 +252,335 @@ export default function PaperPage({ params }) {
     );
   }
 
-  const groupedByEra = [];
+  const q = query.trim().toLowerCase();
+
+  // খণ্ড/যুগ অনুযায়ী গ্রুপ, তারপর প্রতিটার ভেতরে অধ্যায় অনুযায়ী সাব-গ্রুপ
+  const volumeGroups = [];
+  let counter = 0;
   paper.topics.forEach((topic) => {
-    let group = groupedByEra.find((g) => g.era === topic.era);
-    if (!group) {
-      group = { era: topic.era, topics: [] };
-      groupedByEra.push(group);
+    let vol = volumeGroups.find((v) => v.era === topic.era);
+    if (!vol) {
+      vol = { era: topic.era, chapters: [] };
+      volumeGroups.push(vol);
     }
-    group.topics.push(topic);
+    const chapterKey = topic.chapter || "__none__";
+    let ch = vol.chapters.find((c) => c.key === chapterKey);
+    if (!ch) {
+      ch = { key: chapterKey, title: topic.chapter || null, topics: [] };
+      vol.chapters.push(ch);
+    }
+    counter += 1;
+    ch.topics.push({ ...topic, num: counter });
   });
 
-  function handleSaveEdit(updatedFields) {
-    editTopic(subject, paperId, selectedTopic.id, updatedFields);
-    setSelectedTopic({ ...selectedTopic, ...updatedFields });
+  // সার্চ ফিল্টার (খণ্ড, অধ্যায়, শিরোনাম — যেকোনোটায় মিললে)
+  const filteredVolumes = volumeGroups
+    .map((vol) => {
+      if (!q) return vol;
+      const volMatches = vol.era.toLowerCase().includes(q);
+      const chapters = vol.chapters
+        .map((ch) => {
+          const chMatches = ch.title && ch.title.toLowerCase().includes(q);
+          const topics =
+            volMatches || chMatches
+              ? ch.topics
+              : ch.topics.filter((t) => t.title.toLowerCase().includes(q));
+          return { ...ch, topics };
+        })
+        .filter((ch) => ch.topics.length > 0);
+      return { ...vol, chapters };
+    })
+    .filter((vol) => vol.chapters.length > 0);
+
+  const totalMatches = filteredVolumes.reduce(
+    (sum, v) => sum + v.chapters.reduce((s, c) => s + c.topics.length, 0),
+    0,
+  );
+  const noResults = q && filteredVolumes.length === 0;
+
+  function isVolOpen(era) {
+    if (q) return true;
+    return !!openEras[era];
   }
 
-  function handleDelete() {
-    deleteTopic(subject, paperId, selectedTopic.id);
-    setSelectedTopic(null);
-  }
-
-  function handleAdd(form) {
-    addTopic(subject, paperId, {
-      id: Date.now(),
-      era: form.era.trim(),
-      title: form.title.trim(),
-      content: form.content.trim(),
-    });
-    setShowAddModal(false);
+  function toggleVol(era) {
+    setOpenEras((prev) => ({ ...prev, [era]: !prev[era] }));
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 lg:px-6 pt-6 pb-14">
+    <div className="max-w-2xl mx-auto px-4 lg:px-6 pt-5 pb-16">
       {/* হেডার */}
-      <div className="flex items-start justify-between gap-3 mb-6">
-        <div className="flex items-center gap-2">
-          <Link
-            href={`/book-detailed/${encodeURIComponent(subject)}`}
-            className="p-1.5 -ml-1.5 rounded-full hover:bg-[var(--color-app-primary-soft)] transition-colors flex-shrink-0"
+      <div className="flex items-center gap-2 mb-5">
+        <Link
+          href={`/book-detailed/${encodeURIComponent(subject)}`}
+          className="p-1.5 -ml-1.5 rounded-full hover:bg-[var(--color-app-primary-soft)] transition-colors flex-shrink-0"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="var(--color-app-text)"
+            viewBox="0 0 24 24"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="var(--color-app-text)"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </Link>
-          <div>
-            <h1 className="font-[family-name:var(--font-bengali-serif)] text-xl text-[var(--color-app-text)]">
-              {paper.title}
-            </h1>
-            <p className="text-xs text-[var(--color-app-muted)]">
-              {subject} · {paper.topics.length}টি টপিক
-            </p>
-          </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+        </Link>
+        <div className="flex-1 min-w-0">
+          <h1 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)] truncate">
+            {paper.title}
+          </h1>
+          <p className="text-[11.5px] text-[var(--color-app-muted)]">
+            {subject} · {paper.topics.length}টি টপিক
+          </p>
         </div>
-
-        {canEdit && (
+        {canManage && (
           <button
-            onClick={() => setShowAddModal(true)}
-            className="flex-shrink-0 flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-full text-white"
+            onClick={() => setShowAddForm(true)}
+            className="flex-shrink-0 flex items-center gap-1 rounded-full text-white text-xs font-semibold px-3 py-1.5"
             style={{ background: "var(--color-app-primary)" }}
           >
-            <span className="text-base leading-none">+</span> নতুন টপিক
+            <svg
+              className="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            নতুন
           </button>
         )}
       </div>
 
-      {groupedByEra.length === 0 && (
-        <p className="text-sm text-center text-[var(--color-app-muted)] py-10">
-          এখনো কোনো টপিক যোগ হয়নি।
+      {/* সার্চ */}
+      <div className="relative mb-2">
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-app-muted)]">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            viewBox="0 0 24 24"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.35-4.35" />
+          </svg>
+        </span>
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="টপিক, অধ্যায় বা খণ্ডের নাম লিখে খুঁজুন..."
+          className="w-full pl-10 pr-9 py-3 rounded-xl border text-sm outline-none bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+        />
+        {query && (
+          <button
+            onClick={() => setQuery("")}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center bg-[var(--color-app-border)] text-[var(--color-app-muted)]"
+          >
+            <svg
+              className="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              viewBox="0 0 24 24"
+            >
+              <path d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
+      {q && !noResults && (
+        <p className="text-xs text-[var(--color-app-muted)] mb-4 pl-1">
+          {totalMatches}টি টপিক পাওয়া গেছে
+        </p>
+      )}
+      {!q && <div className="mb-4" />}
+
+      {noResults && (
+        <div className="text-center py-14">
+          <p className="text-3xl mb-2">🔍</p>
+          <p className="text-sm text-[var(--color-app-muted)]">
+            কোনো টপিক পাওয়া যায়নি — অন্য কোনো শব্দ দিয়ে খুঁজে দেখুন।
+          </p>
+        </div>
+      )}
+
+      {paper.topics.length === 0 && !q && (
+        <p className="text-sm text-[var(--color-app-muted)] py-8 text-center">
+          এই পত্রে এখনো কোনো টপিক যোগ হয়নি।
         </p>
       )}
 
-      {/* যুগ অনুযায়ী গ্রুপ করা গ্রিড */}
-      {groupedByEra.map((group) => (
-        <section key={group.era} className="mb-8">
-          <div className="flex items-center gap-2 mb-3 px-1">
-            <h2 className="text-sm font-semibold text-[var(--color-app-primary)]">
-              {group.era}
-            </h2>
-            <span className="text-[10px] text-[var(--color-app-muted)]">
-              ({group.topics.length}টি)
-            </span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {group.topics.map((topic) => (
-              <TopicCard
-                key={topic.id}
-                topic={topic}
-                canEdit={canEdit}
-                onOpen={() => setSelectedTopic(topic)}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
+      {/* খণ্ড-ভিত্তিক একর্ডিয়ন */}
+      {filteredVolumes.map((vol) => {
+        const open = isVolOpen(vol.era);
+        return (
+          <div
+            key={vol.era}
+            className="rounded-2xl border mb-3 overflow-hidden bg-[var(--color-app-surface)] border-[var(--color-app-border)]"
+          >
+            <button
+              onClick={() => toggleVol(vol.era)}
+              className="w-full flex items-center justify-between px-4 py-3.5"
+              style={{ borderLeft: "3px solid var(--color-app-primary)" }}
+            >
+              <div className="text-left">
+                <h2 className="font-[family-name:var(--font-bengali-serif)] text-[15px] font-bold text-[var(--color-app-text)]">
+                  {highlightMatch(vol.era, q)}
+                </h2>
+                <p className="text-[11px] text-[var(--color-app-muted)] mt-0.5">
+                  {vol.chapters.reduce((s, c) => s + c.topics.length, 0)}টি টপিক
+                </p>
+              </div>
+              <svg
+                className="w-4 h-4 flex-shrink-0 transition-transform"
+                style={{
+                  transform: open ? "rotate(180deg)" : "rotate(0deg)",
+                  color: "var(--color-app-muted)",
+                }}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                viewBox="0 0 24 24"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
 
-      {!canEdit && (
-        <p className="mt-6 text-xs text-center text-[var(--color-app-muted)]">
-          🔒 শুধুমাত্র যাচাইকৃত শিক্ষকরাই টপিক যোগ, সম্পাদনা বা মুছতে পারেন
-        </p>
-      )}
+            {open && (
+              <div className="px-4 pb-4 pt-1 border-t border-[var(--color-app-border)]">
+                {vol.chapters.map((ch) => (
+                  <div key={ch.key} className="mt-4 first:mt-3">
+                    {ch.title && (
+                      <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-dashed border-[var(--color-app-border)]">
+                        <h3
+                          className="text-[13px] font-bold"
+                          style={{ color: "var(--color-app-primary)" }}
+                        >
+                          {highlightMatch(ch.title, q)}
+                        </h3>
+                        {ch.topics[0]?.contributor && (
+                          <span className="flex items-center gap-1.5 flex-shrink-0">
+                            {ch.topics[0].contributorAvatar && (
+                              <img
+                                src={ch.topics[0].contributorAvatar}
+                                alt={ch.topics[0].contributor}
+                                className="w-5 h-5 rounded-full object-cover"
+                                style={{
+                                  boxShadow:
+                                    "0 0 0 1.5px var(--color-app-accent)",
+                                }}
+                              />
+                            )}
+                            <span className="text-[10.5px] text-[var(--color-app-muted)] whitespace-nowrap">
+                              {ch.topics[0].contributor}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <ul className="space-y-2">
+                      {ch.topics.map((topic) => (
+                        <li
+                          key={topic.id}
+                          onClick={() => setPreviewTopic(topic)}
+                          className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 cursor-pointer transition-colors bg-[var(--color-app-bg)] border border-[var(--color-app-border)] hover:border-[var(--color-app-primary)]"
+                        >
+                          <span
+                            className="font-[family-name:var(--font-bengali-serif)] text-xs flex-shrink-0 w-6"
+                            style={{ color: "var(--color-app-accent)" }}
+                          >
+                            {toBengaliNum(topic.num)}
+                          </span>
+                          <span className="text-[13.5px] flex-1 min-w-0 text-[var(--color-app-text)]">
+                            {highlightMatch(topic.title, q)}
+                          </span>
+                          {canManage && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingTopic(topic);
+                              }}
+                              className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
+                            >
+                              <svg
+                                className="w-3.5 h-3.5"
+                                fill="none"
+                                stroke="var(--color-app-primary)"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5" />
+                                <path d="M17.5 3.5a2.12 2.12 0 013 3L11 16l-4 1 1-4 9.5-9.5z" />
+                              </svg>
+                            </button>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
 
-      {selectedTopic && (
-        <TopicModal
-          topic={selectedTopic}
-          canEdit={canEdit}
-          onClose={() => setSelectedTopic(null)}
-          onSave={handleSaveEdit}
-          onDelete={handleDelete}
+      <p className="text-center text-[11px] text-[var(--color-app-muted)] mt-6 tracking-wide">
+        মনোভূমি · {paper.title}
+      </p>
+
+      {/* মডালসমূহ */}
+      {previewTopic && (
+        <TopicPreviewModal
+          topic={previewTopic}
+          subject={subject}
+          onClose={() => setPreviewTopic(null)}
         />
       )}
 
-      {showAddModal && (
-        <AddTopicModal
-          onClose={() => setShowAddModal(false)}
-          onAdd={handleAdd}
+      {editingTopic && (
+        <TopicFormModal
+          initial={{
+            era: editingTopic.era,
+            chapter: editingTopic.chapter || "",
+            title: editingTopic.title,
+            content: editingTopic.content,
+          }}
+          onClose={() => setEditingTopic(null)}
+          onSubmit={(fields) => {
+            editTopic(subject, paperId, editingTopic.id, fields);
+            setEditingTopic(null);
+          }}
+          onDelete={() => {
+            deleteTopic(subject, paperId, editingTopic.id);
+            setEditingTopic(null);
+          }}
+        />
+      )}
+
+      {showAddForm && (
+        <TopicFormModal
+          onClose={() => setShowAddForm(false)}
+          onSubmit={(fields) => {
+            addTopic(subject, paperId, {
+              id: Date.now(),
+              ...fields,
+              featured: false,
+            });
+            setShowAddForm(false);
+          }}
         />
       )}
     </div>
