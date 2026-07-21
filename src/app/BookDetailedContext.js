@@ -60,15 +60,51 @@ export function BookDetailedProvider({ children }) {
     });
   }
 
-  async function toggleFeatured(subject, paperId, topicId) {
+  async function moveTopicUp(subject, paperId, topicId) {
     const subjectData = content[subject];
+
     const updatedPapers = subjectData.papers.map((paper) => {
       if (paper.id !== paperId) return paper;
-      const topics = paper.topics.map((t) =>
-        t.id === topicId ? { ...t, featured: !t.featured } : t,
-      );
-      return { ...paper, topics };
+
+      const topics = [...paper.topics];
+
+      const index = topics.findIndex((t) => t.id === topicId);
+
+      if (index <= 0) return paper;
+
+      [topics[index - 1], topics[index]] = [topics[index], topics[index - 1]];
+
+      return {
+        ...paper,
+        topics,
+      };
     });
+
+    await updateDoc(doc(db, "bookDetailedContent", subject), {
+      papers: updatedPapers,
+    });
+  }
+
+  async function moveTopicDown(subject, paperId, topicId) {
+    const subjectData = content[subject];
+
+    const updatedPapers = subjectData.papers.map((paper) => {
+      if (paper.id !== paperId) return paper;
+
+      const topics = [...paper.topics];
+
+      const index = topics.findIndex((t) => t.id === topicId);
+
+      if (index === -1 || index >= topics.length - 1) return paper;
+
+      [topics[index], topics[index + 1]] = [topics[index + 1], topics[index]];
+
+      return {
+        ...paper,
+        topics,
+      };
+    });
+
     await updateDoc(doc(db, "bookDetailedContent", subject), {
       papers: updatedPapers,
     });
@@ -81,7 +117,8 @@ export function BookDetailedProvider({ children }) {
         addTopic,
         editTopic,
         deleteTopic,
-        toggleFeatured,
+        moveTopicUp,
+        moveTopicDown,
         loading,
       }}
     >

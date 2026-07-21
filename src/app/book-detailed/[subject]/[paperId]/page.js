@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useBookDetailed } from "../../../BookDetailedContext";
 import { useAuth } from "../../../AuthContext";
@@ -226,10 +226,206 @@ function TopicFormModal({ initial, onClose, onSubmit, onDelete }) {
   );
 }
 
+function ComposerModal({
+  onClose,
+  onSubmit,
+  prefillEra = "",
+  prefillChapter = "",
+}) {
+  const [authorName, setAuthorName] = useState("");
+  const [content, setContent] = useState("");
+  const [title, setTitle] = useState("");
+  const [era, setEra] = useState(prefillEra);
+  const [chapter, setChapter] = useState(prefillChapter);
+  const [image, setImage] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const canPublish =
+    content.trim().length >= 10 &&
+    title.trim().length > 0 &&
+    era.trim().length > 0;
+
+  function handleImageChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setImage(ev.target.result);
+    reader.readAsDataURL(file);
+  }
+
+  function handlePublish() {
+    if (!canPublish) return;
+    onSubmit({
+      title: title.trim(),
+      content: content.trim(),
+      era: era.trim(),
+      chapter: chapter.trim() || "",
+      contributor: authorName.trim() || "আপনি",
+      contributorAvatar: "https://i.pravatar.cc/150?img=13",
+      image: image || null,
+    });
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 z-[95] flex flex-col bg-[var(--color-app-bg)]">
+      {/* হেডার */}
+      <div className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--color-app-border)] flex-shrink-0">
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
+          aria-label="বন্ধ করুন"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="var(--color-app-text)"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+        <span className="text-[15px] font-bold text-[var(--color-app-text)]">
+          নতুন পোস্ট
+        </span>
+        <button
+          onClick={handlePublish}
+          disabled={!canPublish}
+          className="rounded-full px-4 py-2 text-[13.5px] font-bold text-white"
+          style={{
+            background: canPublish
+              ? "var(--color-app-primary)"
+              : "var(--color-app-border)",
+            cursor: canPublish ? "pointer" : "not-allowed",
+          }}
+        >
+          প্রকাশ করুন
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        {/* প্রোফাইল */}
+        <div className="flex items-center gap-2.5 mb-3.5">
+          <img
+            src="https://i.pravatar.cc/150?img=13"
+            alt="আপনি"
+            className="w-11 h-11 rounded-full object-cover"
+            style={{ boxShadow: "0 0 0 2px var(--color-app-accent-soft)" }}
+          />
+          <div className="flex-1">
+            <input
+              value={authorName}
+              onChange={(e) => setAuthorName(e.target.value)}
+              placeholder="আপনার নাম লিখুন"
+              className="w-full bg-transparent text-[15px] font-semibold text-[var(--color-app-text)] outline-none"
+            />
+            <div
+              className="text-[11px] font-semibold flex items-center gap-1 mt-0.5"
+              style={{ color: "var(--color-app-accent)" }}
+            >
+              👑 যাচাইকৃত শিক্ষক হিসেবে পোস্ট হবে
+            </div>
+          </div>
+        </div>
+
+        {/* শিরোনাম */}
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="শিরোনাম লিখুন..."
+          className="w-full bg-transparent text-[17px] font-bold text-[var(--color-app-text)] outline-none mb-3 placeholder:text-[var(--color-app-muted)]"
+        />
+
+        {/* কন্টেন্ট */}
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          rows={6}
+          autoFocus
+          placeholder="আপনার মনের কথা, জ্ঞান বা অভিজ্ঞতা লিখুন..."
+          className="w-full bg-transparent resize-none outline-none text-[16px] leading-relaxed text-[var(--color-app-text)] placeholder:text-[var(--color-app-muted)] min-h-[140px]"
+        />
+
+        {/* ছবি */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="hidden"
+        />
+        {image ? (
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="mt-4 w-full rounded-2xl overflow-hidden border border-[var(--color-app-border)]"
+          >
+            <img
+              src={image}
+              alt="সংযুক্ত ছবি"
+              className="w-full max-h-[220px] object-cover"
+            />
+          </button>
+        ) : (
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="mt-4 w-full rounded-2xl border-[1.5px] border-dashed border-[var(--color-app-border)] py-4 text-[13px] text-[var(--color-app-muted)]"
+          >
+            📷 ছবি যোগ করুন (ঐচ্ছিক)
+          </button>
+        )}
+
+        {/* খণ্ড / যুগ */}
+        <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-5 mb-2 tracking-wide">
+          খণ্ড / যুগ
+        </div>
+        <input
+          value={era}
+          onChange={(e) => setEra(e.target.value)}
+          placeholder="যেমন: প্রাচীনকাল, মধ্যযুগ..."
+          className="w-full p-3 rounded-xl border text-sm bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)] outline-none"
+        />
+
+        {/* অধ্যায় */}
+        <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-4 mb-2 tracking-wide">
+          অধ্যায় (ঐচ্ছিক)
+        </div>
+        <input
+          value={chapter}
+          onChange={(e) => setChapter(e.target.value)}
+          placeholder="যেমন: অধ্যায় ১.১ · চর্যাপদ"
+          className="w-full p-3 rounded-xl border text-sm bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)] outline-none"
+        />
+      </div>
+
+      {/* ফুটার */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-t border-[var(--color-app-border)] flex-shrink-0">
+        <span className="text-[11.5px] text-[var(--color-app-muted)]">
+          {content.length} অক্ষর
+        </span>
+        <span className="text-[11.5px] text-[var(--color-app-muted)]">
+          সর্বনিম্ন ১০ অক্ষর প্রয়োজন
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function PaperPage({ params }) {
   const { subject: rawSubject, paperId } = use(params);
   const subject = decodeURIComponent(rawSubject);
-  const { content, addTopic, editTopic, deleteTopic } = useBookDetailed();
+  const {
+    content,
+    addTopic,
+    editTopic,
+    deleteTopic,
+    moveTopicUp,
+    moveTopicDown,
+  } = useBookDetailed();
   const { role, teacherVerified } = useAuth();
   const canManage = role === "teacher" && teacherVerified;
 
@@ -238,6 +434,11 @@ export default function PaperPage({ params }) {
   const [previewTopic, setPreviewTopic] = useState(null);
   const [editingTopic, setEditingTopic] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [formEra, setFormEra] = useState("");
+  const [showComposer, setShowComposer] = useState(false);
+  const [hoveredEra, setHoveredEra] = useState(null);
+  const [composerEra, setComposerEra] = useState("");
+  const [composerChapter, setComposerChapter] = useState("");
 
   const subjectData = content?.[subject];
   const paper = subjectData?.papers?.find((p) => p.id === paperId);
@@ -254,23 +455,39 @@ export default function PaperPage({ params }) {
 
   const q = query.trim().toLowerCase();
 
+  // sortOrder অনুযায়ী আগে সাজানো
+  const sortedTopics = [...paper.topics].sort(
+    (a, b) => (a.sortOrder || 0) - (b.sortOrder || 0),
+  );
+
   // খণ্ড/যুগ অনুযায়ী গ্রুপ, তারপর প্রতিটার ভেতরে অধ্যায় অনুযায়ী সাব-গ্রুপ
   const volumeGroups = [];
-  let counter = 0;
-  paper.topics.forEach((topic) => {
+
+  sortedTopics.forEach((topic) => {
     let vol = volumeGroups.find((v) => v.era === topic.era);
+
     if (!vol) {
-      vol = { era: topic.era, chapters: [] };
+      vol = {
+        era: topic.era,
+        chapters: [],
+      };
       volumeGroups.push(vol);
     }
+
     const chapterKey = topic.chapter || "__none__";
+
     let ch = vol.chapters.find((c) => c.key === chapterKey);
+
     if (!ch) {
-      ch = { key: chapterKey, title: topic.chapter || null, topics: [] };
+      ch = {
+        key: chapterKey,
+        title: topic.chapter || null,
+        topics: [],
+      };
       vol.chapters.push(ch);
     }
-    counter += 1;
-    ch.topics.push({ ...topic, num: counter });
+
+    ch.topics.push(topic);
   });
 
   // সার্চ ফিল্টার (খণ্ড, অধ্যায়, শিরোনাম — যেকোনোটাই মিললে)
@@ -429,35 +646,76 @@ export default function PaperPage({ params }) {
               key={vol.era}
               className="rounded-2xl border mb-3 overflow-hidden bg-[var(--color-app-surface)] border-[var(--color-app-border)]"
             >
-              <button
-                onClick={() => toggleVol(vol.era)}
-                className="w-full flex items-center justify-between px-4 py-3.5"
+              <div
+                className="flex items-center justify-between px-4 py-3.5"
                 style={{ borderLeft: "3px solid var(--color-app-primary)" }}
+                onMouseEnter={() => setHoveredEra(vol.era)}
+                onMouseLeave={() => setHoveredEra(null)}
               >
-                <div className="text-left">
-                  <h2 className="font-[family-name:var(--font-bengali-serif)] text-[15px] font-bold text-[var(--color-app-text)]">
-                    {highlightMatch(vol.era, q)}
-                  </h2>
-                  <p className="text-[11px] text-[var(--color-app-muted)] mt-0.5">
-                    {vol.chapters.reduce((s, c) => s + c.topics.length, 0)}টি
-                    টপিক
-                  </p>
-                </div>
-                <svg
-                  className="w-4 h-4 flex-shrink-0 transition-transform"
-                  style={{
-                    transform: open ? "rotate(180deg)" : "rotate(0deg)",
-                    color: "var(--color-app-muted)",
-                  }}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  viewBox="0 0 24 24"
+                <button
+                  onClick={() => toggleVol(vol.era)}
+                  className="flex-1 flex items-center justify-between text-left"
                 >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </button>
+                  <div>
+                    <h2 className="font-[family-name:var(--font-bengali-serif)] text-[15px] font-bold text-[var(--color-app-text)]">
+                      {highlightMatch(vol.era, q)}
+                    </h2>
+                    <p className="text-[11px] text-[var(--color-app-muted)] mt-0.5">
+                      {vol.chapters.reduce((s, c) => s + c.topics.length, 0)}টি
+                      টপিক
+                    </p>
+                  </div>
+                </button>
+
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {/* চেভরন বাটন */}
+                  <button
+                    onClick={() => toggleVol(vol.era)}
+                    className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors"
+                  >
+                    <svg
+                      className="w-4 h-4 transition-transform"
+                      style={{
+                        transform: open ? "rotate(180deg)" : "rotate(0deg)",
+                        color: "var(--color-app-muted)",
+                      }}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
+
+                  {/* নতুন বাটন — শুধু হোভার বা ওপেন থাকলে দেখাবে */}
+                  {(hoveredEra === vol.era || open) && canManage && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setComposerEra(vol.era);
+                        setComposerChapter("");
+                        setEditingTopic(topic);
+                        setShowComposer(true);
+                      }}
+                      className="flex items-center gap-1 rounded-full text-[11px] font-semibold px-3 py-1.5 border border-[var(--color-app-border)] bg-[var(--color-app-bg)] text-[var(--color-app-muted)] hover:text-[var(--color-app-primary)] hover:border-[var(--color-app-primary)] transition-all duration-200 animate-fadeIn"
+                    >
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                      নতুন
+                    </button>
+                  )}
+                </div>
+              </div>
 
               {open && (
                 <div className="px-4 pb-4 pt-1 border-t border-[var(--color-app-border)]">
@@ -492,7 +750,7 @@ export default function PaperPage({ params }) {
                         </div>
                       )}
                       <ul className="space-y-2">
-                        {ch.topics.map((topic) => (
+                        {ch.topics.map((topic, index) => (
                           <li
                             key={topic.id}
                             onClick={() => setPreviewTopic(topic)}
@@ -502,32 +760,57 @@ export default function PaperPage({ params }) {
                               className="font-[family-name:var(--font-bengali-serif)] text-xs flex-shrink-0 w-6"
                               style={{ color: "var(--color-app-accent)" }}
                             >
-                              {toBengaliNum(topic.num)}
+                              {toBengaliNum(index + 1)}
                             </span>
                             <span className="text-[13.5px] flex-1 min-w-0 text-[var(--color-app-text)]">
                               {highlightMatch(topic.title, q)}
                             </span>
                             {canManage && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingTopic(topic);
-                                }}
-                                className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
-                              >
-                                <svg
-                                  className="w-3.5 h-3.5"
-                                  fill="none"
-                                  stroke="var(--color-app-primary)"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  viewBox="0 0 24 24"
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    moveTopicUp(subject, paperId, topic.id);
+                                  }}
+                                  className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
+                                  title="উপরে নিন"
                                 >
-                                  <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5" />
-                                  <path d="M17.5 3.5a2.12 2.12 0 013 3L11 16l-4 1 1-4 9.5-9.5z" />
-                                </svg>
-                              </button>
+                                  ⬆️
+                                </button>
+
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    moveTopicDown(subject, paperId, topic.id);
+                                  }}
+                                  className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
+                                  title="নিচে নামান"
+                                >
+                                  ⬇️
+                                </button>
+
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingTopic(topic);
+                                  }}
+                                  className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
+                                  title="সম্পাদনা"
+                                >
+                                  <svg
+                                    className="w-3.5 h-3.5"
+                                    fill="none"
+                                    stroke="var(--color-app-primary)"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5" />
+                                    <path d="M17.5 3.5a2.12 2.12 0 013 3L11 16l-4 1 1-4 9.5-9.5z" />
+                                  </svg>
+                                </button>
+                              </div>
                             )}
                           </li>
                         ))}
@@ -576,14 +859,46 @@ export default function PaperPage({ params }) {
 
       {showAddForm && (
         <TopicFormModal
-          onClose={() => setShowAddForm(false)}
+          initial={
+            formEra
+              ? { era: formEra, chapter: "", title: "", content: "" }
+              : undefined
+          }
+          onClose={() => {
+            setShowAddForm(false);
+            setFormEra("");
+          }}
+          onSubmit={(fields) => {
+            addTopic(subject, paperId, {
+              id: Date.now(),
+              sortOrder: Date.now(),
+              ...fields,
+              featured: false,
+            });
+            setShowAddForm(false);
+            setFormEra("");
+          }}
+        />
+      )}
+
+      {showComposer && (
+        <ComposerModal
+          prefillEra={composerEra}
+          prefillChapter={composerChapter}
+          onClose={() => {
+            setShowComposer(false);
+            setComposerEra("");
+            setComposerChapter("");
+          }}
           onSubmit={(fields) => {
             addTopic(subject, paperId, {
               id: Date.now(),
               ...fields,
               featured: false,
             });
-            setShowAddForm(false);
+            setShowComposer(false);
+            setComposerEra("");
+            setComposerChapter("");
           }}
         />
       )}
