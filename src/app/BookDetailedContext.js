@@ -2,11 +2,17 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { db } from "./firebase";
+import { savePapers, subscribeToSubject } from "./services/bookDetailedService";
+import { getUpdatedPapers } from "./services/bookDetailedHelper";
 import {
-  savePapers,
-  subscribeToSubject,
-  getUpdatedPapers,
-} from "./services/bookDetailedService";
+  buildAddTopic,
+  buildEditTopic,
+  buildDeleteTopic,
+  buildDuplicateTopic,
+  buildMoveTopicUp,
+  buildMoveTopicDown,
+  buildReorderTopic,
+} from "./services/bookDetailedLogic";
 import { arrayMove } from "@dnd-kit/sortable";
 
 const BookDetailedContext = createContext(null);
@@ -34,80 +40,45 @@ export function BookDetailedProvider({ children }) {
 
   async function addTopic(subject, paperId, newTopic) {
     const subjectData = content[subject];
-    const updatedPapers = getUpdatedPapers(subjectData, paperId, (paper) => {
-      const nextSortOrder =
-        paper.topics.length === 0
-          ? 1
-          : Math.max(...paper.topics.map((t) => t.sortOrder || 0)) + 1;
 
-      return {
-        ...paper,
-        topics: [
-          ...paper.topics,
-          {
-            ...newTopic,
-            sortOrder: nextSortOrder,
-          },
-        ],
-      };
-    });
+    const updatedPapers = buildAddTopic(subjectData.papers, paperId, newTopic);
+
     await savePapers(subject, updatedPapers);
   }
 
   async function editTopic(subject, paperId, topicId, updatedFields) {
     const subjectData = content[subject];
-    const updatedPapers = subjectData.papers.map((paper) => {
-      if (paper.id !== paperId) return paper;
-      const topics = paper.topics.map((t) =>
-        t.id === topicId ? { ...t, ...updatedFields } : t,
-      );
-      return { ...paper, topics };
-    });
+
+    const updatedPapers = buildEditTopic(
+      subjectData.papers,
+      paperId,
+      topicId,
+      updatedFields,
+    );
+
     await savePapers(subject, updatedPapers);
   }
 
   async function deleteTopic(subject, paperId, topicId) {
     const subjectData = content[subject];
-    const updatedPapers = subjectData.papers.map((paper) => {
-      if (paper.id !== paperId) return paper;
-      return { ...paper, topics: paper.topics.filter((t) => t.id !== topicId) };
-    });
+
+    const updatedPapers = buildDeleteTopic(
+      subjectData.papers,
+      paperId,
+      topicId,
+    );
+
     await savePapers(subject, updatedPapers);
   }
 
   async function duplicateTopic(subject, paperId, topicId) {
     const subjectData = content[subject];
 
-    const updatedPapers = subjectData.papers.map((paper) => {
-      if (paper.id !== paperId) return paper;
-
-      const topics = [...paper.topics];
-
-      const index = topics.findIndex((t) => t.id === topicId);
-
-      if (index === -1) return paper;
-
-      const original = topics[index];
-
-      const nextSortOrder =
-        topics.length === 0
-          ? 1
-          : Math.max(...topics.map((t) => t.sortOrder || 0)) + 1;
-
-      const copied = {
-        ...original,
-        id: Date.now(),
-        sortOrder: nextSortOrder,
-        title: original.title + " (Copy)",
-      };
-
-      topics.splice(index + 1, 0, copied);
-
-      return {
-        ...paper,
-        topics,
-      };
-    });
+    const updatedPapers = buildDuplicateTopic(
+      subjectData.papers,
+      paperId,
+      topicId,
+    );
 
     await savePapers(subject, updatedPapers);
   }
@@ -115,28 +86,11 @@ export function BookDetailedProvider({ children }) {
   async function moveTopicUp(subject, paperId, topicId) {
     const subjectData = content[subject];
 
-    const updatedPapers = subjectData.papers.map((paper) => {
-      if (paper.id !== paperId) return paper;
-
-      // sortOrder অনুযায়ী সাজানো
-      const topics = [...paper.topics].sort(
-        (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0),
-      );
-
-      const index = topics.findIndex((t) => t.id === topicId);
-
-      if (index <= 0) return paper;
-
-      // sortOrder অদলবদল
-      const currentOrder = topics[index].sortOrder;
-      topics[index].sortOrder = topics[index - 1].sortOrder;
-      topics[index - 1].sortOrder = currentOrder;
-
-      return {
-        ...paper,
-        topics,
-      };
-    });
+    const updatedPapers = buildMoveTopicUp(
+      subjectData.papers,
+      paperId,
+      topicId,
+    );
 
     await savePapers(subject, updatedPapers);
   }
@@ -144,28 +98,11 @@ export function BookDetailedProvider({ children }) {
   async function moveTopicDown(subject, paperId, topicId) {
     const subjectData = content[subject];
 
-    const updatedPapers = subjectData.papers.map((paper) => {
-      if (paper.id !== paperId) return paper;
-
-      // sortOrder অনুযায়ী সাজানো
-      const topics = [...paper.topics].sort(
-        (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0),
-      );
-
-      const index = topics.findIndex((t) => t.id === topicId);
-
-      if (index === -1 || index >= topics.length - 1) return paper;
-
-      // sortOrder অদলবদল
-      const currentOrder = topics[index].sortOrder;
-      topics[index].sortOrder = topics[index + 1].sortOrder;
-      topics[index + 1].sortOrder = currentOrder;
-
-      return {
-        ...paper,
-        topics,
-      };
-    });
+    const updatedPapers = buildMoveTopicDown(
+      subjectData.papers,
+      paperId,
+      topicId,
+    );
 
     await savePapers(subject, updatedPapers);
   }
@@ -173,25 +110,12 @@ export function BookDetailedProvider({ children }) {
   async function reorderTopic(subject, paperId, oldIndex, newIndex) {
     const subjectData = content[subject];
 
-    const updatedPapers = subjectData.papers.map((paper) => {
-      if (paper.id !== paperId) return paper;
-
-      // sortOrder অনুযায়ী সাজানো
-      const topics = [...paper.topics].sort(
-        (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0),
-      );
-      const moved = arrayMove(topics, oldIndex, newIndex);
-
-      const reordered = moved.map((topic, i) => ({
-        ...topic,
-        sortOrder: i + 1,
-      }));
-
-      return {
-        ...paper,
-        topics: reordered,
-      };
-    });
+    const updatedPapers = buildReorderTopic(
+      subjectData.papers,
+      paperId,
+      oldIndex,
+      newIndex,
+    );
 
     await savePapers(subject, updatedPapers);
   }
@@ -206,8 +130,8 @@ export function BookDetailedProvider({ children }) {
         duplicateTopic,
         moveTopicUp,
         moveTopicDown,
-        loading,
         reorderTopic,
+        loading,
       }}
     >
       {children}
