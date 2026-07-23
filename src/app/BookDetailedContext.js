@@ -1,8 +1,12 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "./firebase";
+import {
+  savePapers,
+  subscribeToSubject,
+  getUpdatedPapers,
+} from "./services/bookDetailedService";
 import { arrayMove } from "@dnd-kit/sortable";
 
 const BookDetailedContext = createContext(null);
@@ -15,24 +19,27 @@ export function BookDetailedProvider({ children }) {
 
   useEffect(() => {
     const unsubscribers = subjectList.map((subject) =>
-      onSnapshot(doc(db, "bookDetailedContent", subject), (snap) => {
-        if (snap.exists()) {
-          setContent((prev) => ({ ...prev, [subject]: snap.data() }));
-        }
+      subscribeToSubject(subject, (data) => {
+        setContent((prev) => ({
+          ...prev,
+          [subject]: data,
+        }));
+
         setLoading(false);
       }),
     );
+
     return () => unsubscribers.forEach((unsub) => unsub());
   }, []);
 
   async function addTopic(subject, paperId, newTopic) {
     const subjectData = content[subject];
-    const updatedPapers = subjectData.papers.map((paper) => {
-      if (paper.id !== paperId) return paper;
+    const updatedPapers = getUpdatedPapers(subjectData, paperId, (paper) => {
       const nextSortOrder =
         paper.topics.length === 0
           ? 1
           : Math.max(...paper.topics.map((t) => t.sortOrder || 0)) + 1;
+
       return {
         ...paper,
         topics: [
@@ -44,9 +51,7 @@ export function BookDetailedProvider({ children }) {
         ],
       };
     });
-    await updateDoc(doc(db, "bookDetailedContent", subject), {
-      papers: updatedPapers,
-    });
+    await savePapers(subject, updatedPapers);
   }
 
   async function editTopic(subject, paperId, topicId, updatedFields) {
@@ -58,9 +63,7 @@ export function BookDetailedProvider({ children }) {
       );
       return { ...paper, topics };
     });
-    await updateDoc(doc(db, "bookDetailedContent", subject), {
-      papers: updatedPapers,
-    });
+    await savePapers(subject, updatedPapers);
   }
 
   async function deleteTopic(subject, paperId, topicId) {
@@ -69,9 +72,7 @@ export function BookDetailedProvider({ children }) {
       if (paper.id !== paperId) return paper;
       return { ...paper, topics: paper.topics.filter((t) => t.id !== topicId) };
     });
-    await updateDoc(doc(db, "bookDetailedContent", subject), {
-      papers: updatedPapers,
-    });
+    await savePapers(subject, updatedPapers);
   }
 
   async function duplicateTopic(subject, paperId, topicId) {
@@ -108,9 +109,7 @@ export function BookDetailedProvider({ children }) {
       };
     });
 
-    await updateDoc(doc(db, "bookDetailedContent", subject), {
-      papers: updatedPapers,
-    });
+    await savePapers(subject, updatedPapers);
   }
 
   async function moveTopicUp(subject, paperId, topicId) {
@@ -139,9 +138,7 @@ export function BookDetailedProvider({ children }) {
       };
     });
 
-    await updateDoc(doc(db, "bookDetailedContent", subject), {
-      papers: updatedPapers,
-    });
+    await savePapers(subject, updatedPapers);
   }
 
   async function moveTopicDown(subject, paperId, topicId) {
@@ -170,9 +167,7 @@ export function BookDetailedProvider({ children }) {
       };
     });
 
-    await updateDoc(doc(db, "bookDetailedContent", subject), {
-      papers: updatedPapers,
-    });
+    await savePapers(subject, updatedPapers);
   }
 
   async function reorderTopic(subject, paperId, oldIndex, newIndex) {
@@ -198,9 +193,7 @@ export function BookDetailedProvider({ children }) {
       };
     });
 
-    await updateDoc(doc(db, "bookDetailedContent", subject), {
-      papers: updatedPapers,
-    });
+    await savePapers(subject, updatedPapers);
   }
 
   return (
