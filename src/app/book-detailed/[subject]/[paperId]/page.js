@@ -1,5 +1,6 @@
 "use client";
 
+import SortableTopic from "../../components/SortableTopic";
 import { use, useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -13,12 +14,12 @@ import {
 import {
   SortableContext,
   verticalListSortingStrategy,
-  useSortable,
   arrayMove,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { useBookDetailed } from "../../../BookDetailedContext";
 import { useAuth } from "../../../AuthContext";
+import TopicPreviewModal from "../../components/TopicPreviewModal";
+import TopicFormModal from "../../components/TopicFormModal";
 
 function toBengaliNum(n) {
   const digits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
@@ -48,196 +49,6 @@ function highlightMatch(text, query) {
       </mark>
       {text.slice(idx + query.length)}
     </>
-  );
-}
-
-function TopicPreviewModal({ topic, subject, onClose }) {
-  const [liked, setLiked] = useState(false);
-  const [likeCount] = useState(() => Math.floor(Math.random() * 25) + 4);
-
-  return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[95] px-4">
-      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-md sm:max-w-lg max-h-[90vh] sm:max-h-[80vh] overflow-y-auto p-4 sm:p-6 mx-2">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <span
-            className="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full"
-            style={{
-              background: "var(--color-app-accent-soft)",
-              color: "var(--color-app-accent)",
-            }}
-          >
-            {subject} · {topic.chapter || topic.era}
-          </span>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-[var(--color-app-primary-soft)] flex-shrink-0"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="var(--color-app-text)"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {topic.contributor && (
-          <div className="flex items-center gap-2 mb-3">
-            {topic.contributorAvatar && (
-              <img
-                src={topic.contributorAvatar}
-                alt={topic.contributor}
-                className="w-6 h-6 rounded-full object-cover"
-                style={{ boxShadow: "0 0 0 1.5px var(--color-app-accent)" }}
-              />
-            )}
-            <span className="text-xs font-semibold text-[var(--color-app-muted)]">
-              👑 {topic.contributor}
-            </span>
-          </div>
-        )}
-
-        <h3 className="font-[family-name:var(--font-bengali-serif)] text-xl text-[var(--color-app-text)] mb-3">
-          {topic.title}
-        </h3>
-        <p className="text-sm leading-[1.9] text-[var(--color-app-text)] whitespace-pre-wrap mb-5">
-          {topic.content}
-        </p>
-
-        <div className="flex items-center justify-between pt-4 border-t border-[var(--color-app-border)]">
-          <button
-            onClick={() => setLiked(!liked)}
-            className="flex items-center gap-1.5 text-sm font-medium"
-            style={{ color: liked ? "#e0637a" : "var(--color-app-muted)" }}
-          >
-            <svg
-              className="w-[17px] h-[17px]"
-              fill={liked ? "currentColor" : "none"}
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-            {likeCount + (liked ? 1 : 0)}
-          </button>
-          <button
-            onClick={() => alert("মন্তব্য সেকশন শীঘ্রই আসছে")}
-            className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-app-muted)]"
-          >
-            <svg
-              className="w-[17px] h-[17px]"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
-            </svg>
-            মন্তব্য
-          </button>
-          <button
-            onClick={() => alert("শেয়ার শীঘ্রই আসছে")}
-            className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-app-muted)]"
-          >
-            <svg
-              className="w-[17px] h-[17px]"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <circle cx="18" cy="5" r="3" />
-              <circle cx="6" cy="12" r="3" />
-              <circle cx="18" cy="19" r="3" />
-              <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
-            </svg>
-            শেয়ার
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TopicFormModal({ initial, onClose, onSubmit, onDelete }) {
-  const [form, setForm] = useState(
-    initial || { era: "", chapter: "", title: "", content: "" },
-  );
-
-  function handleSubmit() {
-    if (!form.era.trim() || !form.title.trim() || !form.content.trim()) return;
-    onSubmit(form);
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[95] px-4">
-      <div className="bg-[var(--color-app-surface)] rounded-2xl w-full max-w-md sm:max-w-lg p-4 sm:p-6 max-h-[90vh] sm:max-h-[85vh] overflow-y-auto mx-2">
-        <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)] mb-4">
-          {initial ? "টপিক আপডেট করুন" : "নতুন টপিক যোগ করুন"}
-        </h3>
-        <div className="space-y-3">
-          <input
-            value={form.era}
-            onChange={(e) => setForm({ ...form, era: e.target.value })}
-            placeholder="খণ্ড / যুগ (যেমন: প্রথম খণ্ড: প্রাচীন যুগ)"
-            className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
-          />
-          <input
-            value={form.chapter || ""}
-            onChange={(e) => setForm({ ...form, chapter: e.target.value })}
-            placeholder="অধ্যায় (ঐচ্ছিক, যেমন: অধ্যায় ১.১ · চর্যাপদ)"
-            className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
-          />
-          <input
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            placeholder="শিরোনাম"
-            className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
-          />
-          <textarea
-            value={form.content}
-            onChange={(e) => setForm({ ...form, content: e.target.value })}
-            rows={6}
-            placeholder="বিস্তারিত লেখা"
-            className="w-full p-2.5 rounded-lg border text-sm resize-none bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
-          />
-          <div className="flex gap-2 pt-1">
-            <button
-              onClick={handleSubmit}
-              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white"
-              style={{ background: "var(--color-app-primary)" }}
-            >
-              সংরক্ষণ করুন
-            </button>
-            <button
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-full text-sm font-medium border border-[var(--color-app-border)] text-[var(--color-app-muted)]"
-            >
-              বাতিল
-            </button>
-          </div>
-          {onDelete && (
-            <button
-              onClick={() => {
-                if (confirm("এই টপিকটি স্থায়ীভাবে মুছে যাবে, নিশ্চিত?"))
-                  onDelete();
-              }}
-              className="w-full text-center py-2 text-xs font-semibold text-red-400"
-            >
-              🗑️ টপিক ডিলিট করুন
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -426,29 +237,6 @@ function ComposerModal({
           সর্বনিম্ন ১০ অক্ষর প্রয়োজন
         </span>
       </div>
-    </div>
-  );
-}
-
-function SortableTopic({ id, children }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.55 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      {children}
     </div>
   );
 }
