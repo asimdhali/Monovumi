@@ -14,44 +14,20 @@ import {
 import {
   SortableContext,
   verticalListSortingStrategy,
-  arrayMove,
 } from "@dnd-kit/sortable";
 import { useBookDetailed } from "../../../BookDetailedContext";
 import { useAuth } from "../../../AuthContext";
 import TopicPreviewModal from "../../components/TopicPreviewModal";
 import TopicFormModal from "../../components/TopicFormModal";
 import ComposerModal from "../../components/ComposerModal";
-
-function toBengaliNum(n) {
-  const digits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
-  return String(n)
-    .split("")
-    .map((d) => digits[parseInt(d, 10)])
-    .join("")
-    .padStart(2, "০");
-}
-
-function highlightMatch(text, query) {
-  if (!query) return text;
-  const idx = text.toLowerCase().indexOf(query.toLowerCase());
-  if (idx === -1) return text;
-  return (
-    <>
-      {text.slice(0, idx)}
-      <mark
-        style={{
-          background: "var(--color-app-accent)",
-          color: "#1a1a12",
-          padding: "0 2px",
-          borderRadius: "2px",
-        }}
-      >
-        {text.slice(idx, idx + query.length)}
-      </mark>
-      {text.slice(idx + query.length)}
-    </>
-  );
-}
+import { toBengaliNum } from "../../helpers/bookDetailedPageHelper";
+import {
+  buildVolumeGroups,
+  filterVolumeGroups,
+  getDragIndexes,
+  canReorder,
+} from "../../logic/bookDetailedPageLogic";
+import { highlightMatch } from "../../utils/highlightMatch";
 
 export default function PaperPage({ params }) {
   const { subject: rawSubject, paperId } = use(params);
@@ -106,59 +82,10 @@ export default function PaperPage({ params }) {
   const q = query.trim().toLowerCase();
 
   // sortOrder অনুযায়ী আগে সাজানো
-  const sortedTopics = [...paper.topics].sort(
-    (a, b) => (a.sortOrder || 0) - (b.sortOrder || 0),
-  );
 
-  // খণ্ড/যুগ অনুযায়ী গ্রুপ, তারপর প্রতিটার ভেতরে অধ্যায় অনুযায়ী সাব-গ্রুপ
-  const volumeGroups = [];
+  const volumeGroups = buildVolumeGroups(paper.topics);
 
-  sortedTopics.forEach((topic) => {
-    let vol = volumeGroups.find((v) => v.era === topic.era);
-
-    if (!vol) {
-      vol = {
-        era: topic.era,
-        chapters: [],
-      };
-      volumeGroups.push(vol);
-    }
-
-    const chapterKey = topic.chapter || "__none__";
-
-    let ch = vol.chapters.find((c) => c.key === chapterKey);
-
-    if (!ch) {
-      ch = {
-        key: chapterKey,
-        title: topic.chapter || null,
-        topics: [],
-      };
-      vol.chapters.push(ch);
-    }
-
-    ch.topics.push(topic);
-  });
-
-  // সার্চ ফিল্টার (খণ্ড, অধ্যায়, শিরোনাম — যেকোনোটাই মিললে)
-  const filteredVolumes = volumeGroups
-    .map((vol) => {
-      if (!q) return vol;
-      const volMatches = vol.era.toLowerCase().includes(q);
-      const chapters = vol.chapters
-        .map((ch) => {
-          const chMatches = ch.title && ch.title.toLowerCase().includes(q);
-          const topics =
-            volMatches || chMatches
-              ? ch.topics
-              : ch.topics.filter((t) => t.title.toLowerCase().includes(q));
-          return { ...ch, topics };
-        })
-        .filter((ch) => ch.topics.length > 0);
-      return { ...vol, chapters };
-    })
-    .filter((vol) => vol.chapters.length > 0);
-
+  const filteredVolumes = filterVolumeGroups(volumeGroups, query);
   const totalMatches = filteredVolumes.reduce(
     (sum, v) => sum + v.chapters.reduce((s, c) => s + c.topics.length, 0),
     0,
@@ -188,12 +115,13 @@ export default function PaperPage({ params }) {
   function handleDragEnd(event) {
     const { active, over } = event;
 
-    if (!over) return;
-    if (active.id === over.id) return;
+    if (!canReorder(active, over)) return;
 
-    const oldIndex = sortedTopics.findIndex((topic) => topic.id === active.id);
-
-    const newIndex = sortedTopics.findIndex((topic) => topic.id === over.id);
+    const { oldIndex, newIndex } = getDragIndexes(
+      paper.topics,
+      active.id,
+      over.id,
+    );
 
     if (oldIndex === -1 || newIndex === -1) return;
 
