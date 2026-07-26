@@ -1,4 +1,10 @@
 "use client";
+import TopicItem from "./TopicItem";
+import Link from "next/link";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 export default function ChapterSection({
   vol,
@@ -30,7 +36,7 @@ export default function ChapterSection({
       onMouseLeave={() => setHoveredChapter(null)}
     >
       {ch.title && (
-        <button
+        <div
           onClick={() => toggleChapter(`${vol.era}-${ch.key}`)}
           className="w-full flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-dashed border-[var(--color-app-border)] hover:opacity-90 transition"
         >
@@ -97,7 +103,7 @@ export default function ChapterSection({
               </span>
             )}
           </div>
-        </button>
+        </div>
       )}
       <SortableContext
         items={ch.topics.map((topic) => topic.id)}
@@ -105,82 +111,27 @@ export default function ChapterSection({
       >
         <ul className="space-y-2">
           {ch.topics.map((topic, index) => (
-            <SortableTopic key={topic.id} id={topic.id}>
-              <li
-                onClick={() => setPreviewTopic(topic)}
-                className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 cursor-pointer transition-colors bg-[var(--color-app-bg)] border border-[var(--color-app-border)] hover:border-[var(--color-app-primary)]"
-              >
-                <span
-                  className="font-[family-name:var(--font-bengali-serif)] text-xs flex-shrink-0 w-6"
-                  style={{
-                    color: "var(--color-app-accent)",
-                  }}
-                >
-                  {toBengaliNum(index + 1)}
-                </span>
-                <span className="text-[13.5px] flex-1 min-w-0 text-[var(--color-app-text)]">
-                  {highlightMatch(topic.title, q)}
-                </span>
-                {canManage && (
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        moveTopicUp(subject, paperId, topic.id);
-                      }}
-                      className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
-                      title="উপরে নিন"
-                    >
-                      ⬆️
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        moveTopicDown(subject, paperId, topic.id);
-                      }}
-                      className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
-                      title="নিচে নামান"
-                    >
-                      ⬇️
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        duplicateTopic(subject, paperId, topic.id);
-                      }}
-                      className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
-                      title="কপি করুন"
-                    >
-                      📋
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingTopic(topic);
-                      }}
-                      className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
-                      title="সম্পাদনা"
-                    >
-                      <svg
-                        className="w-3.5 h-3.5"
-                        fill="none"
-                        stroke="var(--color-app-primary)"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5" />
-                        <path d="M17.5 3.5a2.12 2.12 0 013 3L11 16l-4 1 1-4 9.5-9.5z" />
-                      </svg>
-                    </button>
-                  </div>
-                )}
-              </li>
-            </SortableTopic>
+            <Link
+              key={topic.id}
+              href={`/book-detailed/${encodeURIComponent(subject)}/${paperId}/${topic.id}`}
+              className="block"
+            >
+              <TopicItem
+                topic={topic}
+                index={index}
+                q={q}
+                canManage={canManage}
+                subject={subject}
+                paperId={paperId}
+                moveTopicUp={moveTopicUp}
+                moveTopicDown={moveTopicDown}
+                duplicateTopic={duplicateTopic}
+                setEditingTopic={setEditingTopic}
+                setPreviewTopic={setPreviewTopic}
+                toBengaliNum={toBengaliNum}
+                highlightMatch={highlightMatch}
+              />
+            </Link>
           ))}
         </ul>
       </SortableContext>

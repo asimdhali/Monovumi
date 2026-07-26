@@ -31,7 +31,7 @@ import { highlightMatch } from "../../utils/highlightMatch";
 import VolumeAccordion from "../../components/VolumeAccordion";
 import VolumeHeader from "../../components/VolumeHeader";
 import ChapterSection from "../../components/ChapterSection";
-import TopicItem from "./TopicItem";
+import TopicItem from "../../components/TopicItem";
 
 export default function PaperPage({ params }) {
   const { subject: rawSubject, paperId } = use(params);
