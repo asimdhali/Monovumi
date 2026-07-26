@@ -68,29 +68,58 @@
   animation: fadeIn 0.2s ease-out;
 }
 
+.ProseMirror {
+  outline: none;
+  caret-color: var(--color-app-primary);
+}
+
+.ProseMirror > * + * {
+  margin-top: 0.25rem;
+}
+
+.ProseMirror p {
+  line-height: 2;
+}
+
+.ProseMirror:empty::before {
+  content: "এখানে লেখা শুরু করুন...";
+  color: #777;
+  pointer-events: none;
+}
+
 .ProseMirror h1 {
   font-size: 2rem;
   font-weight: 700;
   line-height: 1.2;
-  margin: 1rem 0;
+  margin: 0.25rem 0;
 }
 
 .ProseMirror h2 {
   font-size: 1.6rem;
   font-weight: 700;
   line-height: 1.3;
-  margin: 0.9rem 0;
+  margin: 0.3rem 0;
 }
 
 .ProseMirror h3 {
   font-size: 1.3rem;
   font-weight: 700;
   line-height: 1.4;
-  margin: 0.8rem 0;
+  margin: 0.25rem 0;
 }
 
 .ProseMirror p {
-  margin: 0.8rem 0;
+  margin: 0.25rem 0;
+}
+
+/* Placeholder */
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--color-app-muted);
+  pointer-events: none;
+  height: 0;
 }
 
 .ProseMirror ul {
@@ -117,4 +146,25 @@
 
 .ProseMirror u {
   text-decoration: underline;
+}
+
+.editor-writing-area {
+  border: 1px dashed var(--color-app-border);
+  border-radius: 4px;
+  padding: 18px;
+}
+
+.tiptap {
+  outline: none;
+  min-height: 340px;
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--color-app-muted);
+  float: left;
+  pointer-events: none;
+  height: 0;
 }

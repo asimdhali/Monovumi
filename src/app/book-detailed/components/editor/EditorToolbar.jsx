@@ -4,7 +4,21 @@ export default function EditorToolbar({ editor }) {
   if (!editor) return null;
 
   return (
-    <div className="flex items-center gap-2 border-b border-[var(--color-app-border)] px-3 py-2 bg-[var(--color-app-surface)]">
+    <div
+      className="
+    sticky
+    top-0
+    z-20
+    flex
+    items-center
+    gap-2
+    border-b
+    border-[var(--color-app-border)]
+    px-3
+    py-2
+    bg-[var(--color-app-surface)]
+  "
+    >
       <select
         value={
           editor.isActive("heading", { level: 1 })
@@ -99,6 +113,61 @@ export default function EditorToolbar({ editor }) {
         }`}
       >
         1.
+      </button>
+      {/* Left */}
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setTextAlign("left").run()}
+        className={`w-9 h-9 rounded-lg transition ${
+          editor.isActive({ textAlign: "left" })
+            ? "bg-[var(--color-app-primary)] text-white"
+            : "hover:bg-[var(--color-app-primary-soft)]"
+        }`}
+        title="Left"
+      >
+        ⬅
+      </button>
+
+      {/* Center */}
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setTextAlign("center").run()}
+        className={`w-9 h-9 rounded-lg transition ${
+          editor.isActive({ textAlign: "center" })
+            ? "bg-[var(--color-app-primary)] text-white"
+            : "hover:bg-[var(--color-app-primary-soft)]"
+        }`}
+        title="Center"
+      >
+        ⬌
+      </button>
+
+      {/* Right */}
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setTextAlign("right").run()}
+        className={`w-9 h-9 rounded-lg transition ${
+          editor.isActive({ textAlign: "right" })
+            ? "bg-[var(--color-app-primary)] text-white"
+            : "hover:bg-[var(--color-app-primary-soft)]"
+        }`}
+        title="Right"
+      >
+        ➡
+      </button>
+
+      {/* Justify */}
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+        className={`w-9 h-9 rounded-lg transition ${
+          editor.isActive({ textAlign: "justify" })
+            ? "bg-[var(--color-app-primary)] text-white"
+            : "hover:bg-[var(--color-app-primary-soft)]"
+        }`}
+        title="Justify"
+      >
+        ☰
       </button>
     </div>
   );
