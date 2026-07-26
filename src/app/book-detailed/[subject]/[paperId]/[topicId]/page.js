@@ -5,6 +5,7 @@ import TopicHeader from "../../../components/TopicHeader";
 import TopicContent from "../../../components/TopicContent";
 import { useBookDetailed } from "../../../../BookDetailedContext";
 import TopicNavigation from "../../../components/TopicNavigation";
+import RelatedTopics from "../../../components/RelatedTopics";
 
 export default function TopicPage({ params }) {
   const { subject: rawSubject, paperId, topicId } = use(params);
@@ -20,6 +21,11 @@ export default function TopicPage({ params }) {
   const topic = paper?.topics?.find((topic) => String(topic.id) === topicId);
   const sortedTopics = [...(paper?.topics || [])].sort(
     (a, b) => (a.sortOrder || 0) - (b.sortOrder || 0),
+  );
+  const relatedTopics = sortedTopics.filter(
+    (t) =>
+      String(t.id) !== String(topicId) &&
+      (t.chapter === topic?.chapter || t.era === topic?.era),
   );
 
   const currentIndex = sortedTopics.findIndex((t) => String(t.id) === topicId);
@@ -46,6 +52,12 @@ export default function TopicPage({ params }) {
         paperId={paperId}
         previousTopic={previousTopic}
         nextTopic={nextTopic}
+      />
+      <RelatedTopics
+        subject={subject}
+        paperId={paperId}
+        currentTopicId={topic.id}
+        topics={relatedTopics}
       />
     </div>
   );
