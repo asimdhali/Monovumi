@@ -28,6 +28,7 @@ import {
   canReorder,
 } from "../../logic/bookDetailedPageLogic";
 import { highlightMatch } from "../../utils/highlightMatch";
+import VolumeAccordion from "../../components/VolumeAccordion";
 
 export default function PaperPage({ params }) {
   const { subject: rawSubject, paperId } = use(params);
@@ -251,7 +252,7 @@ export default function PaperPage({ params }) {
           {filteredVolumes.map((vol) => {
             const open = isVolOpen(vol.era);
             return (
-              <div
+              <VolumeAccordion
                 key={vol.era}
                 className="rounded-2xl border mb-3 overflow-hidden bg-[var(--color-app-surface)] border-[var(--color-app-border)]"
               >
@@ -516,7 +517,7 @@ export default function PaperPage({ params }) {
                     })}
                   </div>
                 )}
-              </div>
+              </VolumeAccordion>
             );
           })}
 
