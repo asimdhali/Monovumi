@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import RichTextEditor from "./editor/RichTextEditor";
 
 export default function ComposerModal({
   onClose,
@@ -118,14 +119,8 @@ export default function ComposerModal({
         />
 
         {/* কন্টেন্ট */}
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={6}
-          autoFocus
-          placeholder="আপনার মনের কথা, জ্ঞান বা অভিজ্ঞতা লিখুন..."
-          className="w-full bg-transparent resize-none outline-none text-[16px] leading-relaxed text-[var(--color-app-text)] placeholder:text-[var(--color-app-muted)] min-h-[140px]"
-        />
+
+        <RichTextEditor value={content} onChange={setContent} />
 
         {/* ছবি */}
         <input
