@@ -23,6 +23,7 @@ export default function ComposerModal({
   const [chapter, setChapter] = useState(
     initialTopic?.chapter || prefillChapter,
   );
+  const [editType, setEditType] = useState(initialTopic?.editType || "major");
   const fileInputRef = useRef(null);
 
   const canPublish =
@@ -45,6 +46,7 @@ export default function ComposerModal({
       content: content.trim(),
       era: era.trim(),
       chapter: chapter.trim() || "",
+      editType,
       contributor: authorName.trim() || "আপনি",
       contributorAvatar: "https://i.pravatar.cc/150?img=13",
       image: image || null,
@@ -179,6 +181,30 @@ export default function ComposerModal({
           placeholder="যেমন: অধ্যায় ১.১ · চর্যাপদ"
           className="w-full p-3 rounded-xl border text-sm bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)] outline-none"
         />
+        {/* আপডেটের ধরন */}
+        <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-4 mb-2 tracking-wide">
+          আপডেটের ধরন
+        </div>
+
+        <div className="flex gap-6">
+          <label className="flex items-center gap-2 cursor-pointer text-sm">
+            <input
+              type="radio"
+              checked={editType === "major"}
+              onChange={() => setEditType("major")}
+            />
+            <span>Major Update</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer text-sm">
+            <input
+              type="radio"
+              checked={editType === "minor"}
+              onChange={() => setEditType("minor")}
+            />
+            <span>Minor Edit</span>
+          </label>
+        </div>
       </div>
 
       {/* ফুটার */}

@@ -7,6 +7,8 @@ import { MoreHorizontal, Heart, MessageCircle, Share2 } from "lucide-react";
 import { subjects, postTypes } from "./data";
 import { useAuth } from "./AuthContext";
 import { usePosts } from "./PostsContext";
+import { useBookDetailed } from "./BookDetailedContext";
+import { buildHomeFeed } from "./services/homeFeedHelper";
 
 function PostCard({ post }) {
   const [expanded, setExpanded] = useState(false);
@@ -80,9 +82,29 @@ function PostCard({ post }) {
                 {post.subject}
               </span>
             </div>
-            <p className="text-xs text-[var(--color-app-muted)] mt-0.5">
-              {post.date}
-            </p>
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <p className="text-xs text-[var(--color-app-muted)]">
+                {post.date}
+              </p>
+
+              {post.activityType === "new" && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-600/15 text-green-400">
+                  🟢 নতুন
+                </span>
+              )}
+
+              {post.activityType === "major" && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-600/15 text-sky-400">
+                  🔵 Major Update
+                </span>
+              )}
+
+              {post.activityType === "minor" && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-600/20 text-gray-300">
+                  ⚪ Minor Edit
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -113,13 +135,25 @@ function PostCard({ post }) {
           )}
         </div>
       </div>
-
-      <p
+      {post.paperTitle && (
+        <div className="text-xs text-[var(--color-app-muted)] mb-2">
+          📖 {post.subject} &gt; {post.paperTitle} &gt; {post.era}
+        </div>
+      )}
+      {post.title && (
+        <h2 className="text-lg font-bold mb-2 text-[var(--color-app-text)]">
+          {post.title}
+        </h2>
+      )}
+      <div
         ref={textRef}
-        className={`text-[14px] leading-relaxed text-[var(--color-app-text)] mb-1 ${expanded ? "" : "line-clamp-3"}`}
-      >
-        {post.content}
-      </p>
+        className={`text-[14px] leading-relaxed text-[var(--color-app-text)] mb-1 ${
+          expanded ? "" : "line-clamp-3"
+        }`}
+        dangerouslySetInnerHTML={{
+          __html: post.content,
+        }}
+      />
 
       {isOverflowing && (
         <button
@@ -167,9 +201,45 @@ function PostCard({ post }) {
 export default function Home() {
   const { teacherVerified } = useAuth();
   const { posts } = usePosts();
+  const { content } = useBookDetailed();
+
   const [activeSubject, setActiveSubject] = useState("সব");
 
-  const filteredPosts = posts.filter(
+  const bookPosts = buildHomeFeed(content);
+
+  const allPosts = [
+    ...bookPosts.map((p) => ({
+      id: "book-" + p.id,
+
+      name: p.contributor || "যাচাইকৃত শিক্ষক",
+
+      avatar: p.contributorAvatar || "https://i.pravatar.cc/150?img=13",
+
+      verified: true,
+
+      subject: p.subject,
+
+      date: "এইমাত্র",
+
+      content: p.content,
+
+      image: p.image,
+
+      likes: p.likes || 0,
+
+      title: p.title,
+
+      era: p.era,
+
+      paperTitle: p.paperTitle,
+
+      source: "book",
+    })),
+
+    ...posts,
+  ];
+
+  const filteredPosts = allPosts.filter(
     (post) => activeSubject === "সব" || post.subject === activeSubject,
   );
 

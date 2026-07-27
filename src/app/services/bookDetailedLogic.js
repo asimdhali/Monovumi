@@ -14,7 +14,30 @@ export function buildAddTopic(papers, paperId, newTopic) {
         ...paper.topics,
         {
           ...newTopic,
+
           sortOrder: nextSortOrder,
+          lastActivity: {
+            type: "new",
+            updatedAt: Date.now(),
+          },
+
+          createdAt: Date.now(),
+
+          updatedAt: Date.now(),
+
+          editType: "major",
+
+          published: true,
+
+          views: 0,
+
+          likes: 0,
+
+          comments: 0,
+
+          shares: 0,
+
+          bookmarks: 0,
         },
       ],
     };
@@ -30,6 +53,17 @@ export function buildEditTopic(papers, paperId, topicId, updatedFields) {
         ? {
             ...topic,
             ...updatedFields,
+
+            updatedAt:
+              updatedFields.editType === "major" ? Date.now() : topic.updatedAt,
+
+            lastActivity:
+              updatedFields.editType === "major"
+                ? {
+                    type: "updated",
+                    updatedAt: Date.now(),
+                  }
+                : topic.lastActivity,
           }
         : topic,
     ),

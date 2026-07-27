@@ -9,7 +9,13 @@ export default function TopicFormModal({
   onDelete,
 }) {
   const [form, setForm] = useState(
-    initial || { era: "", chapter: "", title: "", content: "" },
+    initial || {
+      era: "",
+      chapter: "",
+      title: "",
+      content: "",
+      editType: "major",
+    },
   );
 
   function handleSubmit() {
@@ -49,6 +55,41 @@ export default function TopicFormModal({
             placeholder="বিস্তারিত লেখা"
             className="w-full p-2.5 rounded-lg border text-sm resize-none bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
           />
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-[var(--color-app-muted)] mb-2">
+              আপডেটের ধরন
+            </p>
+
+            <div className="flex gap-5">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="radio"
+                  checked={form.editType === "major"}
+                  onChange={() =>
+                    setForm({
+                      ...form,
+                      editType: "major",
+                    })
+                  }
+                />
+                Major Update
+              </label>
+
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="radio"
+                  checked={form.editType === "minor"}
+                  onChange={() =>
+                    setForm({
+                      ...form,
+                      editType: "minor",
+                    })
+                  }
+                />
+                Minor Edit
+              </label>
+            </div>
+          </div>
           <div className="flex gap-2 pt-1">
             <button
               onClick={handleSubmit}

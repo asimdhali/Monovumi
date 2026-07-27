@@ -41,7 +41,14 @@ export function BookDetailedProvider({ children }) {
   async function addTopic(subject, paperId, newTopic) {
     const subjectData = content[subject];
 
-    const updatedPapers = buildAddTopic(subjectData.papers, paperId, newTopic);
+    const now = Date.now();
+
+    const updatedPapers = buildAddTopic(subjectData.papers, paperId, {
+      ...newTopic,
+      createdAt: now,
+      updatedAt: now,
+      editType: "major",
+    });
 
     await savePapers(subject, updatedPapers);
   }
@@ -49,12 +56,10 @@ export function BookDetailedProvider({ children }) {
   async function editTopic(subject, paperId, topicId, updatedFields) {
     const subjectData = content[subject];
 
-    const updatedPapers = buildEditTopic(
-      subjectData.papers,
-      paperId,
-      topicId,
-      updatedFields,
-    );
+    const updatedPapers = buildEditTopic(subjectData.papers, paperId, topicId, {
+      ...updatedFields,
+      updatedAt: Date.now(),
+    });
 
     await savePapers(subject, updatedPapers);
   }
