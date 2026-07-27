@@ -4,17 +4,25 @@ import { useState, useRef } from "react";
 import RichTextEditor from "./editor/RichTextEditor";
 
 export default function ComposerModal({
+  mode = "create",
   onClose,
   onSubmit,
   prefillEra = "",
   prefillChapter = "",
+  initialTopic = null,
 }) {
-  const [authorName, setAuthorName] = useState("");
-  const [content, setContent] = useState("");
-  const [title, setTitle] = useState("");
-  const [era, setEra] = useState(prefillEra);
-  const [chapter, setChapter] = useState(prefillChapter);
-  const [image, setImage] = useState(null);
+  const [authorName, setAuthorName] = useState(initialTopic?.contributor || "");
+
+  const [content, setContent] = useState(initialTopic?.content || "");
+
+  const [title, setTitle] = useState(initialTopic?.title || "");
+
+  const [image, setImage] = useState(initialTopic?.image || null);
+  const [era, setEra] = useState(initialTopic?.era || prefillEra);
+
+  const [chapter, setChapter] = useState(
+    initialTopic?.chapter || prefillChapter,
+  );
   const fileInputRef = useRef(null);
 
   const canPublish =
@@ -68,7 +76,7 @@ export default function ComposerModal({
           </svg>
         </button>
         <span className="text-[15px] font-bold text-[var(--color-app-text)]">
-          নতুন পোস্ট
+          {mode === "edit" ? "পোস্ট সম্পাদনা" : "নতুন পোস্ট"}
         </span>
         <button
           onClick={handlePublish}
@@ -81,7 +89,7 @@ export default function ComposerModal({
             cursor: canPublish ? "pointer" : "not-allowed",
           }}
         >
-          প্রকাশ করুন
+          {mode === "edit" ? "আপডেট করুন" : "প্রকাশ করুন"}
         </button>
       </div>
 

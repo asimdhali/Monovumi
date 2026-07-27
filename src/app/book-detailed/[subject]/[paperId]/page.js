@@ -18,7 +18,6 @@ import {
 import { useBookDetailed } from "../../../BookDetailedContext";
 import { useAuth } from "../../../AuthContext";
 import TopicPreviewModal from "../../components/TopicPreviewModal";
-import TopicFormModal from "../../components/TopicFormModal";
 import ComposerModal from "../../components/ComposerModal";
 import { toBengaliNum } from "../../helpers/bookDetailedPageHelper";
 import {
@@ -54,6 +53,7 @@ export default function PaperPage({ params }) {
   const [openChapters, setOpenChapters] = useState({});
   const [previewTopic, setPreviewTopic] = useState(null);
   const [editingTopic, setEditingTopic] = useState(null);
+  const [editingComposerTopic, setEditingComposerTopic] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [formEra, setFormEra] = useState("");
   const [showComposer, setShowComposer] = useState(false);
@@ -297,7 +297,12 @@ export default function PaperPage({ params }) {
                           moveTopicUp={moveTopicUp}
                           moveTopicDown={moveTopicDown}
                           duplicateTopic={duplicateTopic}
-                          setEditingTopic={setEditingTopic}
+                          setEditingTopic={(topic) => {
+                            setEditingComposerTopic(topic);
+                            setComposerEra(topic.era || "");
+                            setComposerChapter(topic.chapter || "");
+                            setShowComposer(true);
+                          }}
                           setPreviewTopic={setPreviewTopic}
                           toBengaliNum={toBengaliNum}
                         />
@@ -314,7 +319,6 @@ export default function PaperPage({ params }) {
           </p>
         </div>
       </DndContext>
-
       {/* মোডালসমূহ */}
       {previewTopic && (
         <TopicPreviewModal
@@ -323,27 +327,17 @@ export default function PaperPage({ params }) {
           onClose={() => setPreviewTopic(null)}
         />
       )}
-
       {editingTopic && (
-        <TopicFormModal
-          initial={{
-            era: editingTopic.era,
-            chapter: editingTopic.chapter || "",
-            title: editingTopic.title,
-            content: editingTopic.content,
-          }}
+        <ComposerModal
+          mode="edit"
+          initialTopic={editingTopic}
           onClose={() => setEditingTopic(null)}
           onSubmit={(fields) => {
             editTopic(subject, paperId, editingTopic.id, fields);
             setEditingTopic(null);
           }}
-          onDelete={() => {
-            deleteTopic(subject, paperId, editingTopic.id);
-            setEditingTopic(null);
-          }}
         />
       )}
-
       {showAddForm && (
         <TopicFormModal
           initial={
@@ -367,25 +361,33 @@ export default function PaperPage({ params }) {
           }}
         />
       )}
-
       {showComposer && (
         <ComposerModal
+          initialTopic={editingComposerTopic}
+          mode="create"
           prefillEra={composerEra}
           prefillChapter={composerChapter}
           onClose={() => {
             setShowComposer(false);
             setComposerEra("");
             setComposerChapter("");
+            setEditingComposerTopic(null);
           }}
           onSubmit={(fields) => {
-            addTopic(subject, paperId, {
-              id: Date.now(),
-              ...fields,
-              featured: false,
-            });
+            if (editingComposerTopic) {
+              editTopic(subject, paperId, editingComposerTopic.id, fields);
+            } else {
+              addTopic(subject, paperId, {
+                id: Date.now(),
+                ...fields,
+                featured: false,
+              });
+            }
+
             setShowComposer(false);
             setComposerEra("");
             setComposerChapter("");
+            setEditingComposerTopic(null);
           }}
         />
       )}

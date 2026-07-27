@@ -70,6 +70,7 @@ export default function TopicItem({
 
             <button
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 setEditingTopic(topic);
               }}
