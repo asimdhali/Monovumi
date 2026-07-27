@@ -1,5 +1,6 @@
 "use client";
 
+import ComposerModal from "./book-detailed/components/ComposerModal";
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -510,206 +511,9 @@ function ComposerTrigger({ onOpen, canPost }) {
   );
 }
 
-function ComposerModal({ onClose }) {
-  const { addPost } = usePosts();
-  const [authorName, setAuthorName] = useState("");
-  const [content, setContent] = useState("");
-  const [subject, setSubject] = useState(null);
-  const [targetClass, setTargetClass] = useState(null);
-  const [image, setImage] = useState(null);
-  const fileInputRef = useRef(null);
-
-  const classOptions = ["নবম", "দশম", "একাদশ", "দ্বাদশ", "বিসিএস", "সকল চাকরি"];
-  const canPublish = content.trim().length >= 10;
-
-  function handleImageChange(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setImage(ev.target.result);
-    reader.readAsDataURL(file);
-  }
-
-  function handlePublish() {
-    if (!canPublish) return;
-    addPost({
-      id: Date.now(),
-      name: authorName.trim() || "আপনি",
-      date: "এইমাত্র",
-      avatar: "https://i.pravatar.cc/150?img=13",
-      type: Object.keys(postTypes)[0],
-      subject: subject || "সাধারণ",
-      targetClass: targetClass || "সকল ক্লাস",
-      verified: true,
-      content: content.trim(),
-      image: image || null,
-      likes: 0,
-    });
-    onClose();
-  }
-
-  return (
-    <div className="fixed inset-0 z-[95] flex flex-col bg-[var(--color-app-bg)]">
-      <div className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--color-app-border)] flex-shrink-0">
-        <button
-          onClick={onClose}
-          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
-          aria-label="বন্ধ করুন"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="var(--color-app-text)"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-        <span className="text-[15px] font-bold text-[var(--color-app-text)]">
-          নতুন পোস্ট
-        </span>
-        <button
-          onClick={handlePublish}
-          disabled={!canPublish}
-          className="rounded-full px-4 py-2 text-[13.5px] font-bold text-white"
-          style={{
-            background: canPublish
-              ? "var(--color-app-primary)"
-              : "var(--color-app-border)",
-            cursor: canPublish ? "pointer" : "not-allowed",
-          }}
-        >
-          প্রকাশ করুন
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        <div className="flex items-center gap-2.5 mb-3.5">
-          <img
-            src="https://i.pravatar.cc/150?img=13"
-            alt="আপনি"
-            className="w-11 h-11 rounded-full object-cover"
-            style={{ boxShadow: "0 0 0 2px var(--color-app-accent-soft)" }}
-          />
-          <div className="flex-1">
-            <input
-              value={authorName}
-              onChange={(e) => setAuthorName(e.target.value)}
-              placeholder="আপনার নাম লিখুন"
-              className="w-full bg-transparent text-[15px] font-semibold text-[var(--color-app-text)] outline-none"
-            />
-            <div
-              className="text-[11px] font-semibold flex items-center gap-1 mt-0.5"
-              style={{ color: "var(--color-app-accent)" }}
-            >
-              👑 যাচাইকৃত শিক্ষক হিসেবে পোস্ট হবে
-            </div>
-          </div>
-        </div>
-
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={5}
-          autoFocus
-          placeholder="আপনার মনের কথা, জ্ঞান বা অভিজ্ঞতা লিখুন..."
-          className="w-full bg-transparent resize-none outline-none text-[17px] leading-relaxed text-[var(--color-app-text)] placeholder:text-[var(--color-app-muted)] min-h-[120px]"
-        />
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="hidden"
-        />
-        {image ? (
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="mt-4 w-full rounded-2xl overflow-hidden border border-[var(--color-app-border)]"
-          >
-            <img
-              src={image}
-              alt="সংযুক্ত ছবি"
-              className="w-full max-h-[220px] object-cover"
-            />
-          </button>
-        ) : (
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="mt-4 w-full rounded-2xl border-[1.5px] border-dashed border-[var(--color-app-border)] py-4 text-[13px] text-[var(--color-app-muted)]"
-          >
-            📷 ছবি যোগ করুন (ঐচ্ছিক)
-          </button>
-        )}
-
-        <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-4 mb-2 tracking-wide">
-          বিষয় বেছে নিন
-        </div>
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-          {subjects.map((s) => (
-            <button
-              key={s}
-              onClick={() => setSubject(s)}
-              className="flex-shrink-0 px-3.5 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap"
-              style={{
-                background:
-                  subject === s
-                    ? "var(--color-app-primary)"
-                    : "var(--color-app-surface)",
-                border: `1px solid ${subject === s ? "var(--color-app-primary)" : "var(--color-app-border)"}`,
-                color: subject === s ? "white" : "var(--color-app-muted)",
-              }}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-
-        <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-4 mb-2 tracking-wide">
-          ক্লাস বেছে নিন
-        </div>
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-          {classOptions.map((c) => (
-            <button
-              key={c}
-              onClick={() => setTargetClass(c)}
-              className="flex-shrink-0 px-3.5 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap"
-              style={{
-                background:
-                  targetClass === c
-                    ? "var(--color-app-primary)"
-                    : "var(--color-app-surface)",
-                border: `1px solid ${targetClass === c ? "var(--color-app-primary)" : "var(--color-app-border)"}`,
-                color: targetClass === c ? "white" : "var(--color-app-muted)",
-              }}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between px-4 py-2.5 border-t border-[var(--color-app-border)] flex-shrink-0">
-        <span className="text-[11.5px] text-[var(--color-app-muted)]">
-          {content.length} অক্ষর
-        </span>
-        <span className="text-[11.5px] text-[var(--color-app-muted)]">
-          সর্বনিম্ন ১০ অক্ষর প্রয়োজন
-        </span>
-      </div>
-    </div>
-  );
-}
-
 export default function FeaturedBar() {
   const pathname = usePathname();
-  const { content, loading } = useBookDetailed();
+  const { content, loading, addTopic } = useBookDetailed();
   const { role, teacherVerified } = useAuth();
   const canManage = role === "teacher" && teacherVerified;
   const canPost = canManage;
@@ -754,7 +558,17 @@ export default function FeaturedBar() {
           />
         )}
         {showComposer && (
-          <ComposerModal onClose={() => setShowComposer(false)} />
+          <ComposerModal
+            onClose={() => setShowComposer(false)}
+            initialTopic={null}
+            prefillEra=""
+            prefillChapter=""
+            onSubmit={async (topic) => {
+              await addTopic(topic.subject, topic.paperId, topic);
+
+              setShowComposer(false);
+            }}
+          />
         )}
       </div>
     </div>

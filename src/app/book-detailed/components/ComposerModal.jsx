@@ -23,6 +23,9 @@ export default function ComposerModal({
   const [chapter, setChapter] = useState(
     initialTopic?.chapter || prefillChapter,
   );
+  const [subject, setSubject] = useState(initialTopic?.subject || "বাংলা");
+
+  const [paperId, setPaperId] = useState(initialTopic?.paperId || "first");
   const [editType, setEditType] = useState(initialTopic?.editType || "major");
   const fileInputRef = useRef(null);
 
@@ -42,6 +45,8 @@ export default function ComposerModal({
   function handlePublish() {
     if (!canPublish) return;
     onSubmit({
+      subject,
+      paperId,
       title: title.trim(),
       content: content.trim(),
       era: era.trim(),
@@ -159,6 +164,34 @@ export default function ComposerModal({
             📷 ছবি যোগ করুন (ঐচ্ছিক)
           </button>
         )}
+
+        <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-5 mb-2">
+          বিষয়
+        </div>
+
+        <select
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+          className="w-full p-3 rounded-xl border text-sm bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)] outline-none"
+        >
+          <option value="বাংলা">বাংলা</option>
+          <option value="ইংরেজি">ইংরেজি</option>
+          <option value="গণিত">গণিত</option>
+          <option value="বিজ্ঞান">বিজ্ঞান</option>
+        </select>
+
+        <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-4 mb-2">
+          পত্র
+        </div>
+
+        <select
+          value={paperId}
+          onChange={(e) => setPaperId(e.target.value)}
+          className="w-full p-3 rounded-xl border text-sm bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)] outline-none"
+        >
+          <option value="first">প্রথম পত্র</option>
+          <option value="second">দ্বিতীয় পত্র</option>
+        </select>
 
         {/* খণ্ড / যুগ */}
         <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-5 mb-2 tracking-wide">

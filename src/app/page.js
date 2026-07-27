@@ -6,8 +6,9 @@ import { MoreHorizontal, Heart, MessageCircle, Share2 } from "lucide-react";
 
 import { subjects, postTypes } from "./data";
 import { useAuth } from "./AuthContext";
-import { usePosts } from "./PostsContext";
+import ComposerModal from "./book-detailed/components/ComposerModal";
 import { useBookDetailed } from "./BookDetailedContext";
+import { usePosts } from "./PostsContext";
 import { buildHomeFeed } from "./services/homeFeedHelper";
 
 function PostCard({ post }) {
@@ -201,7 +202,14 @@ function PostCard({ post }) {
 export default function Home() {
   const { teacherVerified } = useAuth();
   const { posts } = usePosts();
-  const { content } = useBookDetailed();
+  const { content, addTopic } = useBookDetailed();
+  const [showComposer, setShowComposer] = useState(false);
+
+  const [editingTopic, setEditingTopic] = useState(null);
+
+  const [composerEra, setComposerEra] = useState("");
+
+  const [composerChapter, setComposerChapter] = useState("");
 
   const [activeSubject, setActiveSubject] = useState("সব");
 
@@ -234,6 +242,7 @@ export default function Home() {
       paperTitle: p.paperTitle,
 
       source: "book",
+      activityType: p.activityType,
     })),
 
     ...posts,
