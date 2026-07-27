@@ -1,6 +1,5 @@
 "use client";
 import TopicItem from "./TopicItem";
-import Link from "next/link";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -111,27 +110,22 @@ export default function ChapterSection({
       >
         <ul className="space-y-2">
           {ch.topics.map((topic, index) => (
-            <Link
+            <TopicItem
               key={topic.id}
-              href={`/book-detailed/${encodeURIComponent(subject)}/${paperId}/${topic.id}`}
-              className="block"
-            >
-              <TopicItem
-                topic={topic}
-                index={index}
-                q={q}
-                canManage={canManage}
-                subject={subject}
-                paperId={paperId}
-                moveTopicUp={moveTopicUp}
-                moveTopicDown={moveTopicDown}
-                duplicateTopic={duplicateTopic}
-                setEditingTopic={setEditingTopic}
-                setPreviewTopic={setPreviewTopic}
-                toBengaliNum={toBengaliNum}
-                highlightMatch={highlightMatch}
-              />
-            </Link>
+              topic={topic}
+              index={index}
+              q={q}
+              canManage={canManage}
+              subject={subject}
+              paperId={paperId}
+              moveTopicUp={moveTopicUp}
+              moveTopicDown={moveTopicDown}
+              duplicateTopic={duplicateTopic}
+              setEditingTopic={setEditingTopic}
+              setPreviewTopic={setPreviewTopic}
+              toBengaliNum={toBengaliNum}
+              highlightMatch={highlightMatch}
+            />
           ))}
         </ul>
       </SortableContext>

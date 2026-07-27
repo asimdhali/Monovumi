@@ -173,20 +173,18 @@ export default function PaperPage({ params }) {
             </div>
             {canManage && (
               <button
-                onClick={() => setShowAddForm(true)}
-                className="flex items-center gap-1.5 rounded-full text-[var(--color-app-text)] text-xs font-semibold px-4 py-2 border border-[var(--color-app-border)] bg-[var(--color-app-surface)] hover:bg-[var(--color-app-primary-soft)] transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors"
+                title="More"
               >
                 <svg
-                  className="w-3.5 h-3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
+                  className="w-5 h-5"
+                  fill="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path d="M12 5v14M5 12h14" />
+                  <circle cx="12" cy="5" r="1.8" />
+                  <circle cx="12" cy="12" r="1.8" />
+                  <circle cx="12" cy="19" r="1.8" />
                 </svg>
-                নতুন
               </button>
             )}
           </div>

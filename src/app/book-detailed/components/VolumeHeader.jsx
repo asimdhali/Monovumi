@@ -36,29 +36,8 @@ export default function VolumeHeader({
       </button>
 
       <div className="flex items-center gap-2 flex-shrink-0">
-        {/* চেভরন বাটন */}
-        <button
-          onClick={() => toggleVol(vol.era)}
-          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors"
-        >
-          <svg
-            className="w-4 h-4 transition-transform"
-            style={{
-              transform: open ? "rotate(180deg)" : "rotate(0deg)",
-              color: "var(--color-app-muted)",
-            }}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            viewBox="0 0 24 24"
-          >
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
-
-        {/* নতুন বাটন — শুধু হোভার বা ওপেন থাকলে দেখাবে */}
-        {(hoveredEra === vol.era || open) && canManage && (
+        {/* নতুন বাটন */}
+        {open && canManage && (
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -81,6 +60,27 @@ export default function VolumeHeader({
             নতুন
           </button>
         )}
+
+        {/* চেভরন */}
+        <button
+          onClick={() => toggleVol(vol.era)}
+          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors"
+        >
+          <svg
+            className="w-4 h-4 transition-transform"
+            style={{
+              transform: open ? "rotate(180deg)" : "rotate(0deg)",
+              color: "var(--color-app-muted)",
+            }}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            viewBox="0 0 24 24"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
       </div>
     </div>
   );

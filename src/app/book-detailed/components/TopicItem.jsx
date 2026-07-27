@@ -1,4 +1,6 @@
 "use client";
+
+import Link from "next/link";
 import SortableTopic from "./SortableTopic";
 
 export default function TopicItem({
@@ -12,34 +14,33 @@ export default function TopicItem({
   moveTopicDown,
   duplicateTopic,
   setEditingTopic,
-  setPreviewTopic,
   toBengaliNum,
   highlightMatch,
 }) {
   return (
     <SortableTopic id={topic.id}>
-      <li
-        onClick={() => setPreviewTopic(topic)}
-        className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 cursor-pointer transition-colors bg-[var(--color-app-bg)] border border-[var(--color-app-border)] hover:border-[var(--color-app-primary)]"
-      >
+      <li className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 transition-colors bg-[var(--color-app-bg)] border border-[var(--color-app-border)] hover:border-[var(--color-app-primary)]">
         <span
           className="font-[family-name:var(--font-bengali-serif)] text-xs flex-shrink-0 w-6"
-          style={{
-            color: "var(--color-app-accent)",
-          }}
+          style={{ color: "var(--color-app-accent)" }}
         >
           {toBengaliNum(index + 1)}
         </span>
-        <span className="text-[13.5px] flex-1 min-w-0 text-[var(--color-app-text)]">
-          {highlightMatch(topic.title, q)}
-        </span>
+
+        {/* শুধু Title-ই Link */}
+        <Link
+          href={`/book-detailed/${encodeURIComponent(subject)}/${paperId}/${topic.id}`}
+          className="flex-1 min-w-0"
+        >
+          <span className="text-[13.5px] text-[var(--color-app-text)] hover:text-[var(--color-app-primary)] transition-colors">
+            {highlightMatch(topic.title, q)}
+          </span>
+        </Link>
+
         {canManage && (
           <div className="flex items-center gap-1 flex-shrink-0">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                moveTopicUp(subject, paperId, topic.id);
-              }}
+              onClick={() => moveTopicUp(subject, paperId, topic.id)}
               className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
               title="উপরে নিন"
             >
@@ -47,10 +48,7 @@ export default function TopicItem({
             </button>
 
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                moveTopicDown(subject, paperId, topic.id);
-              }}
+              onClick={() => moveTopicDown(subject, paperId, topic.id)}
               className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
               title="নিচে নামান"
             >
@@ -58,10 +56,7 @@ export default function TopicItem({
             </button>
 
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                duplicateTopic(subject, paperId, topic.id);
-              }}
+              onClick={() => duplicateTopic(subject, paperId, topic.id)}
               className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
               title="কপি করুন"
             >
@@ -69,11 +64,7 @@ export default function TopicItem({
             </button>
 
             <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setEditingTopic(topic);
-              }}
+              onClick={() => setEditingTopic(topic)}
               className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)]"
               title="সম্পাদনা"
             >
