@@ -14,7 +14,7 @@ export default function TopicNavigation({
         <div className="flex-1">
           {previousTopic && (
             <Link
-              href={`/book-detailed/${encodeURIComponent(subject)}/${paperId}/${previousTopic.id}`}
+              href={`/books/${encodeURIComponent(subject)}/${paperId}/${previousTopic.id}`}
               className="block rounded-xl border border-[var(--color-app-border)] p-4 hover:border-[var(--color-app-primary)] transition"
             >
               <div className="text-xs text-[var(--color-app-muted)] mb-1">
@@ -29,7 +29,7 @@ export default function TopicNavigation({
         <div className="flex-1 text-right">
           {nextTopic && (
             <Link
-              href={`/book-detailed/${encodeURIComponent(subject)}/${paperId}/${nextTopic.id}`}
+              href={`/books/${encodeURIComponent(subject)}/${paperId}/${nextTopic.id}`}
               className="block rounded-xl border border-[var(--color-app-border)] p-4 hover:border-[var(--color-app-primary)] transition"
             >
               <div className="text-xs text-[var(--color-app-muted)] mb-1">

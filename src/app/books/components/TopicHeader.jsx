@@ -6,7 +6,7 @@ export default function TopicHeader({ subject, paperId, topic }) {
   return (
     <>
       <Link
-        href={`/book-detailed/${encodeURIComponent(subject)}/${paperId}`}
+        href={`/books/${encodeURIComponent(subject)}/${paperId}`}
         className="inline-flex items-center gap-2 text-sm text-[var(--color-app-muted)] hover:text-[var(--color-app-primary)] transition mb-5"
       >
         ← পত্রে ফিরে যান

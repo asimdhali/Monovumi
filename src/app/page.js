@@ -6,7 +6,7 @@ import { MoreHorizontal, Heart, MessageCircle, Share2 } from "lucide-react";
 
 import { subjects, postTypes } from "./data";
 import { useAuth } from "./AuthContext";
-import ComposerModal from "./book-detailed/components/ComposerModal";
+import ComposerModal from "./books/components/ComposerModal";
 import { useBookDetailed } from "./BookDetailedContext";
 import { usePosts } from "./PostsContext";
 import { buildHomeFeed } from "./services/homeFeedHelper";

@@ -22,7 +22,7 @@ export default function RelatedTopics({
         {relatedTopics.map((topic) => (
           <Link
             key={topic.id}
-            href={`/book-detailed/${encodeURIComponent(subject)}/${paperId}/${topic.id}`}
+            href={`/books/${encodeURIComponent(subject)}/${paperId}/${topic.id}`}
             className="block rounded-xl border border-[var(--color-app-border)] p-4 hover:border-[var(--color-app-primary)] transition"
           >
             <div className="font-semibold">{topic.title}</div>

@@ -38,7 +38,7 @@ export default function SubjectPage({ params }) {
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-5">
           <Link
-            href="/book-detailed"
+            href="/books"
             className="p-2 rounded-full hover:bg-[var(--color-app-primary-soft)]"
           >
             <svg
@@ -66,7 +66,7 @@ export default function SubjectPage({ params }) {
         {subjectData.papers.map((paper) => (
           <Link
             key={paper.id}
-            href={`/book-detailed/${encodeURIComponent(subject)}/${paper.id}`}
+            href={`/books/${encodeURIComponent(subject)}/${paper.id}`}
             className="group rounded-3xl border border-[var(--color-app-border)]
   bg-[var(--color-app-surface)]
   p-5

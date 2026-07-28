@@ -29,7 +29,7 @@ export default function TopicItem({
 
         {/* শুধু Title-ই Link */}
         <Link
-          href={`/book-detailed/${encodeURIComponent(subject)}/${paperId}/${topic.id}`}
+          href={`/books/${encodeURIComponent(subject)}/${paperId}/${topic.id}`}
           className="flex-1 min-w-0"
         >
           <span className="text-[13.5px] text-[var(--color-app-text)] hover:text-[var(--color-app-primary)] transition-colors">

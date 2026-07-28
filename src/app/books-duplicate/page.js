@@ -27,7 +27,7 @@ export default function BookDetailedPage() {
         {bookDetailedSubjects.map((subject) => (
           <Link
             key={subject}
-            href={`/book-detailed/${encodeURIComponent(subject)}`}
+            href={`/books/${encodeURIComponent(subject)}`}
             className="text-center rounded-2xl border p-6 bg-[var(--color-app-surface)] border-[var(--color-app-border)] hover:shadow-md transition-shadow"
           >
             <div className="text-4xl mb-2">{subjectIcons[subject]}</div>

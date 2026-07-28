@@ -1,6 +1,6 @@
 "use client";
 
-import ComposerModal from "./book-detailed/components/ComposerModal";
+import ComposerModal from "./books/components/ComposerModal";
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -27,7 +27,7 @@ function ThreeDotMenu({ topic, canManage }) {
   }, []);
 
   function copyLink() {
-    const url = `${window.location.origin}/book-detailed/${encodeURIComponent(topic.subject)}/${topic.paperId}`;
+    const url = `${window.location.origin}/books/${encodeURIComponent(topic.subject)}/${topic.paperId}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
@@ -323,7 +323,7 @@ function FeaturedPreviewModal({ topic, onClose }) {
         </p>
 
         <Link
-          href={`/book-detailed/${encodeURIComponent(topic.subject)}/${topic.paperId}`}
+          href={`/books/${encodeURIComponent(topic.subject)}/${topic.paperId}`}
           className="block text-center py-2.5 rounded-full text-sm font-semibold text-white"
           style={{ background: "var(--color-app-primary)" }}
         >
@@ -355,7 +355,7 @@ function FeaturedCard({ topic, onOpen, canManage }) {
           {topic.subject}
         </span>
         <Link
-          href={`/book-detailed/${encodeURIComponent(topic.subject)}/${topic.paperId}`}
+          href={`/books/${encodeURIComponent(topic.subject)}/${topic.paperId}`}
           className="ml-auto flex-shrink-0 flex items-center gap-0.5 text-xs font-bold"
           style={{ color: "var(--color-app-accent)" }}
         >
