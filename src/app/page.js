@@ -24,7 +24,7 @@ function formatBanglaDate(timestamp) {
     hour12: true,
   });
 }
-function PostCard({ post, onEdit }) {
+function PostCard({ post, onEdit, onDelete, onCopyLink }) {
   const [expanded, setExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -146,12 +146,31 @@ function PostCard({ post, onEdit }) {
                 <span>Edit</span>
               </button>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left text-red-400 hover:bg-red-500/10 transition">
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+
+                  const ok = window.confirm(
+                    "আপনি কি নিশ্চিত যে পোস্টটি মুছে ফেলতে চান?",
+                  );
+
+                  if (ok) {
+                    onDelete(post);
+                  }
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left text-red-400 hover:bg-red-500/10 transition"
+              >
                 🗑️
                 <span>Delete</span>
               </button>
 
-              <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-[var(--color-app-primary-soft)] transition">
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  onCopyLink(post);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-[var(--color-app-primary-soft)] transition"
+              >
                 📋
                 <span>Copy Link</span>
               </button>
@@ -220,7 +239,8 @@ function PostCard({ post, onEdit }) {
 export default function Home() {
   const { teacherVerified } = useAuth();
   const { posts } = usePosts();
-  const { content, addTopic, editTopic, loading } = useBookDetailed();
+  const { content, addTopic, editTopic, deleteTopic, loading } =
+    useBookDetailed();
   const [showComposer, setShowComposer] = useState(false);
 
   const [editingTopic, setEditingTopic] = useState(null);
@@ -300,6 +320,24 @@ export default function Home() {
                 onEdit={(post) => {
                   setEditingTopic(post);
                   setShowComposer(true);
+                }}
+                onDelete={async (post) => {
+                  await deleteTopic(
+                    post.subject,
+                    post.paperId,
+                    post.originalId,
+                  );
+                }}
+                onCopyLink={async (post) => {
+                  const url =
+                    `${window.location.origin}/books/` +
+                    `${encodeURIComponent(post.subject)}/` +
+                    `${post.paperId}/` +
+                    `${post.originalId}`;
+
+                  await navigator.clipboard.writeText(url);
+
+                  alert("লিংক কপি হয়েছে।");
                 }}
               />
             ))
