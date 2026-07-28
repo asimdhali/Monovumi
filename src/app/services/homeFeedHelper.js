@@ -4,7 +4,10 @@ export function buildHomeFeed(content) {
   Object.entries(content).forEach(([subject, subjectData]) => {
     subjectData.papers.forEach((paper) => {
       paper.topics.forEach((topic) => {
-        // if (!topic.published) return;
+        if (!topic?.id) {
+          console.warn("Topic skipped because id is missing", topic);
+          return;
+        }
 
         feed.push({
           ...topic,

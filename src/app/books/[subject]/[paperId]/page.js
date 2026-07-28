@@ -31,6 +31,7 @@ import VolumeAccordion from "../../components/VolumeAccordion";
 import VolumeHeader from "../../components/VolumeHeader";
 import ChapterSection from "../../components/ChapterSection";
 import TopicItem from "../../components/TopicItem";
+import HomeFeedSkeleton from "@/app/components/HomeFeedSkeleton";
 
 export default function PaperPage({ params }) {
   const { subject: rawSubject, paperId } = use(params);
@@ -44,6 +45,7 @@ export default function PaperPage({ params }) {
     moveTopicUp,
     moveTopicDown,
     reorderTopic,
+    loading,
   } = useBookDetailed();
   const { role, teacherVerified } = useAuth();
   const canManage = role === "teacher" && teacherVerified;
@@ -72,7 +74,9 @@ export default function PaperPage({ params }) {
 
   const subjectData = content?.[subject];
   const paper = subjectData?.papers?.find((p) => p.id === paperId);
-
+  if (loading) {
+    return <HomeFeedSkeleton />;
+  }
   if (!subjectData || !paper) {
     return (
       <div className="max-w-2xl mx-auto px-4 lg:px-6 pt-6">

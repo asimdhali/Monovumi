@@ -10,8 +10,21 @@ import ComposerModal from "./books/components/ComposerModal";
 import { useBookDetailed } from "./BookDetailedContext";
 import { usePosts } from "./PostsContext";
 import { buildHomeFeed } from "./services/homeFeedHelper";
+import HomeFeedSkeleton from "./components/HomeFeedSkeleton";
 
-function PostCard({ post }) {
+function formatBanglaDate(timestamp) {
+  if (!timestamp) return "";
+
+  return new Date(timestamp).toLocaleString("bn-BD", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+function PostCard({ post, onEdit }) {
   const [expanded, setExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -65,10 +78,11 @@ function PostCard({ post }) {
             )}
           </div>
           <div>
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               <span className="text-[14.5px] font-bold text-[var(--color-app-text)]">
                 {post.name}
               </span>
+
               <button
                 onClick={() => setFollowed(!followed)}
                 className="text-[12.5px] font-bold"
@@ -76,36 +90,37 @@ function PostCard({ post }) {
               >
                 {followed ? "✓ ফলো করছেন" : "· ফলো"}
               </button>
-              <span
-                className="text-xs font-semibold"
-                style={{ color: "var(--color-app-accent)" }}
-              >
-                {post.subject}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              <p className="text-xs text-[var(--color-app-muted)]">
-                {post.date}
-              </p>
 
               {post.activityType === "new" && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-600/15 text-green-400">
-                  🟢 নতুন
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400">
+                  ✨ নতুন পোস্ট করেছেন
                 </span>
               )}
 
               {post.activityType === "major" && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-600/15 text-sky-400">
-                  🔵 Major Update
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-500/15 text-sky-400">
+                  ✏️ আপডেট করেছেন
                 </span>
               )}
 
               {post.activityType === "minor" && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-600/20 text-gray-300">
-                  ⚪ Minor Edit
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/15 text-amber-300">
+                  📝 ছোট আপডেট
                 </span>
               )}
+
+              <span className="text-[11px] text-[var(--color-app-muted)]">
+                • {formatBanglaDate(post.activityTime)}
+              </span>
             </div>
+            {post.paperTitle && (
+              <div className="flex items-center gap-1 mt-1 text-[12px] text-[var(--color-app-muted)]">
+                <span>📖</span>
+                <span>
+                  {post.subject} &gt; {post.paperTitle} &gt; {post.era}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -119,28 +134,31 @@ function PostCard({ post }) {
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 mt-1 w-40 bg-[var(--color-app-surface)] rounded-lg shadow-lg border border-[var(--color-app-border)] py-1 z-10">
-              <button className="w-full text-left px-4 py-2 text-sm text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)]">
-                রিপোর্ট করুন
+            <div className="absolute right-0 mt-1 w-44 rounded-xl overflow-hidden border border-[var(--color-app-border)] bg-[var(--color-app-surface)] shadow-xl z-20">
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  onEdit(post);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-[var(--color-app-primary-soft)] transition"
+              >
+                ✏️
+                <span>Edit</span>
               </button>
-              <button className="w-full text-left px-4 py-2 text-sm text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)]">
-                সংরক্ষণ করুন
+
+              <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left text-red-400 hover:bg-red-500/10 transition">
+                🗑️
+                <span>Delete</span>
               </button>
-              <button className="w-full text-left px-4 py-2 text-sm text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)]">
-                কপি লিংক
-              </button>
-              <button className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[var(--color-app-primary-soft)]">
-                লুকিয়ে রাখুন
+
+              <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-[var(--color-app-primary-soft)] transition">
+                📋
+                <span>Copy Link</span>
               </button>
             </div>
           )}
         </div>
       </div>
-      {post.paperTitle && (
-        <div className="text-xs text-[var(--color-app-muted)] mb-2">
-          📖 {post.subject} &gt; {post.paperTitle} &gt; {post.era}
-        </div>
-      )}
       {post.title && (
         <h2 className="text-lg font-bold mb-2 text-[var(--color-app-text)]">
           {post.title}
@@ -202,7 +220,7 @@ function PostCard({ post }) {
 export default function Home() {
   const { teacherVerified } = useAuth();
   const { posts } = usePosts();
-  const { content, addTopic } = useBookDetailed();
+  const { content, addTopic, editTopic, loading } = useBookDetailed();
   const [showComposer, setShowComposer] = useState(false);
 
   const [editingTopic, setEditingTopic] = useState(null);
@@ -217,7 +235,9 @@ export default function Home() {
 
   const allPosts = [
     ...bookPosts.map((p) => ({
-      id: `book-${p.subject}-${p.paperId}-${p.title}-${p.activityTime}`,
+      id: `feed-${p.id}`,
+
+      originalId: p.id,
 
       name: p.contributor || "যাচাইকৃত শিক্ষক",
 
@@ -227,7 +247,15 @@ export default function Home() {
 
       subject: p.subject,
 
-      date: "এইমাত্র",
+      paperId: p.paperId,
+
+      originalId: p.id,
+
+      chapter: p.chapter || "",
+
+      contributor: p.contributor,
+
+      contributorAvatar: p.contributorAvatar,
 
       content: p.content,
 
@@ -241,8 +269,13 @@ export default function Home() {
 
       paperTitle: p.paperTitle,
 
-      source: "book",
+      editType: p.editType || "major",
+
       activityType: p.activityType,
+
+      activityTime: p.activityTime,
+
+      source: "book",
     })),
 
     ...posts,
@@ -257,8 +290,19 @@ export default function Home() {
       {/* মূল ফিড */}
       <div className="max-w-xl mx-auto">
         <div className="space-y-1.5">
-          {filteredPosts.length > 0 ? (
-            filteredPosts.map((post) => <PostCard key={post.id} post={post} />)
+          {loading ? (
+            <HomeFeedSkeleton />
+          ) : filteredPosts.length > 0 ? (
+            filteredPosts.map((post) => (
+              <PostCard
+                key={`feed-${post.id}`}
+                post={post}
+                onEdit={(post) => {
+                  setEditingTopic(post);
+                  setShowComposer(true);
+                }}
+              />
+            ))
           ) : (
             <p className="text-center text-[var(--color-app-muted)] text-sm py-8">
               এই বিষয়ে কোনো পোস্ট পাওয়া যায়নি।
@@ -270,6 +314,31 @@ export default function Home() {
       <footer className="mt-16 text-center text-[var(--color-app-muted)] text-sm">
         © ২০২৬ মনোভূমি। সর্বস্বত্ব সংরক্ষিত।
       </footer>
+      {showComposer && (
+        <ComposerModal
+          mode={editingTopic ? "edit" : "create"}
+          initialTopic={editingTopic}
+          prefillEra={composerEra}
+          prefillChapter={composerChapter}
+          onClose={() => {
+            setShowComposer(false);
+            setEditingTopic(null);
+          }}
+          onSubmit={async (data) => {
+            if (editingTopic) {
+              await editTopic(
+                editingTopic.subject,
+                editingTopic.paperId,
+                editingTopic.originalId,
+                data,
+              );
+            }
+
+            setShowComposer(false);
+            setEditingTopic(null);
+          }}
+        />
+      )}
     </div>
   );
 }

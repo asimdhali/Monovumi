@@ -56,9 +56,16 @@ export function BookDetailedProvider({ children }) {
   async function editTopic(subject, paperId, topicId, updatedFields) {
     const subjectData = content[subject];
 
+    const now = Date.now();
+
     const updatedPapers = buildEditTopic(subjectData.papers, paperId, topicId, {
       ...updatedFields,
-      updatedAt: Date.now(),
+
+      updatedAt: now,
+
+      activityType: "major",
+
+      activityTime: now,
     });
 
     await savePapers(subject, updatedPapers);

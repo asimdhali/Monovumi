@@ -6,17 +6,22 @@ import TopicContent from "../../../components/TopicContent";
 import { useBookDetailed } from "../../../../BookDetailedContext";
 import TopicNavigation from "../../../components/TopicNavigation";
 import RelatedTopics from "../../../components/RelatedTopics";
+import HomeFeedSkeleton from "@/app/components/HomeFeedSkeleton";
 
 export default function TopicPage({ params }) {
   const { subject: rawSubject, paperId, topicId } = use(params);
 
   const subject = decodeURIComponent(rawSubject);
 
-  const { content } = useBookDetailed();
+  const { content, loading } = useBookDetailed();
 
   const subjectData = content?.[subject];
 
   const paper = subjectData?.papers?.find((paper) => paper.id === paperId);
+
+  if (loading) {
+    return <HomeFeedSkeleton />;
+  }
 
   const topic = paper?.topics?.find((topic) => String(topic.id) === topicId);
   const sortedTopics = [...(paper?.topics || [])].sort(

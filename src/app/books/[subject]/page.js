@@ -3,6 +3,7 @@
 import { use } from "react";
 import Link from "next/link";
 import { useBookDetailed } from "../../BookDetailedContext";
+import HomeFeedSkeleton from "@/app/components/HomeFeedSkeleton";
 const subjectIcons = {
   বাংলা: "📖",
   ইংরেজি: "🔤",
@@ -19,9 +20,12 @@ const paperIcons = {
 export default function SubjectPage({ params }) {
   const { subject: rawSubject } = use(params);
   const subject = decodeURIComponent(rawSubject);
-  const { content } = useBookDetailed();
+  const { content, loading } = useBookDetailed();
 
   const subjectData = content[subject];
+  if (loading) {
+    return <HomeFeedSkeleton />;
+  }
 
   if (!subjectData) {
     return (

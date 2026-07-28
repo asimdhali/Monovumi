@@ -57,13 +57,11 @@ export function buildEditTopic(papers, paperId, topicId, updatedFields) {
             updatedAt:
               updatedFields.editType === "major" ? Date.now() : topic.updatedAt,
 
-            lastActivity:
-              updatedFields.editType === "major"
-                ? {
-                    type: "major",
-                    updatedAt: Date.now(),
-                  }
-                : topic.lastActivity,
+            lastActivity: {
+              type: updatedFields.editType === "minor" ? "minor" : "major",
+
+              updatedAt: Date.now(),
+            },
           }
         : topic,
     ),
