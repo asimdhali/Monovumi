@@ -217,7 +217,7 @@ export default function Home() {
 
   const allPosts = [
     ...bookPosts.map((p) => ({
-      id: "book-" + p.id,
+      id: `book-${p.subject}-${p.paperId}-${p.title}-${p.activityTime}`,
 
       name: p.contributor || "যাচাইকৃত শিক্ষক",
 

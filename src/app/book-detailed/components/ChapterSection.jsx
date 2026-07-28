@@ -104,14 +104,15 @@ export default function ChapterSection({
           </div>
         </div>
       )}
+
       <SortableContext
-        items={ch.topics.map((topic) => topic.id)}
+        items={ch.topics.map((topic, index) => `${topic.id}-${index}`)}
         strategy={verticalListSortingStrategy}
       >
         <ul className="space-y-2">
           {ch.topics.map((topic, index) => (
             <TopicItem
-              key={topic.id}
+              key={`${topic.id}-${index}`}
               topic={topic}
               index={index}
               q={q}

@@ -1,59 +1,115 @@
-import Link from 'next/link';
-import { books } from '../../data';
+"use client";
 
-export default async function BookDetailPage({ params }) {
-  const { id } = await params;
-  const bookId = parseInt(id);
-  const book = books.find((b) => b.id === bookId);
+import { use } from "react";
+import Link from "next/link";
+import { useBookDetailed } from "../../BookDetailedContext";
+const subjectIcons = {
+  বাংলা: "📖",
+  ইংরেজি: "🔤",
+  গণিত: "🧮",
+  বিজ্ঞান: "🔬",
+};
 
-  if (!book) {
+const paperIcons = {
+  first: "📘",
+  second: "📗",
+  general: "📚",
+};
+
+export default function SubjectPage({ params }) {
+  const { subject: rawSubject } = use(params);
+  const subject = decodeURIComponent(rawSubject);
+  const { content } = useBookDetailed();
+
+  const subjectData = content[subject];
+
+  if (!subjectData) {
     return (
       <div className="max-w-3xl mx-auto px-4 lg:px-6 pt-6">
-        <p className="text-[var(--color-app-muted)]">বইটি খুঁজে পাওয়া যায়নি।</p>
+        <p className="text-[var(--color-app-muted)]">
+          বিষয়টি খুঁজে পাওয়া যায়নি।
+        </p>
       </div>
     );
   }
 
   return (
     <div className="max-w-3xl mx-auto px-4 lg:px-6 pt-6 pb-10">
-      <div className="flex items-center gap-2 mb-4">
-        <Link
-          href="/books"
-          className="p-1.5 -ml-1.5 rounded-full hover:bg-[var(--color-app-primary-soft)] transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="var(--color-app-text)" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </Link>
-        <div>
-          <h1 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)]">
-            {book.cover} {book.title}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-5">
+          <Link
+            href="/books"
+            className="p-2 rounded-full hover:bg-[var(--color-app-primary-soft)]"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </Link>
+
+          <h1 className="text-2xl font-bold">
+            {subjectIcons[subject]} {subject}
           </h1>
-          <p className="text-xs text-[var(--color-app-muted)]">সূচিপত্র থেকে যেকোনো অধ্যায়ে যাও</p>
         </div>
       </div>
 
-      <div className="space-y-2">
-        {book.chapters.map((chapter, index) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {subjectData.papers.map((paper) => (
           <Link
-            key={chapter.id}
-            href={`/books/${book.id}/${chapter.id}`}
-            className="flex items-center justify-between rounded-xl border p-4 bg-[var(--color-app-surface)] border-[var(--color-app-border)] hover:shadow-md transition-shadow"
+            key={paper.id}
+            href={`/books/${encodeURIComponent(subject)}/${paper.id}`}
+            className="group rounded-3xl border border-[var(--color-app-border)]
+  bg-[var(--color-app-surface)]
+  p-5
+  transition-all
+  duration-300
+  hover:-translate-y-1
+  hover:shadow-xl"
           >
-            <div className="flex items-center gap-3">
-              <span className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold bg-[var(--color-app-primary-soft)] text-[var(--color-app-primary)]">
-                {index + 1}
-              </span>
+            <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-[var(--color-app-text)]">{chapter.title}</p>
-                <p className="text-xs text-[var(--color-app-muted)]">
-                  {chapter.notes.length} নোট · {chapter.qa.length} প্রশ্নোত্তর · {chapter.mcqs.length} এমসিকিউ
-                </p>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xl">
+                    {paperIcons[paper.id] || "📚"}
+                  </span>
+
+                  <h2 className="text-lg font-bold text-[var(--color-app-text)]">
+                    {paper.title}
+                  </h2>
+                </div>
+
+                <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-[var(--color-app-primary-soft)] px-3 py-1">
+                  <span>📚</span>
+
+                  <span className="text-sm font-medium">
+                    {paper.topics.length} টি টপিক
+                  </span>
+                </div>
               </div>
+
+              <svg
+                className="w-5 h-5 mt-2 group-hover:translate-x-1 transition-transform"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
             </div>
-            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="var(--color-app-muted)" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-            </svg>
           </Link>
         ))}
       </div>

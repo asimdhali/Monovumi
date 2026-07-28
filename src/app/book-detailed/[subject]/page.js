@@ -60,23 +60,9 @@ export default function SubjectPage({ params }) {
             {subjectIcons[subject]} {subject}
           </h1>
         </div>
-
-        <div className="rounded-3xl border border-[var(--color-app-border)] bg-[var(--color-app-surface)] p-6">
-          <p className="text-lg font-bold">{subject} বিষয়</p>
-
-          <p className="text-sm mt-2 text-[var(--color-app-muted)]">
-            প্রথম ও দ্বিতীয় পত্রের সকল অধ্যায় এখানে সাজানো রয়েছে।
-          </p>
-
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full px-4 py-2 bg-[var(--color-app-primary-soft)]">
-            📚 মোট{" "}
-            {subjectData.papers.reduce((sum, p) => sum + p.topics.length, 0)} টি
-            টপিক
-          </div>
-        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {subjectData.papers.map((paper) => (
           <Link
             key={paper.id}
@@ -91,28 +77,23 @@ export default function SubjectPage({ params }) {
           >
             <div className="flex items-start justify-between">
               <div>
-                <div className="text-4xl mb-3">
-                  {paperIcons[paper.id] || "📚"}
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xl">
+                    {paperIcons[paper.id] || "📚"}
+                  </span>
+
+                  <h2 className="text-lg font-bold text-[var(--color-app-text)]">
+                    {paper.title}
+                  </h2>
                 </div>
 
-                <h2 className="text-lg font-bold">{paper.title}</h2>
+                <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-[var(--color-app-primary-soft)] px-3 py-1">
+                  <span>📚</span>
 
-                <div className="mt-3 inline-flex items-center rounded-full px-3 py-1 bg-[var(--color-app-primary-soft)] text-sm">
-                  📖 {paper.topics.length} টি টপিক
+                  <span className="text-sm font-medium">
+                    {paper.topics.length} টি টপিক
+                  </span>
                 </div>
-
-                {paper.topics.length > 0 && (
-                  <div className="mt-4 space-y-1">
-                    {paper.topics.slice(0, 3).map((topic) => (
-                      <div
-                        key={topic.id}
-                        className="text-sm text-[var(--color-app-muted)]"
-                      >
-                        • {topic.title}
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
 
               <svg
@@ -128,10 +109,6 @@ export default function SubjectPage({ params }) {
                   d="M9 5l7 7-7 7"
                 />
               </svg>
-            </div>
-
-            <div className="mt-5 pt-4 border-t border-[var(--color-app-border)] font-semibold text-[var(--color-app-primary)]">
-              প্রবেশ করুন →
             </div>
           </Link>
         ))}
