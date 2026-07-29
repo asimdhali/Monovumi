@@ -1,5 +1,6 @@
 "use client";
 
+import { migrateHomeFeed } from "./services/migrateHomeFeedService";
 import { saveHomeFeedPost } from "./services/homeFeedService";
 import { createContext, useContext, useState, useEffect } from "react";
 import { db } from "./firebase";

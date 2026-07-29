@@ -17,6 +17,11 @@ import ComposerModal from "./books/components/ComposerModal";
 import { useBookDetailed } from "./BookDetailedContext";
 import { usePosts } from "./PostsContext";
 import { buildHomeFeed } from "./services/homeFeedHelper";
+import {
+  getInitialHomeFeed,
+  getNextHomeFeed,
+  subscribeHomeFeed,
+} from "./services/homeFeedQuery";
 import HomeFeedSkeleton from "./components/HomeFeedSkeleton";
 
 function formatBanglaDate(timestamp) {
@@ -71,8 +76,12 @@ const PostCard = forwardRef(function PostCard(
               style={{ boxShadow: "0 0 0 2px var(--color-app-accent)" }}
             >
               <Image
-                src={post.avatar}
-                alt={post.name}
+                src={
+                  post.avatar ||
+                  post.contributorAvatar ||
+                  "https://i.pravatar.cc/150?img=13"
+                }
+                alt={post.name || post.contributor || "User"}
                 width={46}
                 height={46}
                 className="object-cover w-full h-full"
@@ -93,7 +102,7 @@ const PostCard = forwardRef(function PostCard(
           <div>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               <span className="text-[14.5px] font-bold text-[var(--color-app-text)]">
-                {post.name}
+                {post.name || post.contributor || "আপনি"}
               </span>
 
               <button
@@ -264,116 +273,99 @@ export default function Home() {
 
   const [activeSubject, setActiveSubject] = useState("সব");
 
-  const loadMoreRef = useRef(null);
-  const bookPosts = buildHomeFeed(content);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [feedPosts, setFeedPosts] = useState([]);
+  const [lastDoc, setLastDoc] = useState(null);
+  const [feedLoading, setFeedLoading] = useState(true);
+  const [homeFeedPosts, setHomeFeedPosts] = useState([]);
 
-  const allPosts = [
-    ...bookPosts.map((p) => ({
-      id: `feed-${p.id}`,
-
-      originalId: p.id,
-
-      name: p.contributor || "যাচাইকৃত শিক্ষক",
-
-      avatar: p.contributorAvatar || "https://i.pravatar.cc/150?img=13",
-
-      verified: true,
-
-      subject: p.subject,
-
-      paperId: p.paperId,
-
-      originalId: p.id,
-
-      chapter: p.chapter || "",
-
-      contributor: p.contributor,
-
-      contributorAvatar: p.contributorAvatar,
-
-      content: p.content,
-
-      image: p.image,
-
-      likes: p.likes || 0,
-
-      title: p.title,
-
-      era: p.era,
-
-      paperTitle: p.paperTitle,
-
-      editType: p.editType || "major",
-
-      activityType: p.activityType,
-
-      activityTime: p.activityTime,
-
-      source: "book",
-    })),
-
-    ...posts,
-  ];
+  const allPosts = homeFeedPosts;
 
   const filteredPosts = allPosts.filter(
     (post) => activeSubject === "সব" || post.subject === activeSubject,
   );
 
-  const POSTS_PER_PAGE = 10;
-
-  const [visibleCount, setVisibleCount] = useState(POSTS_PER_PAGE);
-
-  const visiblePosts = filteredPosts.slice(0, visibleCount);
+  const visiblePosts = filteredPosts;
   const observer = useRef();
+
   const lastPostRef = useCallback(
     (node) => {
-      if (loading) return;
+      if (feedLoading || loadingMore) return;
 
       if (observer.current) observer.current.disconnect();
 
-      observer.current = new IntersectionObserver(
-        (entries) => {
-          if (
-            entries[0].isIntersecting &&
-            visibleCount < filteredPosts.length &&
-            !loadingMore
-          ) {
-            setLoadingMore(true);
+      observer.current = new IntersectionObserver(async (entries) => {
+        if (!entries[0].isIntersecting) return;
 
-            setTimeout(() => {
-              setVisibleCount((prev) => prev + POSTS_PER_PAGE);
-              setLoadingMore(false);
-            }, 600);
+        if (!lastDoc) return;
+
+        setLoadingMore(true);
+
+        try {
+          const result = await getNextHomeFeed(lastDoc);
+
+          if (result.posts.length > 0) {
+            setHomeFeedPosts((prev) => [...prev, ...result.posts]);
+            setLastDoc(result.lastDoc);
+          } else {
+            setLastDoc(null);
           }
-        },
-        {
-          rootMargin: "800px",
-        },
-      );
+        } finally {
+          setLoadingMore(false);
+        }
+      });
 
       if (node) observer.current.observe(node);
     },
-    [loading, visibleCount, filteredPosts.length, loadingMore],
+    [feedLoading, loadingMore, lastDoc],
   );
 
   useEffect(() => {
-    setVisibleCount(POSTS_PER_PAGE);
-  }, [activeSubject]);
+    async function loadFeed() {
+      setFeedLoading(true);
+
+      const result = await getInitialHomeFeed();
+
+      setFeedPosts(result.posts);
+      setLastDoc(result.lastDoc);
+
+      setFeedLoading(false);
+    }
+
+    loadFeed();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeHomeFeed((posts) => {
+      setFeedPosts(posts);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    async function loadFeed() {
+      const data = await getInitialHomeFeed();
+
+      setHomeFeedPosts(data.posts);
+    }
+
+    loadFeed();
+  }, []);
 
   return (
     <div className="min-h-screen font-[family-name:var(--font-bengali-sans)] px-4 pb-16">
       {/* মূল ফিড */}
       <div className="max-w-xl mx-auto">
         <div className="space-y-1.5">
-          {loading ? (
+          {feedLoading ? (
             <HomeFeedSkeleton />
           ) : filteredPosts.length > 0 ? (
             <>
               {visiblePosts.map((post, index) => (
                 <PostCard
-                  key={post.id}
                   ref={index === visiblePosts.length - 1 ? lastPostRef : null}
+                  key={post.id}
                   post={post}
                   onEdit={(post) => {
                     setEditingTopic(post);
