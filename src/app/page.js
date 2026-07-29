@@ -266,6 +266,7 @@ export default function Home() {
 
   const loadMoreRef = useRef(null);
   const bookPosts = buildHomeFeed(content);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const allPosts = [
     ...bookPosts.map((p) => ({
@@ -331,15 +332,29 @@ export default function Home() {
 
       if (observer.current) observer.current.disconnect();
 
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && visibleCount < filteredPosts.length) {
-          setVisibleCount((prev) => prev + POSTS_PER_PAGE);
-        }
-      });
+      observer.current = new IntersectionObserver(
+        (entries) => {
+          if (
+            entries[0].isIntersecting &&
+            visibleCount < filteredPosts.length &&
+            !loadingMore
+          ) {
+            setLoadingMore(true);
+
+            setTimeout(() => {
+              setVisibleCount((prev) => prev + POSTS_PER_PAGE);
+              setLoadingMore(false);
+            }, 600);
+          }
+        },
+        {
+          rootMargin: "800px",
+        },
+      );
 
       if (node) observer.current.observe(node);
     },
-    [loading, visibleCount, filteredPosts.length],
+    [loading, visibleCount, filteredPosts.length, loadingMore],
   );
 
   useEffect(() => {
@@ -367,16 +382,7 @@ export default function Home() {
                 />
               ))}
 
-              {visibleCount < filteredPosts.length && (
-                <div
-                  ref={loadMoreRef}
-                  className="h-16 flex items-center justify-center"
-                >
-                  <div className="text-sm text-[var(--color-app-muted)]">
-                    আরও পোস্ট লোড হচ্ছে...
-                  </div>
-                </div>
-              )}
+              {loadingMore && <HomeFeedSkeleton count={3} />}
             </>
           ) : (
             <p className="text-center text-[var(--color-app-muted)] text-sm py-8">
