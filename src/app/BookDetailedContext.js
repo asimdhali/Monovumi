@@ -1,5 +1,6 @@
 "use client";
 
+import { saveHomeFeedPost } from "./services/homeFeedService";
 import { createContext, useContext, useState, useEffect } from "react";
 import { db } from "./firebase";
 import { savePapers, subscribeToSubject } from "./services/bookDetailedService";
@@ -51,6 +52,18 @@ export function BookDetailedProvider({ children }) {
     });
 
     await savePapers(subject, updatedPapers);
+    const savedPaper = updatedPapers.find((p) => p.id === paperId);
+
+    const savedTopic = savedPaper.topics[savedPaper.topics.length - 1];
+
+    await saveHomeFeedPost({
+      ...savedTopic,
+      subject,
+      paperId,
+      paperTitle: savedPaper.title,
+      activityTime: savedTopic.updatedAt,
+      activityType: "new",
+    });
   }
 
   async function editTopic(subject, paperId, topicId, updatedFields) {

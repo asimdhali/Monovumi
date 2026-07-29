@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+  forwardRef,
+} from "react";
 import Image from "next/image";
 import { MoreHorizontal, Heart, MessageCircle, Share2 } from "lucide-react";
 
@@ -24,7 +31,10 @@ function formatBanglaDate(timestamp) {
     hour12: true,
   });
 }
-function PostCard({ post, onEdit, onDelete, onCopyLink }) {
+const PostCard = forwardRef(function PostCard(
+  { post, onEdit, onDelete, onCopyLink },
+  ref,
+) {
   const [expanded, setExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -49,7 +59,10 @@ function PostCard({ post, onEdit, onDelete, onCopyLink }) {
   }, []);
 
   return (
-    <div className="bg-[var(--color-app-surface)] rounded-2xl border border-[var(--color-app-border)] p-4">
+    <div
+      ref={ref}
+      className="bg-[var(--color-app-surface)] rounded-2xl border border-[var(--color-app-border)] p-4"
+    >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-start gap-2.5">
           <div className="relative flex-shrink-0">
@@ -234,7 +247,7 @@ function PostCard({ post, onEdit, onDelete, onCopyLink }) {
       </div>
     </div>
   );
-}
+});
 
 export default function Home() {
   const { teacherVerified } = useAuth();
@@ -251,6 +264,7 @@ export default function Home() {
 
   const [activeSubject, setActiveSubject] = useState("সব");
 
+  const loadMoreRef = useRef(null);
   const bookPosts = buildHomeFeed(content);
 
   const allPosts = [
@@ -305,6 +319,33 @@ export default function Home() {
     (post) => activeSubject === "সব" || post.subject === activeSubject,
   );
 
+  const POSTS_PER_PAGE = 10;
+
+  const [visibleCount, setVisibleCount] = useState(POSTS_PER_PAGE);
+
+  const visiblePosts = filteredPosts.slice(0, visibleCount);
+  const observer = useRef();
+  const lastPostRef = useCallback(
+    (node) => {
+      if (loading) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && visibleCount < filteredPosts.length) {
+          setVisibleCount((prev) => prev + POSTS_PER_PAGE);
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [loading, visibleCount, filteredPosts.length],
+  );
+
+  useEffect(() => {
+    setVisibleCount(POSTS_PER_PAGE);
+  }, [activeSubject]);
+
   return (
     <div className="min-h-screen font-[family-name:var(--font-bengali-sans)] px-4 pb-16">
       {/* মূল ফিড */}
@@ -313,34 +354,30 @@ export default function Home() {
           {loading ? (
             <HomeFeedSkeleton />
           ) : filteredPosts.length > 0 ? (
-            filteredPosts.map((post) => (
-              <PostCard
-                key={`feed-${post.id}`}
-                post={post}
-                onEdit={(post) => {
-                  setEditingTopic(post);
-                  setShowComposer(true);
-                }}
-                onDelete={async (post) => {
-                  await deleteTopic(
-                    post.subject,
-                    post.paperId,
-                    post.originalId,
-                  );
-                }}
-                onCopyLink={async (post) => {
-                  const url =
-                    `${window.location.origin}/books/` +
-                    `${encodeURIComponent(post.subject)}/` +
-                    `${post.paperId}/` +
-                    `${post.originalId}`;
+            <>
+              {visiblePosts.map((post, index) => (
+                <PostCard
+                  key={post.id}
+                  ref={index === visiblePosts.length - 1 ? lastPostRef : null}
+                  post={post}
+                  onEdit={(post) => {
+                    setEditingTopic(post);
+                    setShowComposer(true);
+                  }}
+                />
+              ))}
 
-                  await navigator.clipboard.writeText(url);
-
-                  alert("লিংক কপি হয়েছে।");
-                }}
-              />
-            ))
+              {visibleCount < filteredPosts.length && (
+                <div
+                  ref={loadMoreRef}
+                  className="h-16 flex items-center justify-center"
+                >
+                  <div className="text-sm text-[var(--color-app-muted)]">
+                    আরও পোস্ট লোড হচ্ছে...
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <p className="text-center text-[var(--color-app-muted)] text-sm py-8">
               এই বিষয়ে কোনো পোস্ট পাওয়া যায়নি।
