@@ -7,6 +7,12 @@ import EditorToolbar from "./EditorToolbar";
 import Heading from "@tiptap/extension-heading";
 import TextAlign from "@tiptap/extension-text-align";
 import Placeholder from "@tiptap/extension-placeholder";
+import { Table } from "@tiptap/extension-table";
+import { TableRow } from "@tiptap/extension-table-row";
+import CustomTableCell from "./extensions/CustomTableCell";
+import { TableHeader } from "@tiptap/extension-table-header";
+import TextStyle from "@tiptap/extension-text-style";
+import Color from "@tiptap/extension-color";
 
 export default function RichTextEditor({ value, onChange }) {
   const editor = useEditor({
@@ -27,6 +33,15 @@ export default function RichTextEditor({ value, onChange }) {
       Placeholder.configure({
         placeholder: "লেখা এখান থেকে শুরু করুন...",
       }),
+      Table.configure({
+        resizable: true,
+      }),
+
+      TableRow,
+
+      TableHeader,
+
+      CustomTableCell,
     ],
 
     content: value,
@@ -41,7 +56,7 @@ export default function RichTextEditor({ value, onChange }) {
   if (!editor) return null;
 
   return (
-    <div className="rounded-xl border border-[var(--color-app-border)] overflow-hidden">
+    <div className="rounded-xl border border-[var(--color-app-border)] overflow-visible">
       <EditorToolbar editor={editor} />
       <div className="max-w-4xl mx-auto p-1">
         <div

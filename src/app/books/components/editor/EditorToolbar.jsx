@@ -1,4 +1,5 @@
 "use client";
+import TableMenu from "./TableMenu";
 
 export default function EditorToolbar({ editor }) {
   if (!editor) return null;
@@ -169,6 +170,7 @@ export default function EditorToolbar({ editor }) {
       >
         ☰
       </button>
+      <TableMenu editor={editor} />
     </div>
   );
 }

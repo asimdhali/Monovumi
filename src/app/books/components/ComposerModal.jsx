@@ -116,12 +116,6 @@ export default function ComposerModal({
               placeholder="আপনার নাম লিখুন"
               className="w-full bg-transparent text-[15px] font-semibold text-[var(--color-app-text)] outline-none"
             />
-            <div
-              className="text-[11px] font-semibold flex items-center gap-1 mt-0.5"
-              style={{ color: "var(--color-app-accent)" }}
-            >
-              👑 যাচাইকৃত শিক্ষক হিসেবে পোস্ট হবে
-            </div>
           </div>
         </div>
 
