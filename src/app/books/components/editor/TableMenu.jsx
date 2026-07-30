@@ -4,6 +4,9 @@ import { useState, useRef, useEffect } from "react";
 
 export default function TableMenu({ editor }) {
   const [open, setOpen] = useState(false);
+  const [showInsertDialog, setShowInsertDialog] = useState(false);
+  const [tableRows, setTableRows] = useState(3);
+  const [tableCols, setTableCols] = useState(3);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -247,22 +250,65 @@ export default function TableMenu({ editor }) {
             >
               <button
                 className="w-full px-4 py-4 text-left hover:bg-[var(--color-app-primary-soft)]"
-                onClick={() => {
-                  editor
-                    .chain()
-                    .focus()
-                    .insertTable({
-                      rows: 3,
-                      cols: 3,
-                      withHeaderRow: true,
-                    })
-                    .run();
-
-                  setOpen(false);
-                }}
+                onClick={() => setShowInsertDialog(!showInsertDialog)}
               >
                 🟦 Insert Table
               </button>
+              {showInsertDialog && (
+                <div className="border-t border-[var(--color-app-border)] p-4 space-y-4">
+                  {/* Rows */}
+                  <div>
+                    <label className="block text-xs text-[var(--color-app-muted)] mb-1">
+                      Rows
+                    </label>
+
+                    <input
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={tableRows}
+                      onChange={(e) => setTableRows(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[var(--color-app-border)] bg-[var(--color-app-bg)] px-3 py-2"
+                    />
+                  </div>
+
+                  {/* Columns */}
+                  <div>
+                    <label className="block text-xs text-[var(--color-app-muted)] mb-1">
+                      Columns
+                    </label>
+
+                    <input
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={tableCols}
+                      onChange={(e) => setTableCols(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[var(--color-app-border)] bg-[var(--color-app-bg)] px-3 py-2"
+                    />
+                  </div>
+
+                  <button
+                    className="w-full rounded-lg bg-[var(--color-app-primary)] py-2 text-white font-semibold"
+                    onClick={() => {
+                      editor
+                        .chain()
+                        .focus()
+                        .insertTable({
+                          rows: tableRows,
+                          cols: tableCols,
+                          withHeaderRow: true,
+                        })
+                        .run();
+
+                      setShowInsertDialog(false);
+                      setOpen(false);
+                    }}
+                  >
+                    Insert Table
+                  </button>
+                </div>
+              )}
             </div>
 
             <div

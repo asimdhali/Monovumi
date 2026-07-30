@@ -11,8 +11,8 @@ import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import CustomTableCell from "./extensions/CustomTableCell";
 import { TableHeader } from "@tiptap/extension-table-header";
-import TextStyle from "@tiptap/extension-text-style";
-import Color from "@tiptap/extension-color";
+import { TextStyle } from "@tiptap/extension-text-style";
+import { Color } from "@tiptap/extension-color";
 
 export default function RichTextEditor({ value, onChange }) {
   const editor = useEditor({
@@ -27,20 +27,24 @@ export default function RichTextEditor({ value, onChange }) {
 
       Underline,
 
+      TextStyle,
+
+      Color,
+
       TextAlign.configure({
         types: ["heading", "paragraph"],
       }),
+
       Placeholder.configure({
         placeholder: "লেখা এখান থেকে শুরু করুন...",
       }),
+
       Table.configure({
         resizable: true,
       }),
 
       TableRow,
-
       TableHeader,
-
       CustomTableCell,
     ],
 

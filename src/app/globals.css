@@ -202,6 +202,7 @@
 
 .ProseMirror th,
 .ProseMirror td {
+  position: relative;
   border: 1px solid var(--color-app-border);
   padding: 10px 12px;
   min-width: 80px;
@@ -209,7 +210,7 @@
 }
 
 .ProseMirror th {
-  background: var(--color-app-primary-soft);
+  background: transparent;
   font-weight: 700;
 }
 
@@ -251,4 +252,61 @@
 
 .table-menu-scroll::-webkit-scrollbar-thumb:hover {
   background: #6a7562;
+}
+
+/* ===========================
+   TipTap Column Resize
+=========================== */
+
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  bottom: 0;
+  width: 6px;
+  background: transparent;
+  cursor: col-resize;
+  z-index: 20;
+}
+
+.ProseMirror .column-resize-handle:hover {
+  background: #3b82f6;
+}
+
+.ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
+
+/* ===== Table Resize Handle ===== */
+
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  bottom: -1px;
+
+  width: 4px;
+
+  background: transparent;
+
+  cursor: col-resize;
+
+  transition: background 0.15s;
+}
+
+/* hover করলে */
+
+.ProseMirror .column-resize-handle:hover {
+  background: var(--color-app-primary);
+}
+
+/* drag করার সময় */
+
+.ProseMirror.resize-cursor .column-resize-handle,
+.ProseMirror .column-resize-handle.active {
+  background: var(--color-app-primary);
+
+  box-shadow:
+    0 0 0 1px var(--color-app-primary),
+    0 0 8px rgba(126, 190, 159, 0.6);
 }
