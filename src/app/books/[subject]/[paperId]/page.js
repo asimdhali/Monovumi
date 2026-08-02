@@ -366,7 +366,7 @@ export default function PaperPage({ params }) {
       {showComposer && (
         <ComposerModal
           initialTopic={editingComposerTopic}
-          mode="create"
+          mode="edit"
           prefillEra={composerEra}
           prefillChapter={composerChapter}
           onClose={() => {

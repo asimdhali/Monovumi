@@ -1,7 +1,7 @@
 import { mergeAttributes } from "@tiptap/core";
-import { TableCell } from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
 
-const CustomTableCell = TableCell.extend({
+const CustomTableHeader = TableHeader.extend({
   addAttributes() {
     return {
       ...this.parent?.(),
@@ -34,11 +34,11 @@ const CustomTableCell = TableCell.extend({
     }
 
     return [
-      "td",
+      "th",
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
       0,
     ];
   },
 });
 
-export default CustomTableCell;
+export default CustomTableHeader;

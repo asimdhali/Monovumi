@@ -41,6 +41,10 @@ export function BookDetailedProvider({ children }) {
   }, []);
 
   async function addTopic(subject, paperId, newTopic) {
+    console.log("subject =", subject);
+    console.log("paperId =", paperId);
+    console.log("newTopic =", newTopic);
+
     const subjectData = content[subject];
 
     const now = Date.now();
@@ -52,10 +56,22 @@ export function BookDetailedProvider({ children }) {
       editType: "major",
     });
 
+    updatedPapers.forEach((p) => {
+      console.log("paper =>", p.id, typeof p.id, p.title);
+    });
+
+    console.log("paperId type =", typeof paperId);
+
     await savePapers(subject, updatedPapers);
+
     const savedPaper = updatedPapers.find((p) => p.id === paperId);
 
-    const savedTopic = savedPaper.topics[savedPaper.topics.length - 1];
+    if (!savedPaper) {
+      console.error("Paper not found:", paperId);
+      return;
+    }
+
+    const savedTopic = savedPaper.topics.at(-1);
 
     await saveHomeFeedPost({
       ...savedTopic,
@@ -77,12 +93,30 @@ export function BookDetailedProvider({ children }) {
 
       updatedAt: now,
 
-      activityType: "major",
+      activityType: updatedFields.editType,
 
       activityTime: now,
     });
 
     await savePapers(subject, updatedPapers);
+    const savedPaper = updatedPapers.find((p) => p.id === paperId);
+
+    if (!savedPaper) return;
+
+    const savedTopic = savedPaper.topics.find(
+      (t) => String(t.id) === String(topicId),
+    );
+
+    if (!savedTopic) return;
+
+    await saveHomeFeedPost({
+      ...savedTopic,
+      subject,
+      paperId,
+      paperTitle: savedPaper.title,
+      activityTime: now,
+      activityType: updatedFields.editType || "major",
+    });
   }
 
   async function deleteTopic(subject, paperId, topicId) {

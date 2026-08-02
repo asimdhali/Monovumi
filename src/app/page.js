@@ -105,14 +105,6 @@ const PostCard = forwardRef(function PostCard(
                 {post.name || post.contributor || "আপনি"}
               </span>
 
-              <button
-                onClick={() => setFollowed(!followed)}
-                className="text-[12.5px] font-bold"
-                style={{ color: "var(--color-app-primary)" }}
-              >
-                {followed ? "✓ ফলো করছেন" : "· ফলো"}
-              </button>
-
               {post.activityType === "new" && (
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400">
                   ✨ নতুন পোস্ট করেছেন
@@ -279,7 +271,7 @@ export default function Home() {
   const [feedLoading, setFeedLoading] = useState(true);
   const [homeFeedPosts, setHomeFeedPosts] = useState([]);
 
-  const allPosts = homeFeedPosts;
+  const allPosts = feedPosts;
 
   const filteredPosts = allPosts.filter(
     (post) => activeSubject === "সব" || post.subject === activeSubject,
@@ -397,12 +389,14 @@ export default function Home() {
             setShowComposer(false);
             setEditingTopic(null);
           }}
+
           onSubmit={async (data) => {
+            console.log(editingTopic);
             if (editingTopic) {
               await editTopic(
                 editingTopic.subject,
                 editingTopic.paperId,
-                editingTopic.originalId,
+                editingTopic.originalId || editingTopic.id,
                 data,
               );
             }

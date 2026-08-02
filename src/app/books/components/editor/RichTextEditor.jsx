@@ -10,7 +10,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import CustomTableCell from "./extensions/CustomTableCell";
-import { TableHeader } from "@tiptap/extension-table-header";
+import CustomTableHeader from "./extensions/CustomTableHeader";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 
@@ -42,9 +42,8 @@ export default function RichTextEditor({ value, onChange }) {
       Table.configure({
         resizable: true,
       }),
-
       TableRow,
-      TableHeader,
+      CustomTableHeader,
       CustomTableCell,
     ],
 

@@ -139,38 +139,50 @@ export default function TableMenu({ editor }) {
       items: [
         {
           label: "⬜ None",
-          action: () =>
+          action: () => {
             editor
               .chain()
               .focus()
               .updateAttributes("tableCell", {
                 backgroundColor: null,
               })
-              .run(),
+              .updateAttributes("tableHeader", {
+                backgroundColor: null,
+              })
+              .run();
+          },
         },
 
         {
           label: "🟢 Green",
-          action: () =>
-            editor
-              .chain()
-              .focus()
-              .updateAttributes("tableCell", {
-                backgroundColor: "#233124",
-              })
-              .run(),
-        },
-
-        {
-          label: "🔵 Blue",
-          action: () =>
+          action: () => {
             editor
               .chain()
               .focus()
               .updateAttributes("tableCell", {
                 backgroundColor: "#20364d",
               })
-              .run(),
+              .updateAttributes("tableHeader", {
+                backgroundColor: "#20364d",
+              })
+              .run();
+          },
+        },
+
+        {
+          label: "🔵 Blue",
+          action: () => {
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("tableCell", {
+                backgroundColor: "#20364d",
+              })
+              .updateAttributes("tableHeader", {
+                backgroundColor: "#20364d",
+              })
+              .run();
+          },
         },
 
         {
@@ -205,6 +217,93 @@ export default function TableMenu({ editor }) {
               .focus()
               .updateAttributes("tableCell", {
                 backgroundColor: "#512626",
+              })
+              .run(),
+        },
+      ],
+    },
+    {
+      section: "Border Color",
+
+      items: [
+        {
+          label: "⚪ Default",
+
+          action: () =>
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("tableCell", {
+                borderColor: null,
+              })
+              .run(),
+        },
+
+        {
+          label: "🟢 Green",
+
+          action: () => {
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("tableCell", {
+                borderColor: "#4CAF50",
+              })
+              .updateAttributes("tableHeader", {
+                borderColor: "#4CAF50",
+              })
+              .run();
+          },
+        },
+
+        {
+          label: "🔵 Blue",
+
+          action: () =>
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("tableCell", {
+                borderColor: "#2196F3",
+              })
+              .run(),
+        },
+
+        {
+          label: "🟡 Yellow",
+
+          action: () =>
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("tableCell", {
+                borderColor: "#FFC107",
+              })
+              .run(),
+        },
+
+        {
+          label: "🔴 Red",
+
+          action: () =>
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("tableCell", {
+                borderColor: "#F44336",
+              })
+              .run(),
+        },
+
+        {
+          label: "⚫ Black",
+
+          action: () =>
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("tableCell", {
+                borderColor: "#000000",
               })
               .run(),
         },

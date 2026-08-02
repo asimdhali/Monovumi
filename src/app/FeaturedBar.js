@@ -111,9 +111,11 @@ function ThreeDotMenu({ topic, canManage }) {
 
 function EditFeaturedModal({ topic, onClose, onSave }) {
   const [form, setForm] = useState({
-    era: topic.era,
-    title: topic.title,
-    content: topic.content,
+    era: topic.era || "",
+    chapter: topic.chapter || "",
+    title: topic.title || "",
+    content: topic.content || "",
+    editType: "major",
   });
 
   function handleSubmit() {
@@ -143,12 +145,52 @@ function EditFeaturedModal({ topic, onClose, onSave }) {
             placeholder="শিরোনাম"
             className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
           />
+          <input
+            value={form.chapter}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                chapter: e.target.value,
+              })
+            }
+            placeholder="অধ্যায়"
+            className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
+          />
           <textarea
             value={form.content}
             onChange={(e) => setForm({ ...form, content: e.target.value })}
             rows={6}
             className="w-full p-2.5 rounded-lg border text-sm resize-none bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
           />
+          <div className="flex gap-6 pt-2">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={form.editType === "major"}
+                onChange={() =>
+                  setForm({
+                    ...form,
+                    editType: "major",
+                  })
+                }
+              />
+              Major Update
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={form.editType === "minor"}
+                onChange={() =>
+                  setForm({
+                    ...form,
+                    editType: "minor",
+                  })
+                }
+              />
+              Minor Edit
+            </label>
+          </div>
           <div className="flex gap-2 pt-1">
             <button
               onClick={handleSubmit}
