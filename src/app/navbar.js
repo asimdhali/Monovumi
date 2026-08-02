@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { useAuth, TEACHER_PASSWORD } from "./AuthContext";
+import SearchOverlay from "./SearchOverlay";
 
 const taglines = [
   "শিক্ষা, জ্ঞান-বিজ্ঞান অর্জনের ফ্রি প্ল্যাটফর্ম",
@@ -230,11 +231,11 @@ function ProfileMenu() {
   );
 }
 
-function NavIcons() {
+function NavIcons({ onSearchClick }) {
   return (
     <div className="flex items-center gap-1">
       <button
-        onClick={() => alert("সার্চ খুব শীঘ্রই আসছে")}
+        onClick={onSearchClick}
         className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors flex-shrink-0"
         aria-label="খুঁজুন"
       >
@@ -248,8 +249,8 @@ function NavIcons() {
           <path d="M21 21l-4.35-4.35" strokeWidth="2" strokeLinecap="round" />
         </svg>
       </button>
-      <button
-        onClick={() => alert("নোটিফিকেশন খুব শীঘ্রই আসছে")}
+      <Link
+        href="/notifications"
         className="relative w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors flex-shrink-0"
         aria-label="নোটিফিকেশন"
       >
@@ -273,7 +274,7 @@ function NavIcons() {
             border: "2px solid var(--color-app-bg)",
           }}
         />
-      </button>
+      </Link>
       <ProfileMenu />
     </div>
   );
@@ -282,6 +283,7 @@ function NavIcons() {
 export default function Navbar() {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const touchStartX = useRef(null);
 
   // বাম কিনারা থেকে সোয়াইপ করলে ড্রয়ার খুলবে
@@ -361,7 +363,7 @@ export default function Navbar() {
                 );
               })}
             </nav>
-            <NavIcons />
+            <NavIcons onSearchClick={() => setSearchOpen(true)} />
           </div>
         </div>
       </header>
@@ -393,7 +395,7 @@ export default function Navbar() {
             মনোভূমি
           </span>
 
-          <NavIcons />
+          <NavIcons onSearchClick={() => setSearchOpen(true)} />
         </div>
       </header>
 
@@ -505,6 +507,8 @@ export default function Navbar() {
           ))}
         </nav>
       </aside>
+
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }
