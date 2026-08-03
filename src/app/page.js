@@ -199,7 +199,7 @@ const PostCard = forwardRef(function PostCard(
       )}
       <div
         ref={textRef}
-        className={`text-[14px] leading-relaxed text-[var(--color-app-text)] mb-1 ${
+        className={`post-content text-[14px] leading-relaxed text-[var(--color-app-text)] mb-1 ${
           expanded ? "" : "line-clamp-3"
         }`}
         dangerouslySetInnerHTML={{

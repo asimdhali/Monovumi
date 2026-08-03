@@ -51,7 +51,12 @@ export default function RichTextEditor({ value, onChange }) {
 
     immediatelyRender: false,
 
+    /*onUpdate({ editor }) {
+      onChange(editor.getHTML());
+    },*/
     onUpdate({ editor }) {
+      console.log(editor.getHTML());
+
       onChange(editor.getHTML());
     },
   });

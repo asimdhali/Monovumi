@@ -360,9 +360,12 @@ function FeaturedPreviewModal({ topic, onClose }) {
           </button>
         </div>
 
-        <p className="text-sm leading-relaxed text-[var(--color-app-muted)] whitespace-pre-wrap mb-5">
-          {topic.content}
-        </p>
+        <div
+          className="prose-content text-sm leading-[1.9] text-[var(--color-app-text)] mb-5"
+          dangerouslySetInnerHTML={{
+            __html: topic.content,
+          }}
+        />
 
         <Link
           href={`/books/${encodeURIComponent(topic.subject)}/${topic.paperId}`}

@@ -310,3 +310,139 @@
     0 0 0 1px var(--color-app-primary),
     0 0 8px rgba(126, 190, 159, 0.6);
 }
+
+/* ===========================
+   Post View / Preview HTML
+=========================== */
+
+.post-content {
+  line-height: 1.9;
+}
+
+.post-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+}
+
+.post-content h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+}
+
+.post-content h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0.4rem 0;
+}
+
+.post-content p {
+  margin: 0.4rem 0;
+}
+
+.post-content ul {
+  list-style: disc;
+  margin-left: 24px;
+  padding-left: 10px;
+}
+
+.post-content ol {
+  list-style: decimal;
+  margin-left: 24px;
+  padding-left: 10px;
+}
+
+.post-content li {
+  margin: 6px 0;
+}
+
+.post-content strong {
+  font-weight: bold;
+}
+
+.post-content em {
+  font-style: italic;
+}
+
+.post-content u {
+  text-decoration: underline;
+}
+
+/* ===== Table ===== */
+
+.post-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+
+.post-content td,
+.post-content th {
+  border-style: solid;
+  border-width: 1px;
+  padding: 10px;
+}
+.post-content th {
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.post-content tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.prose-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 16px 0;
+}
+
+.prose-content ul {
+  list-style: disc;
+  margin-left: 24px;
+}
+
+.prose-content ol {
+  list-style: decimal;
+  margin-left: 24px;
+}
+
+.prose-content li {
+  margin: 6px 0;
+}
+
+.prose-content strong {
+  font-weight: bold;
+}
+
+.prose-content em {
+  font-style: italic;
+}
+
+.prose-content u {
+  text-decoration: underline;
+}
+
+.prose-content table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.prose-content td,
+.prose-content th {
+  border-style: solid;
+  border-width: 1px;
+  border-color: var(--color-app-border);
+  padding: 10px;
+}
+
+.prose-content ul {
+  list-style: disc;
+  margin-left: 24px;
+}
+
+.prose-content ol {
+  list-style: decimal;
+  margin-left: 24px;
+}

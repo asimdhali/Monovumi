@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 export default function TopicPreviewModal({ topic, subject, onClose }) {
+  console.log("POST CONTENT =", topic.content);
+
   const [liked, setLiked] = useState(false);
   const [likeCount] = useState(() => Math.floor(Math.random() * 25) + 4);
 
@@ -38,7 +40,6 @@ export default function TopicPreviewModal({ topic, subject, onClose }) {
             </svg>
           </button>
         </div>
-
         {topic.contributor && (
           <div className="flex items-center gap-2 mb-3">
             {topic.contributorAvatar && (
@@ -54,14 +55,15 @@ export default function TopicPreviewModal({ topic, subject, onClose }) {
             </span>
           </div>
         )}
-
         <h3 className="font-[family-name:var(--font-bengali-serif)] text-xl text-[var(--color-app-text)] mb-3">
           {topic.title}
         </h3>
-        <p className="text-sm leading-[1.9] text-[var(--color-app-text)] whitespace-pre-wrap mb-5">
-          {topic.content}
-        </p>
-
+        <div
+          className="post-content text-sm mb-5 text-[var(--color-app-text)]"
+          dangerouslySetInnerHTML={{
+            __html: topic.content,
+          }}
+        />
         <div className="flex items-center justify-between pt-4 border-t border-[var(--color-app-border)]">
           <button
             onClick={() => setLiked(!liked)}

@@ -8,10 +8,38 @@ const CustomTableCell = TableCell.extend({
 
       backgroundColor: {
         default: null,
+
+        parseHTML: (element) => {
+          return element.style.backgroundColor || null;
+        },
+
+        renderHTML: (attributes) => {
+          if (!attributes.backgroundColor) {
+            return {};
+          }
+
+          return {
+            style: `background-color:${attributes.backgroundColor}`,
+          };
+        },
       },
 
       borderColor: {
         default: null,
+
+        parseHTML: (element) => {
+          return element.style.borderColor || null;
+        },
+
+        renderHTML: (attributes) => {
+          if (!attributes.borderColor) {
+            return {};
+          }
+
+          return {
+            style: `border-color:${attributes.borderColor}`,
+          };
+        },
       },
     };
   },

@@ -8,10 +8,40 @@ const CustomTableHeader = TableHeader.extend({
 
       backgroundColor: {
         default: null,
+
+        parseHTML: (element) => {
+          console.log("TD BG =", element.style.backgroundColor);
+          return element.style.backgroundColor || null;
+        },
+
+        renderHTML: (attributes) => {
+          if (!attributes.backgroundColor) {
+            return {};
+          }
+
+          return {
+            style: `background-color:${attributes.backgroundColor}`,
+          };
+        },
       },
 
       borderColor: {
         default: null,
+
+        parseHTML: (element) => {
+          console.log("TD Border =", element.style.borderColor);
+          return element.style.borderColor || null;
+        },
+
+        renderHTML: (attributes) => {
+          if (!attributes.borderColor) {
+            return {};
+          }
+
+          return {
+            style: `border-color:${attributes.borderColor}`,
+          };
+        },
       },
     };
   },
