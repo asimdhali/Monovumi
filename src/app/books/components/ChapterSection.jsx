@@ -23,6 +23,7 @@ export default function ChapterSection({
   moveTopicUp,
   moveTopicDown,
   duplicateTopic,
+  deleteTopic,
   setEditingTopic,
   setPreviewTopic,
   toBengaliNum,
@@ -122,6 +123,7 @@ export default function ChapterSection({
               moveTopicUp={moveTopicUp}
               moveTopicDown={moveTopicDown}
               duplicateTopic={duplicateTopic}
+              deleteTopic={deleteTopic}
               setEditingTopic={setEditingTopic}
               setPreviewTopic={setPreviewTopic}
               toBengaliNum={toBengaliNum}

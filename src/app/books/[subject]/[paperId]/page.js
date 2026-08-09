@@ -45,6 +45,7 @@ export default function PaperPage({ params }) {
     content,
     addTopic,
     editTopic,
+    deleteTopic,
     duplicateTopic,
     moveTopicUp,
     moveTopicDown,
@@ -364,6 +365,7 @@ export default function PaperPage({ params }) {
                           moveTopicUp={moveTopicUp}
                           moveTopicDown={moveTopicDown}
                           duplicateTopic={duplicateTopic}
+                          deleteTopic={deleteTopic}
                           setEditingTopic={(topic) => {
                             setEditingComposerTopic(topic);
                             setComposerEra(topic.era || "");

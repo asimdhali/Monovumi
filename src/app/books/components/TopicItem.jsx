@@ -13,6 +13,7 @@ export default function TopicItem({
   moveTopicUp,
   moveTopicDown,
   duplicateTopic,
+  deleteTopic,
   setEditingTopic,
   toBengaliNum,
   highlightMatch,
@@ -79,6 +80,35 @@ export default function TopicItem({
               >
                 <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5" />
                 <path d="M17.5 3.5a2.12 2.12 0 013 3L11 16l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => {
+                const ok = window.confirm(
+                  `"${topic.title}" টপিকটি মুছে ফেলতে চান?\n\nএই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।`,
+                );
+
+                if (!ok) return;
+
+                deleteTopic(subject, paperId, topic.id);
+              }}
+              className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-500/10"
+              title="ডিলিট"
+            >
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                viewBox="0 0 24 24"
+              >
+                <path d="M3 6h18" />
+                <path d="M8 6V4h8v2" />
+                <path d="M19 6l-1 14H6L5 6" />
+                <path d="M10 11v5" />
+                <path d="M14 11v5" />
               </svg>
             </button>
           </div>
