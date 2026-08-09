@@ -245,7 +245,7 @@ export default function BookDetailedPage() {
 
                 {/* Subject Link */}
                 <Link
-                  href={`/books/${encodeURIComponent(subject)}`}
+                  href={`/books/${encodeURIComponent(subject)}/${subjectData?.papers?.[0]?.id || "first"}`}
                   className="block text-center p-6"
                 >
                   <div className="text-4xl mb-2">

@@ -4,119 +4,179 @@ import { use } from "react";
 import Link from "next/link";
 import { useBookDetailed } from "../../BookDetailedContext";
 import HomeFeedSkeleton from "@/app/components/HomeFeedSkeleton";
-const subjectIcons = {
-  বাংলা: "📖",
-  ইংরেজি: "🔤",
-  গণিত: "🧮",
-  বিজ্ঞান: "🔬",
-};
 
-const paperIcons = {
-  first: "📘",
-  second: "📗",
-  general: "📚",
+const subjectIcons = {
+  "বাংলা সাহিত্য": "📖",
+  "বাংলা ভাষা": "🔤",
+  "ইংরেজি সাহিত্য": "📚",
+  "ইংরেজি ভাষা": "🔤",
+  গণিত: "🧮",
+  "বাংলাদেশ বিষয়াবলি": "🏛️",
+  "আন্তর্জাতিক বিষয়াবলি": "🌍",
+  ভূগোল: "🌎",
+  "সাধারণ বিজ্ঞান": "🔬",
+  "কম্পিউটার শিক্ষা": "💻",
+  "মানসিক দক্ষতা": "🧠",
+  "নৈতিকতা ও সুশাসন": "⚖️",
 };
 
 export default function SubjectPage({ params }) {
   const { subject: rawSubject } = use(params);
+
   const subject = decodeURIComponent(rawSubject);
+
   const { content, loading } = useBookDetailed();
 
-  const subjectData = content[subject];
   if (loading) {
     return <HomeFeedSkeleton />;
   }
 
+  const subjectData = content[subject];
+
   if (!subjectData) {
     return (
-      <div className="max-w-3xl mx-auto px-4 lg:px-6 pt-6">
-        <p className="text-[var(--color-app-muted)]">
-          বিষয়টি খুঁজে পাওয়া যায়নি।
-        </p>
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="text-5xl mb-4">📚</div>
+
+          <h1 className="text-xl font-bold text-[var(--color-app-text)]">
+            বিষয়টি খুঁজে পাওয়া যায়নি
+          </h1>
+
+          <Link
+            href="/books"
+            className="inline-block mt-5 px-5 py-2.5 rounded-xl bg-[var(--color-app-accent)] text-white"
+          >
+            বইতে ফিরে যান
+          </Link>
+        </div>
       </div>
     );
   }
 
+  /*
+   * সব paper-এর topic একসাথে নেওয়া হচ্ছে।
+   *
+   * এখন থেকে UI-তে:
+   * প্রথম পত্র / দ্বিতীয় পত্র / সাধারণ
+   * আলাদা করে দেখানো হবে না।
+   */
+  const topics = (subjectData.papers || []).flatMap((paper) =>
+    (paper.topics || []).map((topic) => ({
+      ...topic,
+      paperId: paper.id,
+      paperTitle: paper.title,
+    })),
+  );
+
+  /*
+   * নতুন পোস্ট করার জন্য প্রথম paper ব্যবহার করা হবে।
+   *
+   * নতুন Subject তৈরি হলে বর্তমানে "general" paper তৈরি হয়।
+   */
+  const defaultPaper =
+    subjectData.papers?.find((paper) => paper.id === "general") ||
+    subjectData.papers?.[0];
+
   return (
-    <div className="max-w-3xl mx-auto px-4 lg:px-6 pt-6 pb-10">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-5">
+    <div className="min-h-screen pb-24 px-3 py-5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
           <Link
             href="/books"
-            className="p-2 rounded-full hover:bg-[var(--color-app-primary-soft)]"
+            className="w-10 h-10 rounded-full border border-[var(--color-app-border)] flex items-center justify-center text-xl hover:bg-[var(--color-app-primary-soft)] transition"
+            aria-label="ফিরে যান"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
+            ←
           </Link>
 
-          <h1 className="text-2xl font-bold">
-            {subjectIcons[subject]} {subject}
-          </h1>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">
+                {subjectIcons[subject] || subjectData.icon || "📚"}
+              </span>
+
+              <h1 className="text-xl font-bold text-[var(--color-app-text)]">
+                {subject}
+              </h1>
+            </div>
+
+            <p className="text-xs mt-1 text-[var(--color-app-muted)]">
+              {topics.length} টি টপিক
+            </p>
+          </div>
+        </div>
+
+        {/* Three Dot */}
+        <div className="relative">
+          <Link
+            href={
+              defaultPaper
+                ? `/books/${encodeURIComponent(subject)}/${defaultPaper.id}`
+                : "#"
+            }
+            className="w-10 h-10 rounded-full flex items-center justify-center text-2xl text-[var(--color-app-muted)] hover:bg-[var(--color-app-primary-soft)] transition"
+            aria-label="বিষয় অপশন"
+          >
+            ⋮
+          </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {subjectData.papers.map((paper) => (
-          <Link
-            key={paper.id}
-            href={`/books/${encodeURIComponent(subject)}/${paper.id}`}
-            className="group rounded-3xl border border-[var(--color-app-border)]
-  bg-[var(--color-app-surface)]
-  p-5
-  transition-all
-  duration-300
-  hover:-translate-y-1
-  hover:shadow-xl"
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xl">
-                    {paperIcons[paper.id] || "📚"}
-                  </span>
+      {/* Search */}
+      <div className="mb-5">
+        <div className="flex items-center gap-3 rounded-xl border border-[var(--color-app-border)] bg-[var(--color-app-surface)] px-4 py-3">
+          <span className="text-[var(--color-app-muted)]">🔍</span>
 
-                  <h2 className="text-lg font-bold text-[var(--color-app-text)]">
-                    {paper.title}
-                  </h2>
-                </div>
-
-                <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-[var(--color-app-primary-soft)] px-3 py-1">
-                  <span>📚</span>
-
-                  <span className="text-sm font-medium">
-                    {paper.topics.length} টি টপিক
-                  </span>
-                </div>
-              </div>
-
-              <svg
-                className="w-5 h-5 mt-2 group-hover:translate-x-1 transition-transform"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </div>
-          </Link>
-        ))}
+          <input
+            type="text"
+            placeholder="টপিক, অধ্যায় বা শব্দের নাম দিয়ে খুঁজুন..."
+            className="w-full bg-transparent outline-none text-sm text-[var(--color-app-text)] placeholder:text-[var(--color-app-muted)]"
+          />
+        </div>
       </div>
+
+      {/* Topics */}
+      {topics.length === 0 ? (
+        <div className="min-h-[45vh] flex flex-col items-center justify-center text-center">
+          <div className="text-5xl mb-4">📝</div>
+
+          <h2 className="text-lg font-semibold text-[var(--color-app-text)]">
+            এই বিষয়ে এখনো কোনো টপিক নেই
+          </h2>
+
+          <p className="text-sm mt-2 text-[var(--color-app-muted)]">
+            উপরের ⋮ বাটনে ক্লিক করে নতুন পোস্ট যোগ করুন।
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {topics.map((topic) => (
+            <Link
+              key={topic.id}
+              href={`/books/${encodeURIComponent(subject)}/${topic.paperId}/${topic.id}`}
+              className="block rounded-2xl border border-[var(--color-app-border)] bg-[var(--color-app-surface)] p-4 hover:bg-[var(--color-app-primary-soft)] transition"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="font-semibold text-[var(--color-app-text)]">
+                    {topic.title}
+                  </h2>
+
+                  {topic.content && (
+                    <p className="text-sm mt-1 text-[var(--color-app-muted)] line-clamp-2">
+                      {topic.content}
+                    </p>
+                  )}
+                </div>
+
+                <span className="text-lg text-[var(--color-app-muted)]">→</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,8 +1,10 @@
 "use client";
 
-import SortableTopic from "../../components/SortableTopic";
-import { use, useState, useRef, useEffect } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
+
+import SortableTopic from "../../components/SortableTopic";
+
 import {
   DndContext,
   PointerSensor,
@@ -11,56 +13,65 @@ import {
   closestCenter,
 } from "@dnd-kit/core";
 
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 import { useBookDetailed } from "../../../BookDetailedContext";
 import { useAuth } from "../../../AuthContext";
+
 import TopicPreviewModal from "../../components/TopicPreviewModal";
 import ComposerModal from "../../components/ComposerModal";
+
 import { toBengaliNum } from "../../helpers/bookDetailedPageHelper";
+
 import {
   buildVolumeGroups,
   filterVolumeGroups,
   getDragIndexes,
   canReorder,
 } from "../../logic/bookDetailedPageLogic";
+
 import { highlightMatch } from "../../utils/highlightMatch";
+
 import VolumeAccordion from "../../components/VolumeAccordion";
 import VolumeHeader from "../../components/VolumeHeader";
 import ChapterSection from "../../components/ChapterSection";
-import TopicItem from "../../components/TopicItem";
+
 import HomeFeedSkeleton from "@/app/components/HomeFeedSkeleton";
 
 export default function PaperPage({ params }) {
   const { subject: rawSubject, paperId } = use(params);
+
   const subject = decodeURIComponent(rawSubject);
+
   const {
     content,
     addTopic,
     editTopic,
-    deleteTopic,
     duplicateTopic,
     moveTopicUp,
     moveTopicDown,
     reorderTopic,
     loading,
   } = useBookDetailed();
+
   const { role, teacherVerified } = useAuth();
+
   const canManage = role === "teacher" && teacherVerified;
 
   const [query, setQuery] = useState("");
+
   const [openEras, setOpenEras] = useState({});
   const [openChapters, setOpenChapters] = useState({});
+
   const [previewTopic, setPreviewTopic] = useState(null);
-  const [editingTopic, setEditingTopic] = useState(null);
+
   const [editingComposerTopic, setEditingComposerTopic] = useState(null);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [formEra, setFormEra] = useState("");
+
   const [showComposer, setShowComposer] = useState(false);
+
   const [composerEra, setComposerEra] = useState("");
   const [composerChapter, setComposerChapter] = useState("");
+
+  const [hoveredEra, setHoveredEra] = useState(null);
+  const [hoveredChapter, setHoveredChapter] = useState(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -69,48 +80,74 @@ export default function PaperPage({ params }) {
       },
     }),
   );
-  const [hoveredEra, setHoveredEra] = useState(null);
-  const [hoveredChapter, setHoveredChapter] = useState(null);
 
-  const subjectData = content?.[subject];
-  const paper = subjectData?.papers?.find((p) => p.id === paperId);
   if (loading) {
     return <HomeFeedSkeleton />;
   }
+
+  const subjectData = content?.[subject];
+
+  /*
+   * নতুন Subject তৈরি হলে বর্তমানে "general" paper থাকে।
+   *
+   * পুরোনো Subject-এ first/second থাকলেও,
+   * আপাতত URL-এর paperId অনুযায়ী সেই paper নেওয়া হচ্ছে।
+   */
+  const paper = subjectData?.papers?.find((p) => p.id === paperId);
+
   if (!subjectData || !paper) {
     return (
-      <div className="max-w-2xl mx-auto px-4 lg:px-6 pt-6">
-        <p className="text-[var(--color-app-muted)]">
-          পত্রটি খুঁজে পাওয়া যায়নি।
-        </p>
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-lg font-semibold text-[var(--color-app-text)]">
+            বিষয়টির তথ্য পাওয়া যায়নি।
+          </p>
+
+          <Link
+            href={`/books/${encodeURIComponent(subject)}`}
+            className="inline-block mt-4 px-5 py-2.5 rounded-xl bg-[var(--color-app-accent)] text-white"
+          >
+            ফিরে যান
+          </Link>
+        </div>
       </div>
     );
   }
 
   const q = query.trim().toLowerCase();
 
-  // sortOrder অনুযায়ী আগে সাজানো
-
   const volumeGroups = buildVolumeGroups(paper.topics);
 
   const filteredVolumes = filterVolumeGroups(volumeGroups, query);
+
   const totalMatches = filteredVolumes.reduce(
-    (sum, v) => sum + v.chapters.reduce((s, c) => s + c.topics.length, 0),
+    (sum, volume) =>
+      sum +
+      volume.chapters.reduce(
+        (chapterSum, chapter) => chapterSum + chapter.topics.length,
+        0,
+      ),
     0,
   );
+
   const noResults = q && filteredVolumes.length === 0;
 
   function isVolOpen(era) {
     if (q) return true;
+
     return !!openEras[era];
   }
 
   function toggleVol(era) {
-    setOpenEras((prev) => ({ ...prev, [era]: !prev[era] }));
+    setOpenEras((prev) => ({
+      ...prev,
+      [era]: !prev[era],
+    }));
   }
 
   function isChapterOpen(key) {
     if (q) return true;
+
     return !!openChapters[key];
   }
 
@@ -120,6 +157,7 @@ export default function PaperPage({ params }) {
       [key]: !prev[key],
     }));
   }
+
   function handleDragEnd(event) {
     const { active, over } = event;
 
@@ -136,21 +174,28 @@ export default function PaperPage({ params }) {
     reorderTopic(subject, paperId, oldIndex, newIndex);
   }
 
+  function handleOpenNewPost() {
+    setEditingComposerTopic(null);
+    setComposerEra("");
+    setComposerChapter("");
+    setShowComposer(true);
+  }
+
   return (
     <div className="w-full min-h-screen bg-[var(--color-app-bg)]">
-      {/* মূল কন্টেন্ট — মোবাইলে ফুল-উইডথ, বড় স্ক্রিনে সেন্টার্ড */}
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <div className="w-full max-w-3xl mx-auto px-3 sm:px-4 lg:px-6 pt-4 pb-20 sm:pb-16">
-          {/* হেডার — ছবির মতো */}
+        <div className="w-full max-w-3xl mx-auto px-3 sm:px-4 lg:px-6 pt-4 pb-20">
+          {/* Header */}
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <Link
                 href={`/books/${encodeURIComponent(subject)}`}
-                className="w-9 h-9 rounded-full bg-[var(--color-app-surface)] border border-[var(--color-app-border)] flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors flex-shrink-0"
+                className="w-9 h-9 rounded-full bg-[var(--color-app-surface)] border border-[var(--color-app-border)] flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors"
+                aria-label="ফিরে যান"
               >
                 <svg
                   className="w-4 h-4"
@@ -166,19 +211,25 @@ export default function PaperPage({ params }) {
                   />
                 </svg>
               </Link>
+
               <div>
-                <h1 className="font-[family-name:var(--font-bengali-serif)] text-[17px] font-bold text-[var(--color-app-text)] leading-tight">
-                  {paper.title}
+                <h1 className="font-[family-name:var(--font-bengali-serif)] text-[19px] font-bold text-[var(--color-app-text)] leading-tight">
+                  {subject}
                 </h1>
+
                 <p className="text-[11px] text-[var(--color-app-muted)] mt-0.5">
-                  {subject} · {volumeGroups.length}টি খণ্ড
+                  {paper.topics.length}টি টপিক
                 </p>
               </div>
             </div>
+
+            {/* নতুন পোস্ট */}
             {canManage && (
               <button
-                className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors"
-                title="More"
+                onClick={handleOpenNewPost}
+                className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)] transition-colors"
+                title="নতুন পোস্ট"
+                aria-label="নতুন পোস্ট"
               >
                 <svg
                   className="w-5 h-5"
@@ -192,7 +243,8 @@ export default function PaperPage({ params }) {
               </button>
             )}
           </div>
-          {/* সার্চ */}
+
+          {/* Search */}
           <div className="relative mb-2">
             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-app-muted)]">
               <svg
@@ -207,55 +259,67 @@ export default function PaperPage({ params }) {
                 <path d="M21 21l-4.35-4.35" />
               </svg>
             </span>
+
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="টপিক, অধ্যায় বা খণ্ডের নাম লিখে খুঁজুন..."
               className="w-full pl-10 pr-9 py-2.5 sm:py-3 rounded-xl border text-sm outline-none bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
             />
+
             {query && (
               <button
                 onClick={() => setQuery("")}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center bg-[var(--color-app-border)] text-[var(--color-app-muted)]"
               >
-                <svg
-                  className="w-3 h-3"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                ×
               </button>
             )}
           </div>
+
           {q && !noResults && (
             <p className="text-xs text-[var(--color-app-muted)] mb-4 pl-1">
-              {totalMatches}টি টপিক পাওয়া গেছে
+              {toBengaliNum(totalMatches)}টি টপিক পাওয়া গেছে
             </p>
           )}
+
           {!q && <div className="mb-4" />}
 
+          {/* Search result না পাওয়া গেলে */}
           {noResults && (
             <div className="text-center py-14">
               <p className="text-3xl mb-2">🔍</p>
+
               <p className="text-sm text-[var(--color-app-muted)]">
                 কোনো টপিক পাওয়া যায়নি — অন্য কোনো শব্দ দিয়ে খুঁজে দেখুন।
               </p>
             </div>
           )}
 
+          {/* কোনো Topic নেই */}
           {paper.topics.length === 0 && !q && (
-            <p className="text-sm text-[var(--color-app-muted)] py-8 text-center">
-              এই পত্রে এখনো কোনো টপিক যোগ হয়নি।
-            </p>
+            <div className="text-center py-14">
+              <p className="text-4xl mb-3">📝</p>
+
+              <p className="text-sm text-[var(--color-app-muted)]">
+                এই বিষয়ে এখনো কোনো টপিক যোগ হয়নি।
+              </p>
+
+              {canManage && (
+                <button
+                  onClick={handleOpenNewPost}
+                  className="mt-4 px-5 py-2.5 rounded-xl bg-[var(--color-app-accent)] text-white text-sm font-semibold"
+                >
+                  + নতুন পোস্ট
+                </button>
+              )}
+            </div>
           )}
 
-          {/* খণ্ড-ভিত্তিক অ্যাকর্ডিয়ন */}
+          {/* Volume */}
           {filteredVolumes.map((vol) => {
             const open = isVolOpen(vol.era);
+
             return (
               <VolumeAccordion
                 key={vol.era}
@@ -279,6 +343,7 @@ export default function PaperPage({ params }) {
                   <div className="px-4 pb-4 pt-1 border-t border-[var(--color-app-border)]">
                     {vol.chapters.map((ch) => {
                       const chapterOpen = isChapterOpen(`${vol.era}-${ch.key}`);
+
                       return (
                         <ChapterSection
                           key={ch.key}
@@ -317,11 +382,12 @@ export default function PaperPage({ params }) {
           })}
 
           <p className="text-center text-[11px] text-[var(--color-app-muted)] mt-6 tracking-wide">
-            মনোভূমি · {paper.title}
+            মনোভূমি · {subject}
           </p>
         </div>
       </DndContext>
-      {/* মোডালসমূহ */}
+
+      {/* Topic Preview */}
       {previewTopic && (
         <TopicPreviewModal
           topic={previewTopic}
@@ -329,44 +395,12 @@ export default function PaperPage({ params }) {
           onClose={() => setPreviewTopic(null)}
         />
       )}
-      {editingTopic && (
-        <ComposerModal
-          mode="edit"
-          initialTopic={editingTopic}
-          onClose={() => setEditingTopic(null)}
-          onSubmit={(fields) => {
-            editTopic(subject, paperId, editingTopic.id, fields);
-            setEditingTopic(null);
-          }}
-        />
-      )}
-      {showAddForm && (
-        <TopicFormModal
-          initial={
-            formEra
-              ? { era: formEra, chapter: "", title: "", content: "" }
-              : undefined
-          }
-          onClose={() => {
-            setShowAddForm(false);
-            setFormEra("");
-          }}
-          onSubmit={(fields) => {
-            addTopic(subject, paperId, {
-              id: Date.now(),
-              sortOrder: Date.now(),
-              ...fields,
-              featured: false,
-            });
-            setShowAddForm(false);
-            setFormEra("");
-          }}
-        />
-      )}
+
+      {/* Composer */}
       {showComposer && (
         <ComposerModal
           initialTopic={editingComposerTopic}
-          mode="edit"
+          mode={editingComposerTopic ? "edit" : "create"}
           prefillEra={composerEra}
           prefillChapter={composerChapter}
           onClose={() => {

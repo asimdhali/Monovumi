@@ -11,6 +11,7 @@ import {
   createSubject,
   updateSubjectIcon,
   deleteSubject,
+  renameSubject,
 } from "./services/bookDetailedService";
 import { getUpdatedPapers } from "./services/bookDetailedHelper";
 import {
@@ -94,14 +95,6 @@ export function BookDetailedProvider({ children }) {
     await deleteSubject(subject);
   }
 
-  async function changeSubjectIcon(subject, icon) {
-    await updateSubjectIcon(subject, icon);
-  }
-
-  async function removeSubject(subject) {
-    await deleteSubject(subject);
-  }
-
   async function renameBookSubject(oldName, newName) {
     const oldSubject = oldName.trim();
     const newSubject = newName.trim();
@@ -138,26 +131,6 @@ export function BookDetailedProvider({ children }) {
     await deleteSubject(oldSubject);
   }
 
-  async function changeSubjectIcon(subject, icon) {
-    await updateSubjectIcon(subject, icon);
-  }
-
-  async function removeSubject(subject) {
-    if (!content[subject]) {
-      throw new Error("বিষয়টি পাওয়া যায়নি।");
-    }
-
-    await deleteSubject(subject);
-  }
-
-  async function changeSubjectIcon(subject, icon) {
-    await updateSubjectIcon(subject, icon);
-  }
-
-  async function removeSubject(subject) {
-    await deleteSubject(subject);
-  }
-
   async function renameSubjectHandler(oldName, newName) {
     const name = newName.trim();
 
@@ -172,14 +145,6 @@ export function BookDetailedProvider({ children }) {
     }
 
     await renameSubject(oldName, name);
-  }
-
-  async function removeSubject(subject) {
-    if (!content[subject]) {
-      throw new Error("বিষয়টি পাওয়া যায়নি।");
-    }
-
-    await deleteSubject(subject);
   }
 
   async function addTopic(subject, paperId, newTopic) {

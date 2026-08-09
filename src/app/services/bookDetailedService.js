@@ -39,13 +39,7 @@ export async function createSubject(subject, icon = "📚", order = 999) {
   await setDoc(doc(db, "bookDetailedContent", subject), {
     icon,
     order,
-    papers: [
-      {
-        id: "general",
-        title: "সাধারণ",
-        topics: [],
-      },
-    ],
+    papers: [],
   });
 }
 
