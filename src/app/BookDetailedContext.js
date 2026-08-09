@@ -4,7 +4,12 @@ import { migrateHomeFeed } from "./services/migrateHomeFeedService";
 import { saveHomeFeedPost } from "./services/homeFeedService";
 import { createContext, useContext, useState, useEffect } from "react";
 import { db } from "./firebase";
-import { savePapers, subscribeToSubject } from "./services/bookDetailedService";
+import {
+  savePapers,
+  subscribeToSubject,
+  subscribeToAllSubjects,
+  createSubject,
+} from "./services/bookDetailedService";
 import { getUpdatedPapers } from "./services/bookDetailedHelper";
 import {
   buildAddTopic,
@@ -26,19 +31,25 @@ export function BookDetailedProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribers = subjectList.map((subject) =>
-      subscribeToSubject(subject, (data) => {
-        setContent((prev) => ({
-          ...prev,
-          [subject]: data,
-        }));
+    const unsubscribe = subscribeToAllSubjects((data) => {
+      setContent(data);
+      setLoading(false);
+    });
 
-        setLoading(false);
-      }),
-    );
-
-    return () => unsubscribers.forEach((unsub) => unsub());
+    return () => unsubscribe();
   }, []);
+
+  async function addSubject(subject, icon = "📚") {
+    const name = subject.trim();
+
+    if (!name) return;
+
+    if (content[name]) {
+      throw new Error("এই বিষয়টি ইতিমধ্যে আছে।");
+    }
+
+    await createSubject(name, icon);
+  }
 
   async function addTopic(subject, paperId, newTopic) {
     console.log("subject =", subject);
@@ -184,6 +195,7 @@ export function BookDetailedProvider({ children }) {
     <BookDetailedContext.Provider
       value={{
         content,
+        addSubject,
         addTopic,
         editTopic,
         deleteTopic,

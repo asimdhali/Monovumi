@@ -1,4 +1,10 @@
-import { doc, updateDoc, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  updateDoc,
+  onSnapshot,
+  setDoc,
+} from "firebase/firestore";
 
 import { db } from "../firebase";
 
@@ -10,9 +16,34 @@ export function subscribeToSubject(subject, callback) {
   });
 }
 
+export function subscribeToAllSubjects(callback) {
+  return onSnapshot(collection(db, "bookDetailedContent"), (snapshot) => {
+    const data = {};
+
+    snapshot.docs.forEach((docSnap) => {
+      data[docSnap.id] = docSnap.data();
+    });
+
+    callback(data);
+  });
+}
+
 export async function savePapers(subject, papers) {
   await updateDoc(doc(db, "bookDetailedContent", subject), {
     papers,
+  });
+}
+
+export async function createSubject(subject, icon = "📚") {
+  await setDoc(doc(db, "bookDetailedContent", subject), {
+    icon,
+    papers: [
+      {
+        id: "general",
+        title: "সাধারণ",
+        topics: [],
+      },
+    ],
   });
 }
 
