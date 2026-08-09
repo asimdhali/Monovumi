@@ -11,6 +11,21 @@ const subjectIcons = {
   বিজ্ঞান: "🔬",
 };
 
+const subjectOrder = [
+  "বাংলা সাহিত্য",
+  "বাংলা ভাষা",
+  "ইংরেজি সাহিত্য",
+  "ইংরেজি ভাষা",
+  "গণিত",
+  "বাংলাদেশ বিষয়াবলি",
+  "আন্তর্জাতিক বিষয়াবলি",
+  "ভূগোল",
+  "সাধারণ বিজ্ঞান",
+  "কম্পিউটার শিক্ষা",
+  "মানসিক দক্ষতা",
+  "নৈতিকতা ও সুশাসন",
+];
+
 const availableIcons = [
   "📖",
   "🔤",
@@ -31,14 +46,91 @@ const availableIcons = [
 ];
 
 export default function BookDetailedPage() {
-  const { content, addSubject } = useBookDetailed();
+  const {
+    content,
+    addSubject,
+    renameBookSubject,
+    changeSubjectIcon,
+    removeSubject,
+  } = useBookDetailed();
 
   const [showModal, setShowModal] = useState(false);
   const [subjectName, setSubjectName] = useState("");
   const [selectedIcon, setSelectedIcon] = useState("📚");
   const [error, setError] = useState("");
+  const [menuSubject, setMenuSubject] = useState(null);
 
-  const subjects = Object.keys(content);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [renameName, setRenameName] = useState("");
+
+  const [showIconModal, setShowIconModal] = useState(false);
+  const [editingIconSubject, setEditingIconSubject] = useState(null);
+
+  const [actionError, setActionError] = useState("");
+
+  const subjects = Object.keys(content).sort((a, b) => {
+    const indexA = subjectOrder.indexOf(a);
+    const indexB = subjectOrder.indexOf(b);
+
+    const orderA = indexA === -1 ? 999 : indexA;
+    const orderB = indexB === -1 ? 999 : indexB;
+
+    return orderA - orderB;
+  });
+
+  async function handleRenameSubject() {
+    const newName = renameName.trim();
+
+    if (!newName) {
+      setActionError("বিষয়ের নাম লিখুন।");
+      return;
+    }
+
+    if (content[newName] && newName !== menuSubject) {
+      setActionError("এই বিষয়টি ইতিমধ্যে আছে।");
+      return;
+    }
+
+    try {
+      await renameBookSubject(menuSubject, newName);
+
+      setShowRenameModal(false);
+      setMenuSubject(null);
+      setRenameName("");
+      setActionError("");
+    } catch (error) {
+      console.error(error);
+      setActionError(error.message || "বিষয়টির নাম পরিবর্তন করা যায়নি।");
+    }
+  }
+
+  async function handleChangeIcon(icon) {
+    try {
+      await changeSubjectIcon(editingIconSubject, icon);
+
+      setShowIconModal(false);
+      setEditingIconSubject(null);
+      setMenuSubject(null);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function handleDeleteSubject(subject) {
+    const ok = window.confirm(
+      `"${subject}" বিষয়টি মুছে ফেলতে চান? এই বিষয়ের সব তথ্য মুছে যাবে।`,
+    );
+
+    if (!ok) return;
+
+    try {
+      await removeSubject(subject);
+      setMenuSubject(null);
+    } catch (error) {
+      console.error(error);
+      alert("বিষয়টি মুছে ফেলা যায়নি।");
+    }
+  }
 
   async function handleAddSubject() {
     const name = subjectName.trim();
@@ -102,19 +194,69 @@ export default function BookDetailedPage() {
             const subjectData = content[subject];
 
             return (
-              <Link
+              <div
                 key={subject}
-                href={`/books/${encodeURIComponent(subject)}`}
-                className="text-center rounded-2xl border p-6 bg-[var(--color-app-surface)] border-[var(--color-app-border)] hover:shadow-md transition-shadow"
+                className="relative rounded-2xl border bg-[var(--color-app-surface)] border-[var(--color-app-border)] hover:shadow-md transition-shadow"
               >
-                <div className="text-4xl mb-2">
-                  {subjectData?.icon || subjectIcons[subject] || "📚"}
-                </div>
+                {/* Three Dot Button */}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setMenuSubject(menuSubject === subject ? null : subject);
+                  }}
+                  className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-app-muted)] hover:bg-[var(--color-app-primary-soft)]"
+                  aria-label="বিষয় অপশন"
+                >
+                  ⋮
+                </button>
 
-                <p className="font-semibold text-sm text-[var(--color-app-text)]">
-                  {subject}
-                </p>
-              </Link>
+                {/* Menu */}
+                {menuSubject === subject && (
+                  <div className="absolute top-10 right-2 z-30 w-44 rounded-xl border border-[var(--color-app-border)] bg-[var(--color-app-surface)] shadow-xl overflow-hidden">
+                    <button
+                      onClick={() => {
+                        setRenameName(subject);
+                        setActionError("");
+                        setShowRenameModal(true);
+                      }}
+                      className="w-full text-left px-4 py-3 text-sm hover:bg-[var(--color-app-primary-soft)]"
+                    >
+                      ✏️ Rename
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setEditingIconSubject(subject);
+                        setShowIconModal(true);
+                      }}
+                      className="w-full text-left px-4 py-3 text-sm hover:bg-[var(--color-app-primary-soft)]"
+                    >
+                      🎨 আইকন পরিবর্তন
+                    </button>
+
+                    <button
+                      onClick={() => handleDeleteSubject(subject)}
+                      className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                )}
+
+                {/* Subject Link */}
+                <Link
+                  href={`/books/${encodeURIComponent(subject)}`}
+                  className="block text-center p-6"
+                >
+                  <div className="text-4xl mb-2">
+                    {subjectData?.icon || subjectIcons[subject] || "📚"}
+                  </div>
+
+                  <p className="font-semibold text-sm text-[var(--color-app-text)]">
+                    {subject}
+                  </p>
+                </Link>
+              </div>
             );
           })}
         </div>
@@ -216,6 +358,90 @@ export default function BookDetailedPage() {
               >
                 যোগ করুন
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showRenameModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-md rounded-2xl border border-[var(--color-app-border)] bg-[var(--color-app-surface)] p-5 shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-bold text-[var(--color-app-text)]">
+                বিষয়ের নাম পরিবর্তন
+              </h2>
+
+              <button
+                onClick={() => setShowRenameModal(false)}
+                className="text-xl text-[var(--color-app-muted)]"
+              >
+                ×
+              </button>
+            </div>
+
+            <input
+              type="text"
+              value={renameName}
+              onChange={(e) => {
+                setRenameName(e.target.value);
+                setActionError("");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleRenameSubject();
+                }
+              }}
+              className="w-full rounded-xl border border-[var(--color-app-border)] bg-transparent px-4 py-3 text-[var(--color-app-text)] outline-none focus:border-[var(--color-app-accent)]"
+              autoFocus
+            />
+
+            {actionError && (
+              <p className="mt-2 text-sm text-red-400">{actionError}</p>
+            )}
+
+            <div className="flex justify-end gap-3 mt-5">
+              <button
+                onClick={() => setShowRenameModal(false)}
+                className="px-4 py-2.5 rounded-xl border border-[var(--color-app-border)] text-sm"
+              >
+                বাতিল
+              </button>
+
+              <button
+                onClick={handleRenameSubject}
+                className="px-5 py-2.5 rounded-xl bg-[var(--color-app-accent)] text-white text-sm font-semibold"
+              >
+                সংরক্ষণ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showIconModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-md rounded-2xl border border-[var(--color-app-border)] bg-[var(--color-app-surface)] p-5 shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-bold text-[var(--color-app-text)]">
+                আইকন পরিবর্তন
+              </h2>
+
+              <button
+                onClick={() => setShowIconModal(false)}
+                className="text-xl text-[var(--color-app-muted)]"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="grid grid-cols-8 gap-2">
+              {availableIcons.map((icon) => (
+                <button
+                  key={icon}
+                  onClick={() => handleChangeIcon(icon)}
+                  className="h-10 w-10 rounded-xl flex items-center justify-center text-xl hover:bg-[var(--color-app-primary-soft)] transition"
+                >
+                  {icon}
+                </button>
+              ))}
             </div>
           </div>
         </div>

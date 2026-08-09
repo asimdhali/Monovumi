@@ -9,6 +9,8 @@ import {
   subscribeToSubject,
   subscribeToAllSubjects,
   createSubject,
+  updateSubjectIcon,
+  deleteSubject,
 } from "./services/bookDetailedService";
 import { getUpdatedPapers } from "./services/bookDetailedHelper";
 import {
@@ -24,7 +26,20 @@ import { arrayMove } from "@dnd-kit/sortable";
 
 const BookDetailedContext = createContext(null);
 
-const subjectList = ["বাংলা", "ইংরেজি", "গণিত", "বিজ্ঞান"];
+const SUBJECT_ORDER = [
+  "বাংলা সাহিত্য",
+  "বাংলা ভাষা",
+  "ইংরেজি সাহিত্য",
+  "ইংরেজি ভাষা",
+  "গণিত",
+  "বাংলাদেশ বিষয়াবলি",
+  "আন্তর্জাতিক বিষয়াবলি",
+  "ভূগোল",
+  "সাধারণ বিজ্ঞান",
+  "কম্পিউটার শিক্ষা",
+  "মানসিক দক্ষতা",
+  "নৈতিকতা ও সুশাসন",
+];
 
 export function BookDetailedProvider({ children }) {
   const [content, setContent] = useState({});
@@ -48,7 +63,123 @@ export function BookDetailedProvider({ children }) {
       throw new Error("এই বিষয়টি ইতিমধ্যে আছে।");
     }
 
-    await createSubject(name, icon);
+    // নির্ধারিত তালিকায় থাকলে সেই অবস্থান
+    // না থাকলে সবার শেষে
+    const orderIndex = SUBJECT_ORDER.indexOf(name);
+
+    const order =
+      orderIndex !== -1
+        ? orderIndex
+        : Math.max(
+            -1,
+            ...Object.values(content).map((item) => item.order ?? -1),
+          ) + 1;
+
+    await createSubject(name, icon, order);
+  }
+
+  async function changeSubjectIcon(subject, icon) {
+    if (!content[subject]) {
+      throw new Error("বিষয়টি পাওয়া যায়নি।");
+    }
+
+    await updateSubjectIcon(subject, icon);
+  }
+
+  async function removeSubject(subject) {
+    if (!content[subject]) {
+      throw new Error("বিষয়টি পাওয়া যায়নি।");
+    }
+
+    await deleteSubject(subject);
+  }
+
+  async function changeSubjectIcon(subject, icon) {
+    await updateSubjectIcon(subject, icon);
+  }
+
+  async function removeSubject(subject) {
+    await deleteSubject(subject);
+  }
+
+  async function renameBookSubject(oldName, newName) {
+    const oldSubject = oldName.trim();
+    const newSubject = newName.trim();
+
+    if (!oldSubject) {
+      throw new Error("পুরোনো বিষয়ের নাম পাওয়া যায়নি।");
+    }
+
+    if (!newSubject) {
+      throw new Error("বিষয়ের নাম লিখুন।");
+    }
+
+    if (oldSubject === newSubject) {
+      return;
+    }
+
+    if (content[newSubject]) {
+      throw new Error("এই নামে বিষয় ইতিমধ্যে আছে।");
+    }
+
+    const oldData = content[oldSubject];
+
+    if (!oldData) {
+      throw new Error("পুরোনো বিষয়টি পাওয়া যায়নি।");
+    }
+
+    // নতুন নামে বিষয় তৈরি
+    await createSubject(newSubject, oldData.icon || "📚", oldData.order ?? 999);
+
+    // পুরোনো বিষয়ের সব papers নতুন বিষয়ে কপি
+    await savePapers(newSubject, oldData.papers || []);
+
+    // পুরোনো বিষয় মুছে ফেলা
+    await deleteSubject(oldSubject);
+  }
+
+  async function changeSubjectIcon(subject, icon) {
+    await updateSubjectIcon(subject, icon);
+  }
+
+  async function removeSubject(subject) {
+    if (!content[subject]) {
+      throw new Error("বিষয়টি পাওয়া যায়নি।");
+    }
+
+    await deleteSubject(subject);
+  }
+
+  async function changeSubjectIcon(subject, icon) {
+    await updateSubjectIcon(subject, icon);
+  }
+
+  async function removeSubject(subject) {
+    await deleteSubject(subject);
+  }
+
+  async function renameSubjectHandler(oldName, newName) {
+    const name = newName.trim();
+
+    if (!name) {
+      throw new Error("বিষয়ের নাম লিখুন।");
+    }
+
+    if (oldName === name) return;
+
+    if (content[name]) {
+      throw new Error("এই নামে বিষয় ইতিমধ্যে আছে।");
+    }
+
+    await renameSubject(oldName, name);
+  }
+
+  async function removeSubject(subject) {
+    if (!content[subject]) {
+      throw new Error("বিষয়টি পাওয়া যায়নি।");
+    }
+
+    await deleteSubject(subject);
   }
 
   async function addTopic(subject, paperId, newTopic) {
@@ -196,6 +327,9 @@ export function BookDetailedProvider({ children }) {
       value={{
         content,
         addSubject,
+        renameBookSubject,
+        changeSubjectIcon,
+        removeSubject,
         addTopic,
         editTopic,
         deleteTopic,
