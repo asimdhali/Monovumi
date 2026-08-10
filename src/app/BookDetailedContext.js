@@ -1,7 +1,10 @@
 "use client";
 
 import { migrateHomeFeed } from "./services/migrateHomeFeedService";
-import { saveHomeFeedPost } from "./services/homeFeedService";
+import {
+  saveHomeFeedPost,
+  deleteHomeFeedPost,
+} from "./services/homeFeedService";
 import { createContext, useContext, useState, useEffect } from "react";
 import { db } from "./firebase";
 import {
@@ -22,6 +25,7 @@ import {
   buildMoveTopicUp,
   buildMoveTopicDown,
   buildReorderTopic,
+  buildAddVolume,
 } from "./services/bookDetailedLogic";
 import { arrayMove } from "@dnd-kit/sortable";
 
@@ -147,6 +151,22 @@ export function BookDetailedProvider({ children }) {
     await renameSubject(oldName, name);
   }
 
+  async function addVolume(subject, paperId, volumeTitle) {
+    const subjectData = content[subject];
+
+    if (!subjectData) {
+      throw new Error("বিষয়টি পাওয়া যায়নি।");
+    }
+
+    const updatedPapers = buildAddVolume(
+      subjectData.papers,
+      paperId,
+      volumeTitle,
+    );
+
+    await savePapers(subject, updatedPapers);
+  }
+
   async function addTopic(subject, paperId, newTopic) {
     console.log("subject =", subject);
     console.log("paperId =", paperId);
@@ -229,13 +249,21 @@ export function BookDetailedProvider({ children }) {
   async function deleteTopic(subject, paperId, topicId) {
     const subjectData = content[subject];
 
+    if (!subjectData) {
+      throw new Error("বিষয়টি পাওয়া যায়নি।");
+    }
+
     const updatedPapers = buildDeleteTopic(
       subjectData.papers,
       paperId,
       topicId,
     );
 
+    // মূল Book Detailed থেকে Topic মুছে ফেলুন
     await savePapers(subject, updatedPapers);
+
+    // Home Feed থেকেও একই Topic-এর পোস্ট মুছে ফেলুন
+    await deleteHomeFeedPost(topicId);
   }
 
   async function duplicateTopic(subject, paperId, topicId) {
@@ -295,6 +323,7 @@ export function BookDetailedProvider({ children }) {
         renameBookSubject,
         changeSubjectIcon,
         removeSubject,
+        addVolume,
         addTopic,
         editTopic,
         deleteTopic,

@@ -44,6 +44,7 @@ export default function PaperPage({ params }) {
   const {
     content,
     addTopic,
+    addVolume,
     editTopic,
     deleteTopic,
     duplicateTopic,
@@ -58,6 +59,13 @@ export default function PaperPage({ params }) {
   const canManage = role === "teacher" && teacherVerified;
 
   const [query, setQuery] = useState("");
+  const [showOptions, setShowOptions] = useState(false);
+
+  const [showVolumeModal, setShowVolumeModal] = useState(false);
+
+  const [volumeTitle, setVolumeTitle] = useState("");
+
+  const [volumeError, setVolumeError] = useState("");
 
   const [openEras, setOpenEras] = useState({});
   const [openChapters, setOpenChapters] = useState({});
@@ -117,7 +125,7 @@ export default function PaperPage({ params }) {
 
   const q = query.trim().toLowerCase();
 
-  const volumeGroups = buildVolumeGroups(paper.topics);
+  const volumeGroups = buildVolumeGroups(paper.topics, paper.volumes || []);
 
   const filteredVolumes = filterVolumeGroups(volumeGroups, query);
 
@@ -175,6 +183,27 @@ export default function PaperPage({ params }) {
     reorderTopic(subject, paperId, oldIndex, newIndex);
   }
 
+  async function handleAddVolume() {
+    const title = volumeTitle.trim();
+
+    if (!title) {
+      setVolumeError("অধ্যায়ের নাম লিখুন।");
+      return;
+    }
+
+    try {
+      setVolumeError("");
+
+      await addVolume(subject, paperId, title);
+
+      setVolumeTitle("");
+      setShowVolumeModal(false);
+      setShowOptions(false);
+    } catch (error) {
+      setVolumeError(error.message || "অধ্যায় যোগ করা যায়নি।");
+    }
+  }
+
   function handleOpenNewPost() {
     setEditingComposerTopic(null);
     setComposerEra("");
@@ -225,23 +254,56 @@ export default function PaperPage({ params }) {
             </div>
 
             {/* নতুন পোস্ট */}
+            {/* Paper Options */}
             {canManage && (
-              <button
-                onClick={handleOpenNewPost}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)] transition-colors"
-                title="নতুন পোস্ট"
-                aria-label="নতুন পোস্ট"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
+              <div className="relative">
+                <button
+                  onClick={() => setShowOptions((prev) => !prev)}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)] transition-colors"
+                  title="অপশন"
+                  aria-label="অপশন"
                 >
-                  <circle cx="12" cy="5" r="1.8" />
-                  <circle cx="12" cy="12" r="1.8" />
-                  <circle cx="12" cy="19" r="1.8" />
-                </svg>
-              </button>
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="12" cy="5" r="1.8" />
+                    <circle cx="12" cy="12" r="1.8" />
+                    <circle cx="12" cy="19" r="1.8" />
+                  </svg>
+                </button>
+
+                {showOptions && (
+                  <div className="absolute right-0 top-11 z-40 w-48 rounded-xl border border-[var(--color-app-border)] bg-[var(--color-app-surface)] shadow-xl p-1.5">
+                    {/* নতুন অধ্যায় */}
+                    <button
+                      onClick={() => {
+                        setShowVolumeModal(true);
+                        setVolumeError("");
+                        setVolumeTitle("");
+                        setShowOptions(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-left text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)] transition"
+                    >
+                      <span className="text-base">＋</span>
+                      <span>নতুন অধ্যায়</span>
+                    </button>
+
+                    {/* নতুন পোস্ট */}
+                    <button
+                      onClick={() => {
+                        setShowOptions(false);
+                        handleOpenNewPost();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-left text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)] transition"
+                    >
+                      <span className="text-base">＋</span>
+                      <span>নতুন পোস্ট</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
@@ -396,6 +458,67 @@ export default function PaperPage({ params }) {
           subject={subject}
           onClose={() => setPreviewTopic(null)}
         />
+      )}
+
+      {/* নতুন অধ্যায় Modal */}
+      {showVolumeModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50"
+          onClick={() => setShowVolumeModal(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-[var(--color-app-border)] bg-[var(--color-app-surface)] p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-bold text-[var(--color-app-text)]">
+              নতুন অধ্যায়
+            </h2>
+
+            <p className="text-xs mt-1 mb-4 text-[var(--color-app-muted)]">
+              এই অধ্যায়টি এই পত্রের মধ্যে যোগ হবে।
+            </p>
+
+            <input
+              autoFocus
+              value={volumeTitle}
+              onChange={(e) => {
+                setVolumeTitle(e.target.value);
+                setVolumeError("");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleAddVolume();
+                }
+              }}
+              placeholder="অধ্যায়ের নাম লিখুন"
+              className="w-full rounded-xl border border-[var(--color-app-border)] bg-[var(--color-app-bg)] px-4 py-3 text-sm outline-none text-[var(--color-app-text)] placeholder:text-[var(--color-app-muted)] focus:border-[var(--color-app-primary)]"
+            />
+
+            {volumeError && (
+              <p className="text-xs text-red-400 mt-2">{volumeError}</p>
+            )}
+
+            <div className="flex justify-end gap-2 mt-5">
+              <button
+                onClick={() => {
+                  setShowVolumeModal(false);
+                  setVolumeTitle("");
+                  setVolumeError("");
+                }}
+                className="px-4 py-2 rounded-xl text-sm text-[var(--color-app-muted)] hover:bg-[var(--color-app-primary-soft)]"
+              >
+                বাতিল
+              </button>
+
+              <button
+                onClick={handleAddVolume}
+                className="px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--color-app-accent)] text-white"
+              >
+                যোগ করুন
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Composer */}

@@ -1,6 +1,7 @@
 "use client";
 
-import { use } from "react";
+import { useAuth } from "../../AuthContext";
+import { use, useState } from "react";
 import Link from "next/link";
 import { useBookDetailed } from "../../BookDetailedContext";
 import HomeFeedSkeleton from "@/app/components/HomeFeedSkeleton";
@@ -25,7 +26,10 @@ export default function SubjectPage({ params }) {
 
   const subject = decodeURIComponent(rawSubject);
 
-  const { content, loading } = useBookDetailed();
+  const { content, loading, addVolume } = useBookDetailed();
+  const { role, teacherVerified } = useAuth();
+
+  const canManage = role === "teacher" && teacherVerified;
 
   if (loading) {
     return <HomeFeedSkeleton />;
@@ -62,8 +66,15 @@ export default function SubjectPage({ params }) {
    * আলাদা করে দেখানো হবে না।
    */
   const topics = (subjectData.papers || []).flatMap((paper) =>
-    (paper.topics || []).map((topic) => ({
+    (paper.topics || []).map((topic, index) => ({
       ...topic,
+
+      // পুরোনো topic-এর id না থাকলে temporary unique id
+      id:
+        topic.id !== undefined && topic.id !== null
+          ? topic.id
+          : `legacy-${paper.id}-${index}`,
+
       paperId: paper.id,
       paperTitle: paper.title,
     })),
@@ -110,17 +121,17 @@ export default function SubjectPage({ params }) {
 
         {/* Three Dot */}
         <div className="relative">
-          <Link
-            href={
-              defaultPaper
-                ? `/books/${encodeURIComponent(subject)}/${defaultPaper.id}`
-                : "#"
-            }
-            className="w-10 h-10 rounded-full flex items-center justify-center text-2xl text-[var(--color-app-muted)] hover:bg-[var(--color-app-primary-soft)] transition"
-            aria-label="বিষয় অপশন"
-          >
-            ⋮
-          </Link>
+          {canManage && (
+            <>
+              <button
+                onClick={() => setShowOptions((prev) => !prev)}
+                className="w-10 h-10 rounded-full flex items-center justify-center text-2xl text-[var(--color-app-muted)] hover:bg-[var(--color-app-primary-soft)] transition"
+                aria-label="বিষয় অপশন"
+              >
+                ⋮
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -147,14 +158,14 @@ export default function SubjectPage({ params }) {
           </h2>
 
           <p className="text-sm mt-2 text-[var(--color-app-muted)]">
-            উপরের ⋮ বাটনে ক্লিক করে নতুন পোস্ট যোগ করুন।
+            উপরের ⋮ বাটনে ক্লিক করে নতুন অধ্যায় যোগ করুন।
           </p>
         </div>
       ) : (
         <div className="space-y-3">
           {topics.map((topic) => (
             <Link
-              key={topic.id}
+              key={`${topic.paperId}-${String(topic.id)}`}
               href={`/books/${encodeURIComponent(subject)}/${topic.paperId}/${topic.id}`}
               className="block rounded-2xl border border-[var(--color-app-border)] bg-[var(--color-app-surface)] p-4 hover:bg-[var(--color-app-primary-soft)] transition"
             >
@@ -165,9 +176,10 @@ export default function SubjectPage({ params }) {
                   </h2>
 
                   {topic.content && (
-                    <p className="text-sm mt-1 text-[var(--color-app-muted)] line-clamp-2">
-                      {topic.content}
-                    </p>
+                    <div
+                      className="text-sm mt-1 text-[var(--color-app-muted)] line-clamp-2 prose prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: topic.content }}
+                    />
                   )}
                 </div>
 
@@ -175,6 +187,65 @@ export default function SubjectPage({ params }) {
               </div>
             </Link>
           ))}
+        </div>
+      )}
+      {showVolumeModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50"
+          onClick={() => setShowVolumeModal(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-[var(--color-app-border)] bg-[var(--color-app-surface)] p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-bold text-[var(--color-app-text)]">
+              নতুন অধ্যায়
+            </h2>
+
+            <p className="text-xs mt-1 mb-4 text-[var(--color-app-muted)]">
+              যেমন: প্রাচীনকাল, মধ্যযুগ, আধুনিক যুগ
+            </p>
+
+            <input
+              autoFocus
+              value={volumeTitle}
+              onChange={(e) => {
+                setVolumeTitle(e.target.value);
+                setVolumeError("");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleAddVolume();
+                }
+              }}
+              placeholder="অধ্যায়ের নাম লিখুন"
+              className="w-full rounded-xl border border-[var(--color-app-border)] bg-[var(--color-app-bg)] px-4 py-3 text-sm outline-none text-[var(--color-app-text)] placeholder:text-[var(--color-app-muted)] focus:border-[var(--color-app-primary)]"
+            />
+
+            {volumeError && (
+              <p className="text-xs text-red-400 mt-2">{volumeError}</p>
+            )}
+
+            <div className="flex justify-end gap-2 mt-5">
+              <button
+                onClick={() => {
+                  setShowVolumeModal(false);
+                  setVolumeTitle("");
+                  setVolumeError("");
+                }}
+                className="px-4 py-2 rounded-xl text-sm text-[var(--color-app-muted)] hover:bg-[var(--color-app-primary-soft)]"
+              >
+                বাতিল
+              </button>
+
+              <button
+                onClick={handleAddVolume}
+                className="px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--color-app-accent)] text-white"
+              >
+                যোগ করুন
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

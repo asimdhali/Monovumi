@@ -7,6 +7,12 @@ export function buildAddTopic(papers, paperId, newTopic) {
       paper.topics.length === 0
         ? 1
         : Math.max(...paper.topics.map((t) => t.sortOrder || 0)) + 1;
+    const now = Date.now();
+
+    const topicId =
+      newTopic.id !== undefined && newTopic.id !== null
+        ? newTopic.id
+        : `topic-${now}`;
 
     return {
       ...paper,
@@ -15,28 +21,25 @@ export function buildAddTopic(papers, paperId, newTopic) {
         {
           ...newTopic,
 
+          id: topicId,
+
           sortOrder: nextSortOrder,
+
           lastActivity: {
             type: "new",
-            updatedAt: Date.now(),
+            updatedAt: now,
           },
 
-          createdAt: Date.now(),
-
-          updatedAt: Date.now(),
+          createdAt: now,
+          updatedAt: now,
 
           editType: "major",
-
           published: true,
 
           views: 0,
-
           likes: 0,
-
           comments: 0,
-
           shares: 0,
-
           bookmarks: 0,
         },
       ],
@@ -164,6 +167,42 @@ export function buildReorderTopic(papers, paperId, oldIndex, newIndex) {
         ...topic,
         sortOrder: i + 1,
       })),
+    };
+  });
+}
+
+export function buildAddVolume(papers, paperId, volumeTitle) {
+  return getUpdatedPapers(papers, paperId, (paper) => {
+    const title = volumeTitle.trim();
+
+    if (!title) {
+      throw new Error("অধ্যায়ের নাম লিখুন।");
+    }
+
+    const volumes = Array.isArray(paper.volumes) ? [...paper.volumes] : [];
+
+    const alreadyExists = volumes.some(
+      (volume) =>
+        (volume.title || "").trim().toLowerCase() === title.toLowerCase(),
+    );
+
+    if (alreadyExists) {
+      throw new Error("এই অধ্যায়টি ইতিমধ্যে আছে।");
+    }
+
+    const now = Date.now();
+
+    return {
+      ...paper,
+      volumes: [
+        ...volumes,
+        {
+          id: `volume-${now}`,
+          title,
+          createdAt: now,
+          updatedAt: now,
+        },
+      ],
     };
   });
 }

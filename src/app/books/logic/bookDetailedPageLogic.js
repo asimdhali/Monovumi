@@ -1,16 +1,33 @@
-export function buildVolumeGroups(topics) {
+export function buildVolumeGroups(topics, volumes = []) {
   const sortedTopics = [...topics].sort(
     (a, b) => (a.sortOrder || 0) - (b.sortOrder || 0),
   );
 
   const volumeGroups = [];
 
+  // Firebase-এর saved volumes
+  volumes.forEach((volume) => {
+    const title = volume.title || volume.name;
+
+    if (!title) return;
+
+    volumeGroups.push({
+      era: title,
+      volumeId: volume.id,
+      chapters: [],
+    });
+  });
+
+  // Topic থেকে volume/chapter তৈরি
   sortedTopics.forEach((topic) => {
-    let volume = volumeGroups.find((v) => v.era === topic.era);
+    const era = topic.era || "অন্যান্য";
+
+    let volume = volumeGroups.find((v) => v.era === era);
 
     if (!volume) {
       volume = {
-        era: topic.era,
+        era,
+        volumeId: `legacy-${era}`,
         chapters: [],
       };
 
