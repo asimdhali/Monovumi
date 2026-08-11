@@ -165,11 +165,11 @@ export default function BookDetailedPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-[var(--color-app-text)]">
-              বই বিস্তারিত
+              বিসিএস ফ্রি ডিটেইল বই
             </h1>
 
             <p className="text-sm mt-1 text-[var(--color-app-muted)]">
-              প্রাচীনকাল থেকে আধুনিক কাল — যুগ অনুযায়ী সাজানো নোট ও পাঠ্যবিষয়
+              বিসিএস এর সকল বিষয়
             </p>
           </div>
 

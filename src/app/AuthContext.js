@@ -2,36 +2,67 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 
-export const TEACHER_PASSWORD = "vumi"; // এখানে বদলালে সব জায়গায় বদলে যাবে
+export const TEACHER_PASSWORD = "vumi";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [role, setRole] = useState("student"); // 'student' অথবা 'teacher'
+  const [role, setRole] = useState("student");
   const [teacherVerified, setTeacherVerified] = useState(false);
+
+  // নতুন
+  const [userName, setUserName] = useState("");
+
   const [loaded, setLoaded] = useState(false);
 
-  // প্রথমবার পেজ লোড হওয়ার সময় localStorage থেকে আগের অবস্থা ফিরিয়ে আনো
+  // প্রথমবার পেজ লোড
   useEffect(() => {
     const savedRole = localStorage.getItem("monovumi_role");
     const savedVerified = localStorage.getItem("monovumi_teacherVerified");
+
+    // নতুন
+    const savedUserName = localStorage.getItem("monovumi_userName");
+
     if (savedRole === "teacher" && savedVerified === "true") {
       setRole("teacher");
       setTeacherVerified(true);
     }
+
+    // নতুন
+    if (savedUserName) {
+      setUserName(savedUserName);
+    }
+
     setLoaded(true);
   }, []);
 
-  // role/teacherVerified বদলালে localStorage-এ সেভ করো
+  // role / teacher / name সংরক্ষণ
   useEffect(() => {
-    if (!loaded) return; // প্রথম লোডের সময় ওভাররাইট করা এড়াও
+    if (!loaded) return;
+
     localStorage.setItem("monovumi_role", role);
+
     localStorage.setItem("monovumi_teacherVerified", String(teacherVerified));
-  }, [role, teacherVerified, loaded]);
+
+    // নতুন
+    if (userName.trim()) {
+      localStorage.setItem("monovumi_userName", userName.trim());
+    }
+  }, [role, teacherVerified, userName, loaded]);
 
   return (
     <AuthContext.Provider
-      value={{ role, setRole, teacherVerified, setTeacherVerified }}
+      value={{
+        role,
+        setRole,
+
+        teacherVerified,
+        setTeacherVerified,
+
+        // নতুন
+        userName,
+        setUserName,
+      }}
     >
       {children}
     </AuthContext.Provider>

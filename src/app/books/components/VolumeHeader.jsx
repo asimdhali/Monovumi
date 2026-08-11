@@ -95,10 +95,8 @@ export default function VolumeHeader({
 
                 {/* Topic সাজানো */}
                 <button
-                  onClick={() => {
-                    setShowMenu(false);
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-left text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)] transition"
+                  disabled
+                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-left text-[var(--color-app-muted)] opacity-50 cursor-not-allowed"
                 >
                   <span className="text-base">☷</span>
                   <span>টপিক সাজান</span>

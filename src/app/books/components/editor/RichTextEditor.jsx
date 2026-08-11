@@ -69,27 +69,28 @@ export default function RichTextEditor({ value, onChange }) {
       <div className="max-w-4xl mx-auto p-1">
         <div
           className="
-      rounded-2xl
-      border-2
-      border-dashed
-      border-[var(--color-app-border)]
-      min-h-[430px]
-      px-1
-      py-1
-      transition-all
-      hover:border-[var(--color-app-primary)]
-    "
+    rounded-2xl
+    border-2
+    border-dashed
+    border-[var(--color-app-border)]
+    min-h-[58px]
+    max-h-[170px]
+    overflow-y-auto
+    px-1
+    py-1
+    transition-all
+    hover:border-[var(--color-app-primary)]
+  "
         >
           <EditorContent
             editor={editor}
             className="
-      editor-wrapper
-      min-h-[340px]
-      max-w-full
-      mx-auto
-      px-1
-      py-1
-"
+    editor-wrapper
+    max-w-full
+    mx-auto
+    px-1
+    py-1
+  "
           />
         </div>
       </div>
