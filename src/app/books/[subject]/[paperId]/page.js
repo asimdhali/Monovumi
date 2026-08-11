@@ -278,6 +278,13 @@ export default function PaperPage({ params }) {
     setShowComposer(true);
   }
 
+  function handleOpenVolumeNewPost(vol) {
+    setEditingComposerTopic(null);
+    setComposerEra(vol.era || "");
+    setComposerChapter("");
+    setShowComposer(true);
+  }
+
   return (
     <div className="w-full min-h-screen bg-[var(--color-app-bg)]">
       <DndContext
@@ -462,6 +469,7 @@ export default function PaperPage({ params }) {
                   hoveredEra={hoveredEra}
                   setHoveredEra={setHoveredEra}
                   canManage={canManage}
+                  onNewPost={handleOpenVolumeNewPost}
                   onRename={handleOpenRenameVolume}
                   onDelete={handleOpenDeleteVolume}
                   highlightMatch={highlightMatch}
@@ -524,6 +532,144 @@ export default function PaperPage({ params }) {
           subject={subject}
           onClose={() => setPreviewTopic(null)}
         />
+      )}
+
+      {/* Rename Volume Modal */}
+      {renameVolumeData && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50"
+          onClick={() => {
+            setRenameVolumeData(null);
+            setRenameVolumeTitle("");
+            setRenameVolumeError("");
+          }}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-[var(--color-app-border)] bg-[var(--color-app-surface)] p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-bold text-[var(--color-app-text)]">
+              অধ্যায়ের নাম পরিবর্তন
+            </h2>
+
+            <p className="text-xs mt-1 mb-4 text-[var(--color-app-muted)]">
+              নতুন নাম লিখুন।
+            </p>
+
+            <input
+              autoFocus
+              value={renameVolumeTitle}
+              onChange={(e) => {
+                setRenameVolumeTitle(e.target.value);
+                setRenameVolumeError("");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleRenameVolume();
+                }
+              }}
+              className="w-full rounded-xl border border-[var(--color-app-border)] bg-[var(--color-app-bg)] px-4 py-3 text-sm outline-none text-[var(--color-app-text)] placeholder:text-[var(--color-app-muted)] focus:border-[var(--color-app-primary)]"
+            />
+
+            {renameVolumeError && (
+              <p className="text-xs text-red-400 mt-2">{renameVolumeError}</p>
+            )}
+
+            <div className="flex justify-end gap-2 mt-5">
+              <button
+                onClick={() => {
+                  setRenameVolumeData(null);
+                  setRenameVolumeTitle("");
+                  setRenameVolumeError("");
+                }}
+                className="px-4 py-2 rounded-xl text-sm text-[var(--color-app-muted)] hover:bg-[var(--color-app-primary-soft)]"
+              >
+                বাতিল
+              </button>
+
+              <button
+                onClick={handleRenameVolume}
+                className="px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--color-app-accent)] text-white"
+              >
+                সংরক্ষণ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Volume Confirmation Modal */}
+      {deleteVolumeData && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50"
+          onClick={() => {
+            setDeleteVolumeData(null);
+            setDeleteVolumeError("");
+          }}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-[var(--color-app-border)] bg-[var(--color-app-surface)] p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-11 h-11 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mb-4">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v4m0 4h.01M10.3 3.7l-8 14A2 2 0 004 20.7h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z"
+                />
+              </svg>
+            </div>
+
+            <h2 className="text-lg font-bold text-[var(--color-app-text)]">
+              অধ্যায় মুছে ফেলবেন?
+            </h2>
+
+            <p className="text-sm mt-2 leading-6 text-[var(--color-app-muted)]">
+              আপনি কি
+              <span className="font-semibold text-[var(--color-app-text)]">
+                {" "}
+                “{deleteVolumeData.era}”
+              </span>{" "}
+              অধ্যায়টি মুছে ফেলতে চান?
+            </p>
+
+            <div className="mt-3 rounded-xl bg-red-500/5 border border-red-500/10 px-3 py-2.5">
+              <p className="text-xs leading-5 text-red-400">
+                সতর্কতা: এই অধ্যায়ের অধীনে থাকা সব টপিকও মুছে যাবে।
+              </p>
+            </div>
+
+            {deleteVolumeError && (
+              <p className="text-xs text-red-400 mt-3">{deleteVolumeError}</p>
+            )}
+
+            <div className="flex justify-end gap-2 mt-5">
+              <button
+                onClick={() => {
+                  setDeleteVolumeData(null);
+                  setDeleteVolumeError("");
+                }}
+                className="px-4 py-2 rounded-xl text-sm text-[var(--color-app-muted)] hover:bg-[var(--color-app-primary-soft)]"
+              >
+                বাতিল
+              </button>
+
+              <button
+                onClick={handleDeleteVolume}
+                className="px-4 py-2 rounded-xl text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition"
+              >
+                মুছে ফেলুন
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* নতুন অধ্যায় Modal */}

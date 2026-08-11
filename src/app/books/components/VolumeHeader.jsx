@@ -9,6 +9,7 @@ export default function VolumeHeader({
   hoveredEra,
   setHoveredEra,
   canManage,
+  onNewPost,
 
   // নতুন
   onRename,
@@ -72,10 +73,7 @@ export default function VolumeHeader({
                 <button
                   onClick={() => {
                     setShowMenu(false);
-
-                    if (onRename) {
-                      // আপাতত placeholder
-                    }
+                    onNewPost?.(vol);
                   }}
                   className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-left text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)] transition"
                 >
