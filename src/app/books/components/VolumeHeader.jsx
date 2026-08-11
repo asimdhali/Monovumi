@@ -9,11 +9,11 @@ export default function VolumeHeader({
   hoveredEra,
   setHoveredEra,
   canManage,
-  onNewPost,
 
   // নতুন
   onRename,
   onDelete,
+  onNewPost,
 
   highlightMatch,
   q,

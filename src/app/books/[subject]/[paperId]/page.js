@@ -472,6 +472,12 @@ export default function PaperPage({ params }) {
                   onNewPost={handleOpenVolumeNewPost}
                   onRename={handleOpenRenameVolume}
                   onDelete={handleOpenDeleteVolume}
+                  onNewPost={(volume) => {
+                    setEditingComposerTopic(null);
+                    setComposerEra(volume.era);
+                    setComposerChapter("");
+                    setShowComposer(true);
+                  }}
                   highlightMatch={highlightMatch}
                   q={q}
                 />
