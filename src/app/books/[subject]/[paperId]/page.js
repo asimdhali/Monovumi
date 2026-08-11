@@ -46,6 +46,8 @@ export default function PaperPage({ params }) {
     addTopic,
     addVolume,
     editTopic,
+    renameVolume,
+    deleteVolume,
     deleteTopic,
     duplicateTopic,
     moveTopicUp,
@@ -66,6 +68,13 @@ export default function PaperPage({ params }) {
   const [volumeTitle, setVolumeTitle] = useState("");
 
   const [volumeError, setVolumeError] = useState("");
+
+  const [renameVolumeData, setRenameVolumeData] = useState(null);
+  const [renameVolumeTitle, setRenameVolumeTitle] = useState("");
+  const [renameVolumeError, setRenameVolumeError] = useState("");
+
+  const [deleteVolumeData, setDeleteVolumeData] = useState(null);
+  const [deleteVolumeError, setDeleteVolumeError] = useState("");
 
   const [openEras, setOpenEras] = useState({});
   const [openChapters, setOpenChapters] = useState({});
@@ -201,6 +210,64 @@ export default function PaperPage({ params }) {
       setShowOptions(false);
     } catch (error) {
       setVolumeError(error.message || "অধ্যায় যোগ করা যায়নি।");
+    }
+  }
+
+  function handleOpenRenameVolume(vol) {
+    setRenameVolumeData(vol);
+    setRenameVolumeTitle(vol.era || "");
+    setRenameVolumeError("");
+  }
+
+  async function handleRenameVolume() {
+    if (!renameVolumeData) return;
+
+    const newTitle = renameVolumeTitle.trim();
+
+    if (!newTitle) {
+      setRenameVolumeError("অধ্যায়ের নাম লিখুন।");
+      return;
+    }
+
+    try {
+      setRenameVolumeError("");
+
+      await renameVolume(
+        subject,
+        paperId,
+        renameVolumeData.volumeId,
+        renameVolumeData.era,
+        newTitle,
+      );
+
+      setRenameVolumeData(null);
+      setRenameVolumeTitle("");
+    } catch (error) {
+      setRenameVolumeError(error.message || "অধ্যায়ের নাম পরিবর্তন করা যায়নি।");
+    }
+  }
+
+  function handleOpenDeleteVolume(vol) {
+    setDeleteVolumeData(vol);
+    setDeleteVolumeError("");
+  }
+
+  async function handleDeleteVolume() {
+    if (!deleteVolumeData) return;
+
+    try {
+      setDeleteVolumeError("");
+
+      await deleteVolume(
+        subject,
+        paperId,
+        deleteVolumeData.volumeId,
+        deleteVolumeData.era,
+      );
+
+      setDeleteVolumeData(null);
+    } catch (error) {
+      setDeleteVolumeError(error.message || "অধ্যায় মুছে ফেলা যায়নি।");
     }
   }
 
@@ -395,9 +462,8 @@ export default function PaperPage({ params }) {
                   hoveredEra={hoveredEra}
                   setHoveredEra={setHoveredEra}
                   canManage={canManage}
-                  setComposerEra={setComposerEra}
-                  setComposerChapter={setComposerChapter}
-                  setShowComposer={setShowComposer}
+                  onRename={handleOpenRenameVolume}
+                  onDelete={handleOpenDeleteVolume}
                   highlightMatch={highlightMatch}
                   q={q}
                 />

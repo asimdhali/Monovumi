@@ -26,6 +26,8 @@ import {
   buildMoveTopicDown,
   buildReorderTopic,
   buildAddVolume,
+  buildRenameVolume,
+  buildDeleteVolume,
 } from "./services/bookDetailedLogic";
 import { arrayMove } from "@dnd-kit/sortable";
 
@@ -161,6 +163,41 @@ export function BookDetailedProvider({ children }) {
     const updatedPapers = buildAddVolume(
       subjectData.papers,
       paperId,
+      volumeTitle,
+    );
+
+    await savePapers(subject, updatedPapers);
+  }
+
+  async function renameVolume(subject, paperId, volumeId, oldTitle, newTitle) {
+    const subjectData = content[subject];
+
+    if (!subjectData) {
+      throw new Error("বিষয়টি পাওয়া যায়নি।");
+    }
+
+    const updatedPapers = buildRenameVolume(
+      subjectData.papers,
+      paperId,
+      volumeId,
+      oldTitle,
+      newTitle,
+    );
+
+    await savePapers(subject, updatedPapers);
+  }
+
+  async function deleteVolume(subject, paperId, volumeId, volumeTitle) {
+    const subjectData = content[subject];
+
+    if (!subjectData) {
+      throw new Error("বিষয়টি পাওয়া যায়নি।");
+    }
+
+    const updatedPapers = buildDeleteVolume(
+      subjectData.papers,
+      paperId,
+      volumeId,
       volumeTitle,
     );
 
@@ -324,6 +361,8 @@ export function BookDetailedProvider({ children }) {
         changeSubjectIcon,
         removeSubject,
         addVolume,
+        renameVolume,
+        deleteVolume,
         addTopic,
         editTopic,
         deleteTopic,

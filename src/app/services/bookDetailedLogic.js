@@ -206,3 +206,79 @@ export function buildAddVolume(papers, paperId, volumeTitle) {
     };
   });
 }
+
+// Volume / অধ্যায়ের নাম পরিবর্তন
+export function buildRenameVolume(
+  papers,
+  paperId,
+  volumeId,
+  oldTitle,
+  newTitle,
+) {
+  return getUpdatedPapers(papers, paperId, (paper) => {
+    const title = newTitle.trim();
+
+    if (!title) {
+      throw new Error("অধ্যায়ের নাম লিখুন।");
+    }
+
+    const volumes = Array.isArray(paper.volumes) ? [...paper.volumes] : [];
+
+    // একই নামে অন্য অধ্যায় আছে কিনা
+    const alreadyExists = volumes.some(
+      (volume) =>
+        volume.id !== volumeId &&
+        (volume.title || "").trim().toLowerCase() === title.toLowerCase(),
+    );
+
+    if (alreadyExists) {
+      throw new Error("এই নামে একটি অধ্যায় ইতিমধ্যে আছে।");
+    }
+
+    const now = Date.now();
+
+    return {
+      ...paper,
+
+      // Volume-এর নাম পরিবর্তন
+      volumes: volumes.map((volume) =>
+        volume.id === volumeId
+          ? {
+              ...volume,
+              title,
+              updatedAt: now,
+            }
+          : volume,
+      ),
+
+      // এই Volume-এর পুরোনো নামের Topic থাকলে
+      // Topic-এর era-ও নতুন নামে পরিবর্তন হবে
+      topics: paper.topics.map((topic) =>
+        (topic.era || "") === oldTitle
+          ? {
+              ...topic,
+              era: title,
+              updatedAt: now,
+            }
+          : topic,
+      ),
+    };
+  });
+}
+
+// Volume / অধ্যায় মুছে ফেলা
+export function buildDeleteVolume(papers, paperId, volumeId, volumeTitle) {
+  return getUpdatedPapers(papers, paperId, (paper) => {
+    const volumes = Array.isArray(paper.volumes) ? [...paper.volumes] : [];
+
+    return {
+      ...paper,
+
+      // Volume মুছে যাবে
+      volumes: volumes.filter((volume) => volume.id !== volumeId),
+
+      // ওই Volume-এর সব Topic-ও মুছে যাবে
+      topics: paper.topics.filter((topic) => (topic.era || "") !== volumeTitle),
+    };
+  });
+}
