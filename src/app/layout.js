@@ -1,3 +1,4 @@
+import LoginPromptModal from "./LoginPromptModal";
 import {
   Geist,
   Geist_Mono,
@@ -48,6 +49,7 @@ export default function RootLayout({ children }) {
             <PostsProvider>
               <Navbar />
               <FeaturedBar />
+              <LoginPromptModal />
               {children}
             </PostsProvider>
           </BookDetailedProvider>

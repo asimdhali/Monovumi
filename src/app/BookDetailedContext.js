@@ -1,22 +1,23 @@
 "use client";
 
 import { migrateHomeFeed } from "./services/migrateHomeFeedService";
+
 import {
   saveHomeFeedPost,
   deleteHomeFeedPost,
 } from "./services/homeFeedService";
+
 import { createContext, useContext, useState, useEffect } from "react";
-import { db } from "./firebase";
+
 import {
   savePapers,
-  subscribeToSubject,
   subscribeToAllSubjects,
   createSubject,
   updateSubjectIcon,
   deleteSubject,
   renameSubject,
 } from "./services/bookDetailedService";
-import { getUpdatedPapers } from "./services/bookDetailedHelper";
+
 import {
   buildAddTopic,
   buildEditTopic,
@@ -29,7 +30,6 @@ import {
   buildRenameVolume,
   buildDeleteVolume,
 } from "./services/bookDetailedLogic";
-import { arrayMove } from "@dnd-kit/sortable";
 
 const BookDetailedContext = createContext(null);
 
@@ -70,8 +70,6 @@ export function BookDetailedProvider({ children }) {
       throw new Error("এই বিষয়টি ইতিমধ্যে আছে।");
     }
 
-    // নির্ধারিত তালিকায় থাকলে সেই অবস্থান
-    // না থাকলে সবার শেষে
     const orderIndex = SUBJECT_ORDER.indexOf(name);
 
     const order =
@@ -127,13 +125,10 @@ export function BookDetailedProvider({ children }) {
       throw new Error("পুরোনো বিষয়টি পাওয়া যায়নি।");
     }
 
-    // নতুন নামে বিষয় তৈরি
     await createSubject(newSubject, oldData.icon || "📚", oldData.order ?? 999);
 
-    // পুরোনো বিষয়ের সব papers নতুন বিষয়ে কপি
     await savePapers(newSubject, oldData.papers || []);
 
-    // পুরোনো বিষয় মুছে ফেলা
     await deleteSubject(oldSubject);
   }
 
@@ -144,7 +139,9 @@ export function BookDetailedProvider({ children }) {
       throw new Error("বিষয়ের নাম লিখুন।");
     }
 
-    if (oldName === name) return;
+    if (oldName === name) {
+      return;
+    }
 
     if (content[name]) {
       throw new Error("এই নামে বিষয় ইতিমধ্যে আছে।");
@@ -205,44 +202,50 @@ export function BookDetailedProvider({ children }) {
   }
 
   async function addTopic(subject, paperId, newTopic) {
-    console.log("subject =", subject);
-    console.log("paperId =", paperId);
-    console.log("newTopic =", newTopic);
-
     const subjectData = content[subject];
+
+    if (!subjectData) {
+      throw new Error("বিষয়টি পাওয়া যায়নি।");
+    }
 
     const now = Date.now();
 
     const updatedPapers = buildAddTopic(subjectData.papers, paperId, {
       ...newTopic,
+
       createdAt: now,
       updatedAt: now,
+
       editType: "major",
     });
 
-    updatedPapers.forEach((p) => {
-      console.log("paper =>", p.id, typeof p.id, p.title);
-    });
-
-    console.log("paperId type =", typeof paperId);
-
     await savePapers(subject, updatedPapers);
 
-    const savedPaper = updatedPapers.find((p) => p.id === paperId);
+    const savedPaper = updatedPapers.find(
+      (paper) => String(paper.id) === String(paperId),
+    );
 
     if (!savedPaper) {
       console.error("Paper not found:", paperId);
       return;
     }
 
-    const savedTopic = savedPaper.topics.at(-1);
+    const savedTopic = savedPaper.topics[savedPaper.topics.length - 1];
+
+    if (!savedTopic) {
+      return;
+    }
 
     await saveHomeFeedPost({
       ...savedTopic,
+
       subject,
-      paperId,
+      paperId: savedPaper.id,
+
       paperTitle: savedPaper.title,
+
       activityTime: savedTopic.updatedAt,
+
       activityType: "new",
     });
   }
@@ -250,36 +253,51 @@ export function BookDetailedProvider({ children }) {
   async function editTopic(subject, paperId, topicId, updatedFields) {
     const subjectData = content[subject];
 
+    if (!subjectData) {
+      throw new Error("বিষয়টি পাওয়া যায়নি।");
+    }
+
     const now = Date.now();
+
+    const editType = updatedFields.editType === "minor" ? "minor" : "major";
 
     const updatedPapers = buildEditTopic(subjectData.papers, paperId, topicId, {
       ...updatedFields,
 
-      updatedAt: now,
+      updatedAt: editType === "major" ? now : undefined,
 
-      activityType: updatedFields.editType,
-
-      activityTime: now,
+      editType,
     });
 
     await savePapers(subject, updatedPapers);
-    const savedPaper = updatedPapers.find((p) => p.id === paperId);
 
-    if (!savedPaper) return;
-
-    const savedTopic = savedPaper.topics.find(
-      (t) => String(t.id) === String(topicId),
+    const savedPaper = updatedPapers.find(
+      (paper) => String(paper.id) === String(paperId),
     );
 
-    if (!savedTopic) return;
+    if (!savedPaper) {
+      return;
+    }
+
+    const savedTopic = savedPaper.topics.find(
+      (topic) => String(topic.id) === String(topicId),
+    );
+
+    if (!savedTopic) {
+      return;
+    }
 
     await saveHomeFeedPost({
       ...savedTopic,
+
       subject,
-      paperId,
+      paperId: savedPaper.id,
+
       paperTitle: savedPaper.title,
+
       activityTime: now,
-      activityType: updatedFields.editType || "major",
+
+      activityType: editType,
     });
   }
 
@@ -296,15 +314,17 @@ export function BookDetailedProvider({ children }) {
       topicId,
     );
 
-    // মূল Book Detailed থেকে Topic মুছে ফেলুন
     await savePapers(subject, updatedPapers);
 
-    // Home Feed থেকেও একই Topic-এর পোস্ট মুছে ফেলুন
     await deleteHomeFeedPost(topicId);
   }
 
   async function duplicateTopic(subject, paperId, topicId) {
     const subjectData = content[subject];
+
+    if (!subjectData) {
+      throw new Error("বিষয়টি পাওয়া যায়নি।");
+    }
 
     const updatedPapers = buildDuplicateTopic(
       subjectData.papers,
@@ -318,6 +338,10 @@ export function BookDetailedProvider({ children }) {
   async function moveTopicUp(subject, paperId, topicId) {
     const subjectData = content[subject];
 
+    if (!subjectData) {
+      throw new Error("বিষয়টি পাওয়া যায়নি।");
+    }
+
     const updatedPapers = buildMoveTopicUp(
       subjectData.papers,
       paperId,
@@ -330,6 +354,10 @@ export function BookDetailedProvider({ children }) {
   async function moveTopicDown(subject, paperId, topicId) {
     const subjectData = content[subject];
 
+    if (!subjectData) {
+      throw new Error("বিষয়টি পাওয়া যায়নি।");
+    }
+
     const updatedPapers = buildMoveTopicDown(
       subjectData.papers,
       paperId,
@@ -341,6 +369,10 @@ export function BookDetailedProvider({ children }) {
 
   async function reorderTopic(subject, paperId, oldIndex, newIndex) {
     const subjectData = content[subject];
+
+    if (!subjectData) {
+      throw new Error("বিষয়টি পাওয়া যায়নি।");
+    }
 
     const updatedPapers = buildReorderTopic(
       subjectData.papers,
@@ -356,20 +388,28 @@ export function BookDetailedProvider({ children }) {
     <BookDetailedContext.Provider
       value={{
         content,
+
         addSubject,
         renameBookSubject,
+        renameSubjectHandler,
+
         changeSubjectIcon,
         removeSubject,
+
         addVolume,
         renameVolume,
         deleteVolume,
+
         addTopic,
         editTopic,
         deleteTopic,
+
         duplicateTopic,
+
         moveTopicUp,
         moveTopicDown,
         reorderTopic,
+
         loading,
       }}
     >

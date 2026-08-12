@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { useAuth, TEACHER_PASSWORD } from "./AuthContext";
+import { useAuth } from "./AuthContext";
 import SearchOverlay from "./SearchOverlay";
 
 const taglines = [
@@ -71,45 +71,19 @@ const drawerLinks = [
 ];
 
 function ProfileMenu() {
-  const { role, setRole, teacherVerified, setTeacherVerified } = useAuth();
+  const { user, profile, loading, logout } = useAuth();
   const [open, setOpen] = useState(false);
-  const [showPasswordBox, setShowPasswordBox] = useState(false);
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const menuRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setOpen(false);
-        setShowPasswordBox(false);
-        setError("");
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  function handleSwitchClick() {
-    if (role === "teacher") {
-      setRole("student");
-    } else {
-      setShowPasswordBox(true);
-    }
-  }
-
-  function checkPassword() {
-    if (password === TEACHER_PASSWORD) {
-      setRole("teacher");
-      setTeacherVerified(true);
-      setShowPasswordBox(false);
-      setPassword("");
-      setError("");
-      setOpen(false);
-    } else {
-      setError("পাসওয়ার্ড সঠিক নয়");
-    }
-  }
 
   return (
     <div className="relative" ref={menuRef}>
@@ -170,61 +144,6 @@ function ProfileMenu() {
             </svg>
             প্রোফাইল দেখুন
           </Link>
-
-          {!showPasswordBox ? (
-            <button
-              onClick={handleSwitchClick}
-              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)] transition-colors"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="var(--color-app-primary)"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4"
-                />
-              </svg>
-              {role === "teacher" ? "শিক্ষার্থী মোডে যান" : "শিক্ষক মোডে যান"}
-            </button>
-          ) : (
-            <div className="px-2 py-2">
-              <p className="text-xs mb-2 text-[var(--color-app-muted)]">
-                শিক্ষক পাসওয়ার্ড দিন
-              </p>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setError("");
-                }}
-                onKeyDown={(e) => e.key === "Enter" && checkPassword()}
-                autoFocus
-                className="w-full p-2 rounded-lg border text-sm bg-[var(--color-app-bg)] border-[var(--color-app-border)] text-[var(--color-app-text)]"
-              />
-              {error && <p className="text-xs mt-1.5 text-red-400">{error}</p>}
-              <div className="flex gap-2 mt-2.5">
-                <button
-                  onClick={checkPassword}
-                  className="flex-1 py-1.5 rounded-full text-xs font-semibold text-white"
-                  style={{ background: "var(--color-app-primary)" }}
-                >
-                  যাচাই করুন
-                </button>
-                <button
-                  onClick={() => setShowPasswordBox(false)}
-                  className="px-3 py-1.5 rounded-full text-xs font-medium text-[var(--color-app-muted)] border border-[var(--color-app-border)]"
-                >
-                  বাতিল
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>

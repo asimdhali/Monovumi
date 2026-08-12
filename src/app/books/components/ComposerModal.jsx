@@ -14,19 +14,23 @@ export default function ComposerModal({
   const [authorName, setAuthorName] = useState(initialTopic?.contributor || "");
 
   const [content, setContent] = useState(initialTopic?.content || "");
-
   const [title, setTitle] = useState(initialTopic?.title || "");
-
   const [image, setImage] = useState(initialTopic?.image || null);
+
   const [era, setEra] = useState(initialTopic?.era || prefillEra);
 
   const [chapter, setChapter] = useState(
     initialTopic?.chapter || prefillChapter,
   );
-  const [subject, setSubject] = useState(initialTopic?.subject || "বাংলা");
+
+  const [subject, setSubject] = useState(
+    initialTopic?.subject || "বাংলা সাহিত্য",
+  );
 
   const [paperId, setPaperId] = useState(initialTopic?.paperId || "first");
+
   const [editType, setEditType] = useState(initialTopic?.editType || "major");
+
   const fileInputRef = useRef(null);
 
   const canPublish =
@@ -36,32 +40,46 @@ export default function ComposerModal({
 
   function handleImageChange(e) {
     const file = e.target.files?.[0];
+
     if (!file) return;
+
     const reader = new FileReader();
-    reader.onload = (ev) => setImage(ev.target.result);
+
+    reader.onload = (ev) => {
+      setImage(ev.target.result);
+    };
+
     reader.readAsDataURL(file);
   }
 
   function handlePublish() {
     if (!canPublish) return;
+
     onSubmit({
       subject,
       paperId,
+
       title: title.trim(),
       content: content.trim(),
+
       era: era.trim(),
       chapter: chapter.trim() || "",
+
       editType,
+
       contributor: authorName.trim() || "আপনি",
+
       contributorAvatar: "https://i.pravatar.cc/150?img=13",
+
       image: image || null,
     });
+
     onClose();
   }
 
   return (
     <div className="fixed inset-0 z-[95] flex flex-col bg-[var(--color-app-bg)]">
-      {/* হেডার */}
+      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--color-app-border)] flex-shrink-0">
         <button
           onClick={onClose}
@@ -82,9 +100,11 @@ export default function ComposerModal({
             />
           </svg>
         </button>
+
         <span className="text-[15px] font-bold text-[var(--color-app-text)]">
           {mode === "edit" ? "পোস্ট সম্পাদনা" : "নতুন পোস্ট"}
         </span>
+
         <button
           onClick={handlePublish}
           disabled={!canPublish}
@@ -100,15 +120,19 @@ export default function ComposerModal({
         </button>
       </div>
 
+      {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
-        {/* প্রোফাইল */}
+        {/* Profile */}
         <div className="flex items-center gap-2.5 mb-3.5">
           <img
             src="https://i.pravatar.cc/150?img=13"
             alt="আপনি"
             className="w-11 h-11 rounded-full object-cover"
-            style={{ boxShadow: "0 0 0 2px var(--color-app-accent-soft)" }}
+            style={{
+              boxShadow: "0 0 0 2px var(--color-app-accent-soft)",
+            }}
           />
+
           <div className="flex-1">
             <input
               value={authorName}
@@ -119,7 +143,7 @@ export default function ComposerModal({
           </div>
         </div>
 
-        {/* শিরোনাম */}
+        {/* Title */}
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -127,11 +151,10 @@ export default function ComposerModal({
           className="w-full bg-transparent text-[17px] font-bold text-[var(--color-app-text)] outline-none mb-3 placeholder:text-[var(--color-app-muted)]"
         />
 
-        {/* কন্টেন্ট */}
-
+        {/* Rich Text Content */}
         <RichTextEditor value={content} onChange={setContent} />
 
-        {/* ছবি */}
+        {/* Image */}
         <input
           ref={fileInputRef}
           type="file"
@@ -139,6 +162,7 @@ export default function ComposerModal({
           onChange={handleImageChange}
           className="hidden"
         />
+
         {image ? (
           <button
             onClick={() => fileInputRef.current?.click()}
@@ -159,6 +183,7 @@ export default function ComposerModal({
           </button>
         )}
 
+        {/* Subject */}
         <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-5 mb-2">
           বিষয়
         </div>
@@ -168,12 +193,32 @@ export default function ComposerModal({
           onChange={(e) => setSubject(e.target.value)}
           className="w-full p-3 rounded-xl border text-sm bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)] outline-none"
         >
-          <option value="বাংলা">বাংলা</option>
-          <option value="ইংরেজি">ইংরেজি</option>
+          <option value="বাংলা সাহিত্য">বাংলা সাহিত্য</option>
+
+          <option value="বাংলা ভাষা">বাংলা ভাষা</option>
+
+          <option value="ইংরেজি সাহিত্য">ইংরেজি সাহিত্য</option>
+
+          <option value="ইংরেজি ভাষা">ইংরেজি ভাষা</option>
+
           <option value="গণিত">গণিত</option>
-          <option value="বিজ্ঞান">বিজ্ঞান</option>
+
+          <option value="বাংলাদেশ বিষয়াবলি">বাংলাদেশ বিষয়াবলি</option>
+
+          <option value="আন্তর্জাতিক বিষয়াবলি">আন্তর্জাতিক বিষয়াবলি</option>
+
+          <option value="ভূগোল">ভূগোল</option>
+
+          <option value="সাধারণ বিজ্ঞান">সাধারণ বিজ্ঞান</option>
+
+          <option value="কম্পিউটার শিক্ষা">কম্পিউটার শিক্ষা</option>
+
+          <option value="মানসিক দক্ষতা">মানসিক দক্ষতা</option>
+
+          <option value="নৈতিকতা ও সুশাসন">নৈতিকতা ও সুশাসন</option>
         </select>
 
+        {/* Paper */}
         <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-4 mb-2">
           পত্র
         </div>
@@ -184,13 +229,15 @@ export default function ComposerModal({
           className="w-full p-3 rounded-xl border text-sm bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)] outline-none"
         >
           <option value="first">প্রথম পত্র</option>
+
           <option value="second">দ্বিতীয় পত্র</option>
         </select>
 
-        {/* খণ্ড / যুগ */}
+        {/* Era / Volume */}
         <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-5 mb-2 tracking-wide">
           খণ্ড / যুগ
         </div>
+
         <input
           value={era}
           onChange={(e) => setEra(e.target.value)}
@@ -198,17 +245,19 @@ export default function ComposerModal({
           className="w-full p-3 rounded-xl border text-sm bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)] outline-none"
         />
 
-        {/* অধ্যায় */}
+        {/* Chapter */}
         <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-4 mb-2 tracking-wide">
           অধ্যায় (ঐচ্ছিক)
         </div>
+
         <input
           value={chapter}
           onChange={(e) => setChapter(e.target.value)}
           placeholder="যেমন: অধ্যায় ১.১ · চর্যাপদ"
           className="w-full p-3 rounded-xl border text-sm bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)] outline-none"
         />
-        {/* আপডেটের ধরন */}
+
+        {/* Edit Type */}
         <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-4 mb-2 tracking-wide">
           আপডেটের ধরন
         </div>
@@ -220,6 +269,7 @@ export default function ComposerModal({
               checked={editType === "major"}
               onChange={() => setEditType("major")}
             />
+
             <span>Major Update</span>
           </label>
 
@@ -229,16 +279,18 @@ export default function ComposerModal({
               checked={editType === "minor"}
               onChange={() => setEditType("minor")}
             />
+
             <span>Minor Edit</span>
           </label>
         </div>
       </div>
 
-      {/* ফুটার */}
+      {/* Footer */}
       <div className="flex items-center justify-between px-4 py-2.5 border-t border-[var(--color-app-border)] flex-shrink-0">
         <span className="text-[11.5px] text-[var(--color-app-muted)]">
           {content.length} অক্ষর
         </span>
+
         <span className="text-[11.5px] text-[var(--color-app-muted)]">
           সর্বনিম্ন ১০ অক্ষর প্রয়োজন
         </span>

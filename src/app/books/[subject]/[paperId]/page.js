@@ -56,9 +56,10 @@ export default function PaperPage({ params }) {
     loading,
   } = useBookDetailed();
 
-  const { role, teacherVerified } = useAuth();
+  const { user, approved, role } = useAuth();
 
-  const canManage = role === "teacher" && teacherVerified;
+  const canManage =
+    approved === true && (role === "teacher" || role === "admin");
 
   const [query, setQuery] = useState("");
   const [showOptions, setShowOptions] = useState(false);

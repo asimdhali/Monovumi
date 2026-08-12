@@ -27,9 +27,9 @@ export default function SubjectPage({ params }) {
   const subject = decodeURIComponent(rawSubject);
 
   const { content, loading, addVolume } = useBookDetailed();
-  const { role, teacherVerified } = useAuth();
+  const { user } = useAuth();
 
-  const canManage = role === "teacher" && teacherVerified;
+  const canManage = !!user;
 
   if (loading) {
     return <HomeFeedSkeleton />;

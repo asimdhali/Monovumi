@@ -6,7 +6,8 @@ export function buildAddTopic(papers, paperId, newTopic) {
     const nextSortOrder =
       paper.topics.length === 0
         ? 1
-        : Math.max(...paper.topics.map((t) => t.sortOrder || 0)) + 1;
+        : Math.max(...paper.topics.map((topic) => topic.sortOrder || 0)) + 1;
+
     const now = Date.now();
 
     const topicId =
@@ -16,8 +17,10 @@ export function buildAddTopic(papers, paperId, newTopic) {
 
     return {
       ...paper,
+
       topics: [
         ...paper.topics,
+
         {
           ...newTopic,
 
@@ -30,10 +33,12 @@ export function buildAddTopic(papers, paperId, newTopic) {
             updatedAt: now,
           },
 
-          createdAt: now,
-          updatedAt: now,
+          createdAt: newTopic.createdAt || now,
+
+          updatedAt: newTopic.updatedAt || now,
 
           editType: "major",
+
           published: true,
 
           views: 0,
@@ -47,34 +52,46 @@ export function buildAddTopic(papers, paperId, newTopic) {
   });
 }
 
-// নতুন
 export function buildEditTopic(papers, paperId, topicId, updatedFields) {
-  return getUpdatedPapers(papers, paperId, (paper) => ({
-    ...paper,
-    topics: paper.topics.map((topic) =>
-      topic.id === topicId
-        ? {
-            ...topic,
-            ...updatedFields,
+  return getUpdatedPapers(papers, paperId, (paper) => {
+    const now = Date.now();
 
-            updatedAt:
-              updatedFields.editType === "major" ? Date.now() : topic.updatedAt,
+    const editType = updatedFields.editType === "minor" ? "minor" : "major";
 
-            lastActivity: {
-              type: updatedFields.editType === "minor" ? "minor" : "major",
+    return {
+      ...paper,
 
-              updatedAt: Date.now(),
-            },
-          }
-        : topic,
-    ),
-  }));
+      topics: paper.topics.map((topic) =>
+        String(topic.id) === String(topicId)
+          ? {
+              ...topic,
+
+              ...updatedFields,
+
+              id: topic.id,
+
+              updatedAt: editType === "major" ? now : topic.updatedAt || now,
+
+              editType,
+
+              lastActivity: {
+                type: editType,
+                updatedAt: now,
+              },
+            }
+          : topic,
+      ),
+    };
+  });
 }
 
 export function buildDeleteTopic(papers, paperId, topicId) {
   return getUpdatedPapers(papers, paperId, (paper) => ({
     ...paper,
-    topics: paper.topics.filter((topic) => topic.id !== topicId),
+
+    topics: paper.topics.filter(
+      (topic) => String(topic.id) !== String(topicId),
+    ),
   }));
 }
 
@@ -82,22 +99,41 @@ export function buildDuplicateTopic(papers, paperId, topicId) {
   return getUpdatedPapers(papers, paperId, (paper) => {
     const topics = [...paper.topics];
 
-    const index = topics.findIndex((topic) => topic.id === topicId);
+    const index = topics.findIndex(
+      (topic) => String(topic.id) === String(topicId),
+    );
 
-    if (index === -1) return paper;
+    if (index === -1) {
+      return paper;
+    }
 
     const original = topics[index];
 
     const nextSortOrder =
       topics.length === 0
         ? 1
-        : Math.max(...topics.map((t) => t.sortOrder || 0)) + 1;
+        : Math.max(...topics.map((topic) => topic.sortOrder || 0)) + 1;
+
+    const now = Date.now();
 
     const copied = {
       ...original,
-      id: Date.now(),
+
+      id: `topic-${now}`,
+
       sortOrder: nextSortOrder,
+
       title: original.title + " (Copy)",
+
+      createdAt: now,
+      updatedAt: now,
+
+      editType: "major",
+
+      lastActivity: {
+        type: "new",
+        updatedAt: now,
+      },
     };
 
     topics.splice(index + 1, 0, copied);
@@ -117,9 +153,13 @@ export function buildMoveTopicUp(papers, paperId, topicId) {
   return getUpdatedPapers(papers, paperId, (paper) => {
     const topics = sortTopics(paper.topics);
 
-    const index = topics.findIndex((topic) => topic.id === topicId);
+    const index = topics.findIndex(
+      (topic) => String(topic.id) === String(topicId),
+    );
 
-    if (index <= 0) return paper;
+    if (index <= 0) {
+      return paper;
+    }
 
     const temp = topics[index].sortOrder;
 
@@ -138,9 +178,13 @@ export function buildMoveTopicDown(papers, paperId, topicId) {
   return getUpdatedPapers(papers, paperId, (paper) => {
     const topics = sortTopics(paper.topics);
 
-    const index = topics.findIndex((topic) => topic.id === topicId);
+    const index = topics.findIndex(
+      (topic) => String(topic.id) === String(topicId),
+    );
 
-    if (index === -1 || index >= topics.length - 1) return paper;
+    if (index === -1 || index >= topics.length - 1) {
+      return paper;
+    }
 
     const temp = topics[index].sortOrder;
 
@@ -163,9 +207,11 @@ export function buildReorderTopic(papers, paperId, oldIndex, newIndex) {
 
     return {
       ...paper,
-      topics: moved.map((topic, i) => ({
+
+      topics: moved.map((topic, index) => ({
         ...topic,
-        sortOrder: i + 1,
+
+        sortOrder: index + 1,
       })),
     };
   });
@@ -194,11 +240,14 @@ export function buildAddVolume(papers, paperId, volumeTitle) {
 
     return {
       ...paper,
+
       volumes: [
         ...volumes,
+
         {
           id: `volume-${now}`,
           title,
+
           createdAt: now,
           updatedAt: now,
         },
@@ -207,7 +256,6 @@ export function buildAddVolume(papers, paperId, volumeTitle) {
   });
 }
 
-// Volume / অধ্যায়ের নাম পরিবর্তন
 export function buildRenameVolume(
   papers,
   paperId,
@@ -224,7 +272,6 @@ export function buildRenameVolume(
 
     const volumes = Array.isArray(paper.volumes) ? [...paper.volumes] : [];
 
-    // একই নামে অন্য অধ্যায় আছে কিনা
     const alreadyExists = volumes.some(
       (volume) =>
         volume.id !== volumeId &&
@@ -240,7 +287,6 @@ export function buildRenameVolume(
     return {
       ...paper,
 
-      // Volume-এর নাম পরিবর্তন
       volumes: volumes.map((volume) =>
         volume.id === volumeId
           ? {
@@ -251,13 +297,13 @@ export function buildRenameVolume(
           : volume,
       ),
 
-      // এই Volume-এর পুরোনো নামের Topic থাকলে
-      // Topic-এর era-ও নতুন নামে পরিবর্তন হবে
       topics: paper.topics.map((topic) =>
         (topic.era || "") === oldTitle
           ? {
               ...topic,
+
               era: title,
+
               updatedAt: now,
             }
           : topic,
@@ -266,19 +312,14 @@ export function buildRenameVolume(
   });
 }
 
-// Volume / অধ্যায় মুছে ফেলা
 export function buildDeleteVolume(papers, paperId, volumeId, volumeTitle) {
-  return getUpdatedPapers(papers, paperId, (paper) => {
-    const volumes = Array.isArray(paper.volumes) ? [...paper.volumes] : [];
+  return getUpdatedPapers(papers, paperId, (paper) => ({
+    ...paper,
 
-    return {
-      ...paper,
+    volumes: (Array.isArray(paper.volumes) ? paper.volumes : []).filter(
+      (volume) => volume.id !== volumeId,
+    ),
 
-      // Volume মুছে যাবে
-      volumes: volumes.filter((volume) => volume.id !== volumeId),
-
-      // ওই Volume-এর সব Topic-ও মুছে যাবে
-      topics: paper.topics.filter((topic) => (topic.era || "") !== volumeTitle),
-    };
-  });
+    topics: paper.topics.filter((topic) => (topic.era || "") !== volumeTitle),
+  }));
 }

@@ -559,9 +559,7 @@ function ComposerTrigger({ onOpen, canPost }) {
 export default function FeaturedBar() {
   const pathname = usePathname();
   const { content, loading, addTopic } = useBookDetailed();
-  const { role, teacherVerified } = useAuth();
-  const canManage = role === "teacher" && teacherVerified;
-  const canPost = canManage;
+  const { user, canManage, canPost } = useAuth();
   const [previewTopic, setPreviewTopic] = useState(null);
   const [showComposer, setShowComposer] = useState(false);
 
