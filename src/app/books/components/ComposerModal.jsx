@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import RichTextEditor from "./editor/RichTextEditor";
+import { useAuth } from "./../../AuthContext";
 
 export default function ComposerModal({
   mode = "create",
@@ -11,7 +12,15 @@ export default function ComposerModal({
   prefillChapter = "",
   initialTopic = null,
 }) {
-  const [authorName, setAuthorName] = useState(initialTopic?.contributor || "");
+  const { user, profile, loading: authLoading } = useAuth();
+
+  const [authorName, setAuthorName] = useState(
+    initialTopic?.name ||
+      initialTopic?.contributor ||
+      profile?.name ||
+      user?.displayName ||
+      "",
+  );
 
   const [content, setContent] = useState(initialTopic?.content || "");
   const [title, setTitle] = useState(initialTopic?.title || "");
@@ -67,9 +76,14 @@ export default function ComposerModal({
 
       editType,
 
-      contributor: authorName.trim() || "আপনি",
+      contributor: authorName.trim() || "",
 
-      contributorAvatar: "https://i.pravatar.cc/150?img=13",
+      contributorAvatar:
+        initialTopic?.contributorAvatar ||
+        initialTopic?.avatar ||
+        profile?.photoURL ||
+        user?.photoURL ||
+        "",
 
       image: image || null,
     });
@@ -124,22 +138,41 @@ export default function ComposerModal({
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {/* Profile */}
         <div className="flex items-center gap-2.5 mb-3.5">
-          <img
-            src="https://i.pravatar.cc/150?img=13"
-            alt="আপনি"
-            className="w-11 h-11 rounded-full object-cover"
+          <div
+            className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 bg-[var(--color-app-border)]"
             style={{
               boxShadow: "0 0 0 2px var(--color-app-accent-soft)",
             }}
-          />
+          >
+            {authLoading ? (
+              <div className="w-full h-full animate-pulse bg-[var(--color-app-border)]" />
+            ) : initialTopic?.avatar || initialTopic?.contributorAvatar ? (
+              <img
+                src={initialTopic.avatar || initialTopic.contributorAvatar}
+                alt={authorName || "প্রোফাইল"}
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            ) : profile?.photoURL || user?.photoURL ? (
+              <img
+                src={profile?.photoURL || user?.photoURL}
+                alt={authorName || "প্রোফাইল"}
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="w-full h-full bg-[var(--color-app-border)]" />
+            )}
+          </div>
 
           <div className="flex-1">
-            <input
-              value={authorName}
-              onChange={(e) => setAuthorName(e.target.value)}
-              placeholder="আপনার নাম লিখুন"
-              className="w-full bg-transparent text-[15px] font-semibold text-[var(--color-app-text)] outline-none"
-            />
+            <p className="text-[15px] font-semibold text-[var(--color-app-text)]">
+              {authorName || "নাম পাওয়া যায়নি"}
+            </p>
+
+            <p className="text-[11px] text-[var(--color-app-muted)] mt-0.5">
+              {mode === "edit" ? "পোস্টের লেখক" : "আপনার Google account"}
+            </p>
           </div>
         </div>
 

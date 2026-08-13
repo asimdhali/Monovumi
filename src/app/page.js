@@ -75,17 +75,29 @@ const PostCard = forwardRef(function PostCard(
               className="relative w-[46px] h-[46px] rounded-full overflow-hidden bg-[var(--color-app-border)]"
               style={{ boxShadow: "0 0 0 2px var(--color-app-accent)" }}
             >
-              <Image
-                src={
-                  post.avatar ||
-                  post.contributorAvatar ||
-                  "https://i.pravatar.cc/150?img=13"
-                }
-                alt={post.name || post.contributor || "User"}
-                width={46}
-                height={46}
-                className="object-cover w-full h-full"
-              />
+              {(
+                post.avatar && !post.avatar.includes("i.pravatar.cc")
+                  ? post.avatar
+                  : post.contributorAvatar &&
+                      !post.contributorAvatar.includes("i.pravatar.cc")
+                    ? post.contributorAvatar
+                    : null
+              ) ? (
+                <Image
+                  src={
+                    post.avatar && !post.avatar.includes("i.pravatar.cc")
+                      ? post.avatar
+                      : post.contributorAvatar
+                  }
+                  alt={post.name || post.contributor || "প্রোফাইল"}
+                  width={46}
+                  height={46}
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-full h-full bg-[var(--color-app-border)]" />
+              )}
             </div>
             {post.verified && (
               <span
@@ -102,7 +114,7 @@ const PostCard = forwardRef(function PostCard(
           <div>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               <span className="text-[14.5px] font-bold text-[var(--color-app-text)]">
-                {post.name || post.contributor || "আপনি"}
+                {post.name || post.contributor || "অজ্ঞাত"}
               </span>
 
               {post.activityType === "new" && (

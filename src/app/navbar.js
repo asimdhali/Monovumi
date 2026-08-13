@@ -93,11 +93,17 @@ function ProfileMenu() {
         style={{ boxShadow: "0 0 0 1.5px var(--color-app-accent)" }}
         aria-label="প্রোফাইল মেনু"
       >
-        <img
-          src="https://i.pravatar.cc/150?img=13"
-          alt="প্রোফাইল"
-          className="w-full h-full object-cover"
-        />
+        {loading ? (
+          <div className="w-full h-full animate-pulse bg-[var(--color-app-border)]" />
+        ) : profile?.photoURL ? (
+          <img
+            src={profile.photoURL}
+            alt={profile.name || "প্রোফাইল"}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-[var(--color-app-border)]" />
+        )}
       </button>
 
       {open && (
@@ -109,17 +115,27 @@ function ProfileMenu() {
           }}
         >
           <div className="flex items-center gap-2.5 px-1 pb-3 mb-2 border-b border-[var(--color-app-border)]">
-            <img
-              src="https://i.pravatar.cc/150?img=13"
-              alt="প্রোফাইল"
-              className="w-9 h-9 rounded-full object-cover"
-            />
+            {loading ? (
+              <div className="w-9 h-9 rounded-full animate-pulse bg-[var(--color-app-border)]" />
+            ) : profile?.photoURL ? (
+              <img
+                src={profile.photoURL}
+                alt={profile.name || "প্রোফাইল"}
+                className="w-9 h-9 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-[var(--color-app-border)]" />
+            )}
             <div>
               <p className="text-sm font-semibold text-[var(--color-app-text)]">
-                আপনি
+                {profile?.name || user?.displayName || "আপনি"}
               </p>
               <p className="text-[11px] text-[var(--color-app-muted)]">
-                {role === "teacher" ? "👑 শিক্ষক মোড" : "🎓 শিক্ষার্থী মোড"}
+                {profile?.role === "teacher"
+                  ? "👨‍🏫 শিক্ষক মোড"
+                  : profile?.role === "admin"
+                    ? "👑 Admin মোড"
+                    : "🎓 শিক্ষার্থী মোড"}
               </p>
             </div>
           </div>

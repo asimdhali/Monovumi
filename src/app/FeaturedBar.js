@@ -14,6 +14,7 @@ function ThreeDotMenu({ topic, canManage }) {
   const [copied, setCopied] = useState(false);
   const [editing, setEditing] = useState(false);
   const menuRef = useRef(null);
+
   const { editTopic, toggleFeatured } = useBookDetailed();
 
   useEffect(() => {
@@ -22,7 +23,9 @@ function ThreeDotMenu({ topic, canManage }) {
         setOpen(false);
       }
     }
+
     document.addEventListener("mousedown", handleClickOutside);
+
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
@@ -487,7 +490,7 @@ function FeaturedCarousel({ featuredTopics, canManage, onOpenPreview }) {
   );
 }
 
-function ComposerTrigger({ onOpen, canPost }) {
+function ComposerTrigger({ onOpen, canPost, profile, authLoading }) {
   if (!canPost) {
     return (
       <div className="flex items-center gap-2.5 rounded-full px-3.5 py-3 mt-0 bg-[var(--color-app-surface)] border border-[var(--color-app-border)] opacity-70">
@@ -525,14 +528,24 @@ function ComposerTrigger({ onOpen, canPost }) {
         className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden"
         style={{ background: "var(--color-app-border)" }}
       >
-        <img
-          src="https://i.pravatar.cc/150?img=13"
-          alt="আপনি"
-          className="w-full h-full object-cover"
-        />
+        {authLoading ? (
+          <div className="w-full h-full animate-pulse bg-[var(--color-app-border)]" />
+        ) : profile?.photoURL ? (
+          <img
+            src={profile.photoURL}
+            alt={profile.name || "প্রোফাইল"}
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        ) : (
+          <div className="w-full h-full bg-[var(--color-app-border)]" />
+        )}
       </div>
       <span className="flex-1 text-[13px] text-[var(--color-app-muted)]">
-        শিক্ষক হিসেবে আপনার জ্ঞান শেয়ার করুন...
+        শিক্ষা বিপ্লবে অংশ নিন- পোস্ট করুন...
       </span>
       <div
         className="w-7 h-7 flex-shrink-0 flex items-center justify-center"
@@ -559,7 +572,9 @@ function ComposerTrigger({ onOpen, canPost }) {
 export default function FeaturedBar() {
   const pathname = usePathname();
   const { content, loading, addTopic } = useBookDetailed();
-  const { user, canManage, canPost } = useAuth();
+
+  const { user, profile, canManage, canPost, loading: authLoading } = useAuth();
+
   const [previewTopic, setPreviewTopic] = useState(null);
   const [showComposer, setShowComposer] = useState(false);
 
@@ -582,6 +597,8 @@ export default function FeaturedBar() {
         <ComposerTrigger
           onOpen={() => setShowComposer(true)}
           canPost={canPost}
+          profile={profile}
+          authLoading={authLoading}
         />
 
         {featuredTopics.length > 0 && (
