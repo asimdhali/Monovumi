@@ -7,6 +7,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  where,
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -17,7 +18,11 @@ export function PostsProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(collection(db, "posts"), orderBy("id", "desc"));
+    const q = query(
+      collection(db, "posts"),
+      where("published", "==", true),
+      orderBy("id", "desc"),
+    );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const loadedPosts = snapshot.docs.map((d) => ({
         docId: d.id,
@@ -30,7 +35,18 @@ export function PostsProvider({ children }) {
   }, []);
 
   async function addPost(newPost) {
-    await addDoc(collection(db, "posts"), newPost);
+    await addDoc(collection(db, "posts"), {
+      ...newPost,
+
+      // Admin review না করা পর্যন্ত Public হবে না
+      published: false,
+
+      // Admin review-এর জন্য
+      reviewStatus: "pending",
+
+      createdAt: newPost.createdAt || Date.now(),
+      updatedAt: Date.now(),
+    });
   }
 
   return (
