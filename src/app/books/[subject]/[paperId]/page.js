@@ -298,7 +298,7 @@ export default function PaperPage({ params }) {
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <Link
-                href={`/books/${encodeURIComponent(subject)}`}
+                href="/books"
                 className="w-9 h-9 rounded-full bg-[var(--color-app-surface)] border border-[var(--color-app-border)] flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors"
                 aria-label="ফিরে যান"
               >

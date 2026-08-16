@@ -281,7 +281,6 @@ export default function Home() {
   const [feedPosts, setFeedPosts] = useState([]);
   const [lastDoc, setLastDoc] = useState(null);
   const [feedLoading, setFeedLoading] = useState(true);
-  const [homeFeedPosts, setHomeFeedPosts] = useState([]);
 
   const allPosts = feedPosts;
 
@@ -309,7 +308,7 @@ export default function Home() {
           const result = await getNextHomeFeed(lastDoc);
 
           if (result.posts.length > 0) {
-            setHomeFeedPosts((prev) => [...prev, ...result.posts]);
+            setFeedPosts((prev) => [...prev, ...result.posts]);
             setLastDoc(result.lastDoc);
           } else {
             setLastDoc(null);
@@ -345,16 +344,6 @@ export default function Home() {
     });
 
     return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    async function loadFeed() {
-      const data = await getInitialHomeFeed();
-
-      setHomeFeedPosts(data.posts);
-    }
-
-    loadFeed();
   }, []);
 
   return (
