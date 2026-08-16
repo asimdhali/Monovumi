@@ -66,7 +66,7 @@ export default function RichTextEditor({ value, onChange }) {
   return (
     <div className="rounded-xl border border-[var(--color-app-border)] overflow-visible">
       <EditorToolbar editor={editor} />
-      <div className="max-w-4xl mx-auto p-1">
+      <div className="p-1">
         <div
           className="
     rounded-2xl

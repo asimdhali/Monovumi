@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import RichTextEditor from "./editor/RichTextEditor";
 import { useAuth } from "./../../AuthContext";
 
@@ -24,7 +24,6 @@ export default function ComposerModal({
 
   const [content, setContent] = useState(initialTopic?.content || "");
   const [title, setTitle] = useState(initialTopic?.title || "");
-  const [image, setImage] = useState(initialTopic?.image || null);
 
   const [era, setEra] = useState(initialTopic?.era || prefillEra);
 
@@ -38,28 +37,10 @@ export default function ComposerModal({
 
   const [paperId, setPaperId] = useState(initialTopic?.paperId || "first");
 
-  const [editType, setEditType] = useState(initialTopic?.editType || "major");
-
-  const fileInputRef = useRef(null);
-
   const canPublish =
     content.trim().length >= 10 &&
     title.trim().length > 0 &&
     era.trim().length > 0;
-
-  function handleImageChange(e) {
-    const file = e.target.files?.[0];
-
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = (ev) => {
-      setImage(ev.target.result);
-    };
-
-    reader.readAsDataURL(file);
-  }
 
   function handlePublish() {
     if (!canPublish) return;
@@ -74,8 +55,6 @@ export default function ComposerModal({
       era: era.trim(),
       chapter: chapter.trim() || "",
 
-      editType,
-
       contributor: authorName.trim() || "",
 
       contributorAvatar:
@@ -84,8 +63,6 @@ export default function ComposerModal({
         profile?.photoURL ||
         user?.photoURL ||
         "",
-
-      image: image || null,
     });
 
     onClose();
@@ -187,134 +164,61 @@ export default function ComposerModal({
         {/* Rich Text Content */}
         <RichTextEditor value={content} onChange={setContent} />
 
-        {/* Image */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="hidden"
-        />
-
-        {image ? (
+        {/* Post Location */}
+        <div className="mt-5 mb-4">
           <button
-            onClick={() => fileInputRef.current?.click()}
-            className="mt-4 w-full rounded-2xl overflow-hidden border border-[var(--color-app-border)]"
+            type="button"
+            className="
+      w-full
+      flex
+      items-center
+      justify-between
+      gap-3
+      p-3.5
+      rounded-xl
+      border
+      border-[var(--color-app-border)]
+      bg-[var(--color-app-surface)]
+      text-left
+      transition-all
+      hover:border-[var(--color-app-primary)]
+      hover:bg-[var(--color-app-primary-soft)]
+    "
           >
-            <img
-              src={image}
-              alt="সংযুক্ত ছবি"
-              className="w-full max-h-[220px] object-cover"
-            />
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className="
+          w-9
+          h-9
+          rounded-lg
+          flex
+          items-center
+          justify-center
+          flex-shrink-0
+        "
+                style={{
+                  background: "var(--color-app-primary-soft)",
+                  color: "var(--color-app-primary)",
+                }}
+              >
+                📍
+              </div>
+
+              <div className="min-w-0">
+                <p className="text-[14px] font-semibold text-[var(--color-app-text)]">
+                  পোস্ট লোকেশন নির্বাচন করুন
+                </p>
+
+                <p className="text-[11px] text-[var(--color-app-muted)] mt-0.5">
+                  বিষয়, পত্র ও অধ্যায় নির্বাচন করতে ক্লিক করুন
+                </p>
+              </div>
+            </div>
+
+            <span className="text-[var(--color-app-muted)] text-lg flex-shrink-0">
+              ›
+            </span>
           </button>
-        ) : (
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="mt-4 w-full rounded-2xl border-[1.5px] border-dashed border-[var(--color-app-border)] py-4 text-[13px] text-[var(--color-app-muted)]"
-          >
-            📷 ছবি যোগ করুন (ঐচ্ছিক)
-          </button>
-        )}
-
-        {/* Subject */}
-        <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-5 mb-2">
-          বিষয়
-        </div>
-
-        <select
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          className="w-full p-3 rounded-xl border text-sm bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)] outline-none"
-        >
-          <option value="বাংলা সাহিত্য">বাংলা সাহিত্য</option>
-
-          <option value="বাংলা ভাষা">বাংলা ভাষা</option>
-
-          <option value="ইংরেজি সাহিত্য">ইংরেজি সাহিত্য</option>
-
-          <option value="ইংরেজি ভাষা">ইংরেজি ভাষা</option>
-
-          <option value="গণিত">গণিত</option>
-
-          <option value="বাংলাদেশ বিষয়াবলি">বাংলাদেশ বিষয়াবলি</option>
-
-          <option value="আন্তর্জাতিক বিষয়াবলি">আন্তর্জাতিক বিষয়াবলি</option>
-
-          <option value="ভূগোল">ভূগোল</option>
-
-          <option value="সাধারণ বিজ্ঞান">সাধারণ বিজ্ঞান</option>
-
-          <option value="কম্পিউটার শিক্ষা">কম্পিউটার শিক্ষা</option>
-
-          <option value="মানসিক দক্ষতা">মানসিক দক্ষতা</option>
-
-          <option value="নৈতিকতা ও সুশাসন">নৈতিকতা ও সুশাসন</option>
-        </select>
-
-        {/* Paper */}
-        <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-4 mb-2">
-          পত্র
-        </div>
-
-        <select
-          value={paperId}
-          onChange={(e) => setPaperId(e.target.value)}
-          className="w-full p-3 rounded-xl border text-sm bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)] outline-none"
-        >
-          <option value="first">প্রথম পত্র</option>
-
-          <option value="second">দ্বিতীয় পত্র</option>
-        </select>
-
-        {/* Era / Volume */}
-        <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-5 mb-2 tracking-wide">
-          খণ্ড / যুগ
-        </div>
-
-        <input
-          value={era}
-          onChange={(e) => setEra(e.target.value)}
-          placeholder="যেমন: প্রাচীনকাল, মধ্যযুগ..."
-          className="w-full p-3 rounded-xl border text-sm bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)] outline-none"
-        />
-
-        {/* Chapter */}
-        <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-4 mb-2 tracking-wide">
-          অধ্যায় (ঐচ্ছিক)
-        </div>
-
-        <input
-          value={chapter}
-          onChange={(e) => setChapter(e.target.value)}
-          placeholder="যেমন: অধ্যায় ১.১ · চর্যাপদ"
-          className="w-full p-3 rounded-xl border text-sm bg-[var(--color-app-surface)] border-[var(--color-app-border)] text-[var(--color-app-text)] outline-none"
-        />
-
-        {/* Edit Type */}
-        <div className="text-[12px] font-bold text-[var(--color-app-muted)] mt-4 mb-2 tracking-wide">
-          আপডেটের ধরন
-        </div>
-
-        <div className="flex gap-6">
-          <label className="flex items-center gap-2 cursor-pointer text-sm">
-            <input
-              type="radio"
-              checked={editType === "major"}
-              onChange={() => setEditType("major")}
-            />
-
-            <span>Major Update</span>
-          </label>
-
-          <label className="flex items-center gap-2 cursor-pointer text-sm">
-            <input
-              type="radio"
-              checked={editType === "minor"}
-              onChange={() => setEditType("minor")}
-            />
-
-            <span>Minor Edit</span>
-          </label>
         </div>
       </div>
 

@@ -513,7 +513,7 @@ function ComposerTrigger({ onOpen, canPost, profile, authLoading }) {
           </svg>
         </div>
         <span className="flex-1 text-[13px] text-[var(--color-app-muted)]">
-          পোস্ট করতে "শিক্ষক মোড"-এ যান
+          শিক্ষায় অবদান রাখতে লগ ইন করুন...
         </span>
       </div>
     );
