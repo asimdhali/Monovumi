@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import RichTextEditor from "./editor/RichTextEditor";
+import PostLocationModal from "./PostLocationModal";
 import { useAuth } from "./../../AuthContext";
 
 export default function ComposerModal({
@@ -35,6 +36,12 @@ export default function ComposerModal({
     initialTopic?.subject || "বাংলা সাহিত্য",
   );
 
+  const [showLocationModal, setShowLocationModal] = useState(false);
+
+  const [postLocation, setPostLocation] = useState(
+    initialTopic?.postLocation || "",
+  );
+
   const [paperId, setPaperId] = useState(initialTopic?.paperId || "first");
 
   const canPublish =
@@ -48,6 +55,7 @@ export default function ComposerModal({
     onSubmit({
       subject,
       paperId,
+      postLocation,
 
       title: title.trim(),
       content: content.trim(),
@@ -168,54 +176,62 @@ export default function ComposerModal({
         <div className="mt-5 mb-4">
           <button
             type="button"
+            onClick={() => setShowLocationModal(true)}
             className="
       w-full
       flex
       items-center
       justify-between
       gap-3
-      p-3.5
+      px-3.5
+      py-3
       rounded-xl
       border
       border-[var(--color-app-border)]
       bg-[var(--color-app-surface)]
       text-left
-      transition-all
+      transition-colors
       hover:border-[var(--color-app-primary)]
       hover:bg-[var(--color-app-primary-soft)]
     "
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div
+              <span
                 className="
-          w-9
-          h-9
+          flex-shrink-0
+          w-8
+          h-8
           rounded-lg
           flex
           items-center
           justify-center
-          flex-shrink-0
+          text-[22px]
+          font-light
+          leading-none
         "
                 style={{
-                  background: "var(--color-app-primary-soft)",
                   color: "var(--color-app-primary)",
                 }}
               >
-                📍
-              </div>
+                +
+              </span>
 
               <div className="min-w-0">
                 <p className="text-[14px] font-semibold text-[var(--color-app-text)]">
-                  পোস্ট লোকেশন নির্বাচন করুন
+                  {postLocation
+                    ? `${postLocation.subject} / ${postLocation.volume} / ${postLocation.topicTitle}`
+                    : "পোস্ট লোকেশন নির্বাচন করুন"}
                 </p>
 
-                <p className="text-[11px] text-[var(--color-app-muted)] mt-0.5">
-                  বিষয়, পত্র ও অধ্যায় নির্বাচন করতে ক্লিক করুন
+                <p className="text-[11px] text-[var(--color-app-muted)] mt-0.5 truncate">
+                  {postLocation
+                    ? "লোকেশন পরিবর্তন করতে ক্লিক করুন"
+                    : "যেমন- বিসিএস/বাংলা সাহিত্য/প্রাচীন কাল/চর্যাপদ"}
                 </p>
               </div>
             </div>
 
-            <span className="text-[var(--color-app-muted)] text-lg flex-shrink-0">
+            <span className="flex-shrink-0 text-lg text-[var(--color-app-muted)]">
               ›
             </span>
           </button>
@@ -232,6 +248,15 @@ export default function ComposerModal({
           সর্বনিম্ন ১০ অক্ষর প্রয়োজন
         </span>
       </div>
+      {showLocationModal && (
+        <PostLocationModal
+          onClose={() => setShowLocationModal(false)}
+          onSelect={(location) => {
+            setPostLocation(location);
+            setShowLocationModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }
