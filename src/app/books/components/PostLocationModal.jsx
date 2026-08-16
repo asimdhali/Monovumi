@@ -94,20 +94,13 @@ export default function PostLocationModal({ onClose, onSelect }) {
   function handleTopicSelect(topic) {
     const location = {
       subject: selectedSubject,
-
       chapter: selectedChapter.title,
-
       topicId: topic.id,
-
       topicTitle: topic.title || "",
-
       paperId: topic.paperId,
     };
 
-    console.log("Selected Post Location:", location);
-
     onSelect?.(location);
-
     onClose();
   }
 
