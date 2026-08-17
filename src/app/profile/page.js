@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { progressData } from "../data";
 import { useAuth } from "../AuthContext";
 
 function InfoRow({ icon, label, value }) {
@@ -70,16 +69,147 @@ export default function ProfilePage() {
 
   const [draft, setDraft] = useState(null);
 
-  const weakest = [...progressData.subjects].sort(
-    (a, b) => a.strength - b.strength,
-  )[0];
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <p className="text-sm text-[var(--color-app-muted)]">
-          প্রোফাইল লোড হচ্ছে...
-        </p>
+      <div className="w-full px-3 sm:px-4 lg:px-6 pt-4 sm:pt-6 pb-24">
+        <div className="w-full rounded-2xl p-5 mb-4 text-white relative overflow-hidden">
+          {/* ================= HERO SKELETON ================= */}
+          <div
+            className="rounded-2xl p-5 mb-4 relative overflow-hidden"
+            style={{
+              background: "var(--color-app-surface)",
+              border: "1px solid var(--color-app-border)",
+            }}
+          >
+            <div className="flex items-center gap-4">
+              {/* Avatar */}
+              <div
+                className="w-16 h-16 rounded-full shrink-0 animate-pulse"
+                style={{
+                  background: "var(--color-app-border)",
+                }}
+              />
+
+              <div className="flex-1 space-y-2">
+                {/* Name */}
+                <div
+                  className="h-5 w-32 rounded-md animate-pulse"
+                  style={{
+                    background: "var(--color-app-border)",
+                  }}
+                />
+
+                {/* Email */}
+                <div
+                  className="h-3 w-44 rounded-md animate-pulse"
+                  style={{
+                    background: "var(--color-app-border)",
+                  }}
+                />
+
+                {/* Role */}
+                <div
+                  className="h-5 w-24 rounded-full animate-pulse"
+                  style={{
+                    background: "var(--color-app-border)",
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ================= পরিচিতি SKELETON ================= */}
+          <div
+            className="rounded-2xl border p-4"
+            style={{
+              background: "var(--color-app-surface)",
+              borderColor: "var(--color-app-border)",
+            }}
+          >
+            <div className="flex items-center justify-between mb-5">
+              {/* Title */}
+              <div
+                className="h-4 w-16 rounded-md animate-pulse"
+                style={{
+                  background: "var(--color-app-border)",
+                }}
+              />
+
+              {/* Edit button */}
+              <div
+                className="h-7 w-24 rounded-full animate-pulse"
+                style={{
+                  background: "var(--color-app-border)",
+                }}
+              />
+            </div>
+
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5, 6].map((item) => (
+                <div key={item} className="flex items-start gap-3">
+                  {/* Icon */}
+                  <div
+                    className="w-9 h-9 rounded-full shrink-0 animate-pulse"
+                    style={{
+                      background: "var(--color-app-border)",
+                    }}
+                  />
+
+                  <div className="flex-1 space-y-1.5 pt-1">
+                    {/* Label */}
+                    <div
+                      className="h-2.5 w-16 rounded animate-pulse"
+                      style={{
+                        background: "var(--color-app-border)",
+                      }}
+                    />
+
+                    {/* Value */}
+                    <div
+                      className={`h-3 rounded animate-pulse ${
+                        item % 2 === 0 ? "w-36" : "w-48"
+                      }`}
+                      style={{
+                        background: "var(--color-app-border)",
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ================= আগ্রহ SKELETON ================= */}
+          <div
+            className="rounded-2xl border p-4 mt-4"
+            style={{
+              background: "var(--color-app-surface)",
+              borderColor: "var(--color-app-border)",
+            }}
+          >
+            {/* Title */}
+            <div
+              className="h-4 w-28 rounded-md animate-pulse mb-4"
+              style={{
+                background: "var(--color-app-border)",
+              }}
+            />
+
+            <div className="flex flex-wrap gap-2">
+              {[1, 2, 3].map((item) => (
+                <div
+                  key={item}
+                  className={`h-7 rounded-full animate-pulse ${
+                    item === 1 ? "w-16" : item === 2 ? "w-20" : "w-14"
+                  }`}
+                  style={{
+                    background: "var(--color-app-border)",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -140,409 +270,338 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 lg:px-6 pt-6 pb-10">
-      {/* ================= HERO ================= */}
+    <div className="w-full px-3 sm:px-4 lg:px-6 pt-4 sm:pt-6 pb-24">
+      <div className="w-full rounded-2xl p-5 mb-4 text-white relative overflow-hidden">
+        {/* ================= HERO ================= */}
 
-      <div
-        className="rounded-2xl p-5 mb-4 text-white relative overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(135deg, var(--color-app-primary), #2a4a3f)",
-        }}
-      >
         <div
-          className="absolute -right-8 -top-8 w-32 h-32 rounded-full"
+          className="rounded-2xl p-5 mb-4 text-white relative overflow-hidden"
           style={{
-            background: "rgba(255,255,255,0.08)",
+            background:
+              "linear-gradient(135deg, var(--color-app-primary), #2a4a3f)",
           }}
-        />
-
-        <div className="relative flex items-center gap-4">
-          <img
-            src={profile.photoURL || "https://i.pravatar.cc/150?img=13"}
-            alt={profile.name || "প্রোফাইল"}
-            className="w-16 h-16 rounded-full ring-2 ring-white/70 object-cover"
+        >
+          <div
+            className="absolute -right-8 -top-8 w-32 h-32 rounded-full"
+            style={{
+              background: "rgba(255,255,255,0.08)",
+            }}
           />
 
-          <div className="min-w-0">
-            <p className="font-[family-name:var(--font-bengali-serif)] text-lg leading-tight">
-              {profile.name || "আপনি"}
-            </p>
+          <div className="relative flex items-center gap-4">
+            <img
+              src={profile.photoURL || "https://i.pravatar.cc/150?img=13"}
+              alt={profile.name || "প্রোফাইল"}
+              className="w-16 h-16 rounded-full ring-2 ring-white/70 object-cover"
+            />
 
-            <p className="text-[11px] text-white/75 mt-1 truncate">
-              {profile.email}
-            </p>
+            <div className="min-w-0">
+              <p className="font-[family-name:var(--font-bengali-serif)] text-lg leading-tight">
+                {profile.name || "আপনি"}
+              </p>
 
-            <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-white/15">
-              {profile.role === "teacher"
-                ? "মনোভূমি শিক্ষক"
-                : "মনোভূমি শিক্ষার্থী"}
-            </span>
+              <p className="text-[11px] text-white/75 mt-1 truncate">
+                {profile.email}
+              </p>
+
+              <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-white/15">
+                {profile.role === "teacher"
+                  ? "মনোভূমি শিক্ষক"
+                  : "মনোভূমি শিক্ষার্থী"}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ================= পরিচিতি ================= */}
+        {/* ================= পরিচিতি ================= */}
 
-      <div
-        className="rounded-2xl border p-4 bg-[var(--color-app-surface)]"
-        style={{
-          borderColor: "var(--color-app-border)",
-        }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-[var(--color-app-text)]">
-            পরিচিতি
-          </h3>
-
-          <button
-            onClick={startEdit}
-            className="text-xs font-medium px-3 py-1.5 rounded-full"
-            style={{
-              background: "var(--color-app-primary-soft)",
-              color: "var(--color-app-primary)",
-            }}
-          >
-            ✏️ সম্পাদনা করুন
-          </button>
-        </div>
-
-        <div className="space-y-3.5">
-          <InfoRow icon="👤" label="নাম" value={profile.name} />
-
-          <InfoRow icon="✉️" label="ই-মেইল" value={profile.email} />
-
-          <InfoRow icon="🎂" label="জন্মতারিখ" value={profile.birthDate} />
-
-          <InfoRow
-            icon="🏫"
-            label="শিক্ষা প্রতিষ্ঠান"
-            value={profile.institution}
-          />
-
-          <InfoRow icon="📘" label="শ্রেণি" value={profile.classLevel} />
-
-          <InfoRow icon="📍" label="অবস্থান" value={profile.location} />
-
-          {profile.createdAt && (
-            <InfoRow
-              icon="📅"
-              label="মনোভূমিতে যোগদান"
-              value={new Date(profile.createdAt).toLocaleDateString("bn-BD")}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* ================= আগ্রহ ================= */}
-
-      {profile.interests?.length > 0 && (
         <div
-          className="rounded-2xl border p-4 mt-4 bg-[var(--color-app-surface)]"
+          className="w-full rounded-2xl border p-4 bg-[var(--color-app-surface)]"
           style={{
             borderColor: "var(--color-app-border)",
           }}
         >
-          <h3 className="text-sm font-semibold mb-3 text-[var(--color-app-text)]">
-            ✨ আগ্রহের বিষয়
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-[var(--color-app-text)]">
+              পরিচিতি
+            </h3>
 
-          <InterestTags interests={profile.interests} />
-        </div>
-      )}
+            <button
+              onClick={startEdit}
+              className="text-xs font-medium px-3 py-1.5 rounded-full"
+              style={{
+                background: "var(--color-app-primary-soft)",
+                color: "var(--color-app-primary)",
+              }}
+            >
+              ✏️ সম্পাদনা করুন
+            </button>
+          </div>
 
-      {/* ================= অগ্রগতি ================= */}
+          <div className="space-y-3.5">
+            <InfoRow icon="👤" label="নাম" value={profile.name} />
 
-      <div
-        className="rounded-2xl border p-4 mt-4 bg-[var(--color-app-surface)]"
-        style={{
-          borderColor: "var(--color-app-border)",
-        }}
-      >
-        <h3 className="font-[family-name:var(--font-bengali-serif)] text-base mb-3 text-[var(--color-app-text)]">
-          📊 আমার অগ্রগতি
-        </h3>
+            <InfoRow icon="✉️" label="ই-মেইল" value={profile.email} />
 
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <StatCard
-            value={`${progressData.studyMinutesToday} মিনিট`}
-            label="আজকের অধ্যয়ন"
-            bg="var(--color-app-primary-soft)"
-            color="var(--color-app-primary)"
-          />
+            <InfoRow icon="🎂" label="জন্মতারিখ" value={profile.birthDate} />
 
-          <StatCard
-            value={`🔥 ${progressData.streakDays} দিন`}
-            label="টানা অধ্যয়ন"
-            bg="var(--color-app-accent-soft)"
-            color="var(--color-app-accent)"
-          />
-        </div>
+            <InfoRow
+              icon="🏫"
+              label="শিক্ষা প্রতিষ্ঠান"
+              value={profile.institution}
+            />
 
-        <p className="text-xs font-medium mb-2 text-[var(--color-app-text)]">
-          বিষয়ভিত্তিক দক্ষতা
-        </p>
+            <InfoRow icon="📘" label="শ্রেণি" value={profile.classLevel} />
 
-        <div className="space-y-2.5">
-          {progressData.subjects.map((s) => (
-            <div key={s.name}>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-[var(--color-app-text)]">{s.name}</span>
+            <InfoRow icon="📍" label="অবস্থান" value={profile.location} />
 
-                <span className="text-[var(--color-app-muted)]">
-                  {s.strength}%
-                </span>
-              </div>
-
-              <div
-                className="h-2 rounded-full overflow-hidden"
-                style={{
-                  background: "var(--color-app-border)",
-                }}
-              >
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${s.strength}%`,
-                    background:
-                      s.strength < 50 ? "#ef4444" : "var(--color-app-primary)",
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div
-          className="mt-3 rounded-xl p-3 text-xs leading-relaxed text-[var(--color-app-text)]"
-          style={{
-            background: "var(--color-app-accent-soft)",
-          }}
-        >
-          💡 <strong>{weakest.name}</strong> বিষয়ে আপনার দুর্বলতা বেশি — এই
-          বিষয়ে আরও অনুশীলন প্রয়োজন।
-        </div>
-      </div>
-
-      {/* ================= LOGOUT ================= */}
-
-      <button
-        onClick={logout}
-        className="w-full mt-4 py-3 rounded-full text-sm font-semibold border"
-        style={{
-          borderColor: "var(--color-app-border)",
-          color: "var(--color-app-muted)",
-        }}
-      >
-        লগআউট
-      </button>
-
-      {/* ================= EDIT MODAL ================= */}
-
-      {editing && draft && (
-        <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center px-4">
-          <div
-            className="w-full max-w-lg rounded-2xl p-5 max-h-[85vh] overflow-y-auto"
-            style={{
-              background: "var(--color-app-surface)",
-            }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)]">
-                প্রোফাইল সম্পাদনা
-              </h3>
-
-              <button
-                onClick={() => setEditing(false)}
-                className="text-lg text-[var(--color-app-muted)]"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {/* নাম */}
-
-              <div>
-                <p className="text-[11px] mb-1 text-[var(--color-app-muted)]">
-                  নাম
-                </p>
-
-                <input
-                  value={draft.name}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      name: e.target.value,
-                    })
-                  }
-                  className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] text-[var(--color-app-text)]"
-                  style={{
-                    borderColor: "var(--color-app-border)",
-                  }}
-                />
-              </div>
-
-              {/* Email */}
-
-              <div>
-                <p className="text-[11px] mb-1 text-[var(--color-app-muted)]">
-                  ই-মেইল
-                </p>
-
-                <input
-                  value={profile.email || ""}
-                  disabled
-                  className="w-full p-2.5 rounded-lg border text-sm opacity-60 bg-[var(--color-app-bg)] text-[var(--color-app-text)]"
-                  style={{
-                    borderColor: "var(--color-app-border)",
-                  }}
-                />
-              </div>
-
-              {/* জন্মতারিখ */}
-
-              <div>
-                <p className="text-[11px] mb-1 text-[var(--color-app-muted)]">
-                  জন্মতারিখ
-                </p>
-
-                <input
-                  type="date"
-                  value={draft.birthDate}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      birthDate: e.target.value,
-                    })
-                  }
-                  className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] text-[var(--color-app-text)]"
-                  style={{
-                    borderColor: "var(--color-app-border)",
-                  }}
-                />
-              </div>
-
-              {/* প্রতিষ্ঠান */}
-
-              <div>
-                <p className="text-[11px] mb-1 text-[var(--color-app-muted)]">
-                  শিক্ষা প্রতিষ্ঠান
-                </p>
-
-                <input
-                  value={draft.institution}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      institution: e.target.value,
-                    })
-                  }
-                  className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] text-[var(--color-app-text)]"
-                  style={{
-                    borderColor: "var(--color-app-border)",
-                  }}
-                />
-              </div>
-
-              {/* শ্রেণি */}
-
-              <div>
-                <p className="text-[11px] mb-1 text-[var(--color-app-muted)]">
-                  শ্রেণি
-                </p>
-
-                <input
-                  value={draft.classLevel}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      classLevel: e.target.value,
-                    })
-                  }
-                  placeholder="যেমন: নবম শ্রেণি"
-                  className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] text-[var(--color-app-text)]"
-                  style={{
-                    borderColor: "var(--color-app-border)",
-                  }}
-                />
-              </div>
-
-              {/* অবস্থান */}
-
-              <div>
-                <p className="text-[11px] mb-1 text-[var(--color-app-muted)]">
-                  অবস্থান
-                </p>
-
-                <input
-                  value={draft.location}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      location: e.target.value,
-                    })
-                  }
-                  placeholder="যেমন: কুষ্টিয়া, বাংলাদেশ"
-                  className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] text-[var(--color-app-text)]"
-                  style={{
-                    borderColor: "var(--color-app-border)",
-                  }}
-                />
-              </div>
-
-              {/* আগ্রহ */}
-
-              <div>
-                <p className="text-[11px] mb-1 text-[var(--color-app-muted)]">
-                  আগ্রহের বিষয়
-                </p>
-
-                <input
-                  value={draft.interests?.join(", ") || ""}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      interests: e.target.value
-                        .split(",")
-                        .map((item) => item.trim())
-                        .filter(Boolean),
-                    })
-                  }
-                  placeholder="বিজ্ঞান, গণিত, ইতিহাস"
-                  className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] text-[var(--color-app-text)]"
-                  style={{
-                    borderColor: "var(--color-app-border)",
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2 mt-5">
-              <button
-                onClick={saveProfile}
-                className="flex-1 py-2.5 rounded-full text-white text-sm font-semibold"
-                style={{
-                  background: "var(--color-app-primary)",
-                }}
-              >
-                সংরক্ষণ করুন
-              </button>
-
-              <button
-                onClick={() => setEditing(false)}
-                className="px-5 py-2.5 rounded-full text-sm font-semibold border"
-                style={{
-                  borderColor: "var(--color-app-border)",
-                  color: "var(--color-app-muted)",
-                }}
-              >
-                বাতিল
-              </button>
-            </div>
+            {profile.createdAt && (
+              <InfoRow
+                icon="📅"
+                label="মনোভূমিতে যোগদান"
+                value={new Date(profile.createdAt).toLocaleDateString("bn-BD")}
+              />
+            )}
           </div>
         </div>
-      )}
+
+        {/* ================= আগ্রহ ================= */}
+
+        {profile.interests?.length > 0 && (
+          <div
+            className="w-full rounded-2xl border p-4 mt-4 bg-[var(--color-app-surface)]"
+            style={{
+              borderColor: "var(--color-app-border)",
+            }}
+          >
+            <h3 className="text-sm font-semibold mb-3 text-[var(--color-app-text)]">
+              ✨ আগ্রহের বিষয়
+            </h3>
+
+            <InterestTags interests={profile.interests} />
+          </div>
+        )}
+
+        {/* ================= LOGOUT ================= */}
+
+        <button
+          onClick={logout}
+          className="w-full mt-4 py-3 rounded-full text-sm font-semibold border"
+          style={{
+            borderColor: "var(--color-app-border)",
+            color: "var(--color-app-muted)",
+          }}
+        >
+          লগআউট
+        </button>
+
+        {/* ================= EDIT MODAL ================= */}
+
+        {editing && draft && (
+          <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center px-4">
+            <div
+              className="w-full max-w-lg rounded-2xl p-5 max-h-[85vh] overflow-y-auto"
+              style={{
+                background: "var(--color-app-surface)",
+              }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-[family-name:var(--font-bengali-serif)] text-lg text-[var(--color-app-text)]">
+                  প্রোফাইল সম্পাদনা
+                </h3>
+
+                <button
+                  onClick={() => setEditing(false)}
+                  className="text-lg text-[var(--color-app-muted)]"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {/* নাম */}
+
+                <div>
+                  <p className="text-[11px] mb-1 text-[var(--color-app-muted)]">
+                    নাম
+                  </p>
+
+                  <input
+                    value={draft.name}
+                    onChange={(e) =>
+                      setDraft({
+                        ...draft,
+                        name: e.target.value,
+                      })
+                    }
+                    className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] text-[var(--color-app-text)]"
+                    style={{
+                      borderColor: "var(--color-app-border)",
+                    }}
+                  />
+                </div>
+
+                {/* Email */}
+
+                <div>
+                  <p className="text-[11px] mb-1 text-[var(--color-app-muted)]">
+                    ই-মেইল
+                  </p>
+
+                  <input
+                    value={profile.email || ""}
+                    disabled
+                    className="w-full p-2.5 rounded-lg border text-sm opacity-60 bg-[var(--color-app-bg)] text-[var(--color-app-text)]"
+                    style={{
+                      borderColor: "var(--color-app-border)",
+                    }}
+                  />
+                </div>
+
+                {/* জন্মতারিখ */}
+
+                <div>
+                  <p className="text-[11px] mb-1 text-[var(--color-app-muted)]">
+                    জন্মতারিখ
+                  </p>
+
+                  <input
+                    type="date"
+                    value={draft.birthDate}
+                    onChange={(e) =>
+                      setDraft({
+                        ...draft,
+                        birthDate: e.target.value,
+                      })
+                    }
+                    className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] text-[var(--color-app-text)]"
+                    style={{
+                      borderColor: "var(--color-app-border)",
+                    }}
+                  />
+                </div>
+
+                {/* প্রতিষ্ঠান */}
+
+                <div>
+                  <p className="text-[11px] mb-1 text-[var(--color-app-muted)]">
+                    শিক্ষা প্রতিষ্ঠান
+                  </p>
+
+                  <input
+                    value={draft.institution}
+                    onChange={(e) =>
+                      setDraft({
+                        ...draft,
+                        institution: e.target.value,
+                      })
+                    }
+                    className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] text-[var(--color-app-text)]"
+                    style={{
+                      borderColor: "var(--color-app-border)",
+                    }}
+                  />
+                </div>
+
+                {/* শ্রেণি */}
+
+                <div>
+                  <p className="text-[11px] mb-1 text-[var(--color-app-muted)]">
+                    শ্রেণি
+                  </p>
+
+                  <input
+                    value={draft.classLevel}
+                    onChange={(e) =>
+                      setDraft({
+                        ...draft,
+                        classLevel: e.target.value,
+                      })
+                    }
+                    placeholder="যেমন: নবম শ্রেণি"
+                    className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] text-[var(--color-app-text)]"
+                    style={{
+                      borderColor: "var(--color-app-border)",
+                    }}
+                  />
+                </div>
+
+                {/* অবস্থান */}
+
+                <div>
+                  <p className="text-[11px] mb-1 text-[var(--color-app-muted)]">
+                    অবস্থান
+                  </p>
+
+                  <input
+                    value={draft.location}
+                    onChange={(e) =>
+                      setDraft({
+                        ...draft,
+                        location: e.target.value,
+                      })
+                    }
+                    placeholder="যেমন: কুষ্টিয়া, বাংলাদেশ"
+                    className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] text-[var(--color-app-text)]"
+                    style={{
+                      borderColor: "var(--color-app-border)",
+                    }}
+                  />
+                </div>
+
+                {/* আগ্রহ */}
+
+                <div>
+                  <p className="text-[11px] mb-1 text-[var(--color-app-muted)]">
+                    আগ্রহের বিষয়
+                  </p>
+
+                  <input
+                    value={draft.interests?.join(", ") || ""}
+                    onChange={(e) =>
+                      setDraft({
+                        ...draft,
+                        interests: e.target.value
+                          .split(",")
+                          .map((item) => item.trim())
+                          .filter(Boolean),
+                      })
+                    }
+                    placeholder="বিজ্ঞান, গণিত, ইতিহাস"
+                    className="w-full p-2.5 rounded-lg border text-sm bg-[var(--color-app-bg)] text-[var(--color-app-text)]"
+                    style={{
+                      borderColor: "var(--color-app-border)",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 mt-5">
+                <button
+                  onClick={saveProfile}
+                  className="flex-1 py-2.5 rounded-full text-white text-sm font-semibold"
+                  style={{
+                    background: "var(--color-app-primary)",
+                  }}
+                >
+                  সংরক্ষণ করুন
+                </button>
+
+                <button
+                  onClick={() => setEditing(false)}
+                  className="px-5 py-2.5 rounded-full text-sm font-semibold border"
+                  style={{
+                    borderColor: "var(--color-app-border)",
+                    color: "var(--color-app-muted)",
+                  }}
+                >
+                  বাতিল
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
