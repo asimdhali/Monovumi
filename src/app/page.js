@@ -10,6 +10,9 @@ import {
 } from "react";
 import Image from "next/image";
 import { MoreHorizontal, Heart, MessageCircle, Share2 } from "lucide-react";
+import { doc, deleteDoc } from "firebase/firestore";
+
+import { db } from "./firebase";
 
 import { subjects, postTypes } from "./data";
 import { useAuth } from "./AuthContext";
@@ -289,6 +292,16 @@ export default function Home() {
   );
 
   const visiblePosts = filteredPosts;
+  async function handleDeletePost(post) {
+    try {
+      await deleteDoc(doc(db, "homeFeed", post.docId));
+
+      setFeedPosts((prev) => prev.filter((item) => item.id !== post.id));
+    } catch (error) {
+      console.error("HomeFeed delete error:", error);
+      alert("পোস্টটি মুছে ফেলা যায়নি।");
+    }
+  }
   const observer = useRef();
 
   const lastPostRef = useCallback(
@@ -363,6 +376,13 @@ export default function Home() {
                   onEdit={(post) => {
                     setEditingTopic(post);
                     setShowComposer(true);
+                  }}
+                  onDelete={handleDeletePost}
+                  onCopyLink={(post) => {
+                    navigator.clipboard.writeText(
+                      `${window.location.origin}/?post=${post.id}`,
+                    );
+                    alert("লিংক কপি হয়েছে।");
                   }}
                 />
               ))}

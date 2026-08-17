@@ -21,8 +21,8 @@ export async function getInitialHomeFeed() {
 
   return {
     posts: snapshot.docs.map((doc) => ({
-      id: doc.id,
       ...doc.data(),
+      docId: doc.id,
     })),
     lastDoc: snapshot.docs[snapshot.docs.length - 1] || null,
   };
@@ -47,8 +47,8 @@ export async function getNextHomeFeed(lastDoc) {
 
   return {
     posts: snapshot.docs.map((doc) => ({
-      id: doc.id,
       ...doc.data(),
+      docId: doc.id,
     })),
     lastDoc: snapshot.docs[snapshot.docs.length - 1] || null,
   };
@@ -64,8 +64,8 @@ export function subscribeHomeFeed(callback) {
   return onSnapshot(q, (snapshot) => {
     callback(
       snapshot.docs.map((doc) => ({
-        id: doc.id,
         ...doc.data(),
+        docId: doc.id,
       })),
     );
   });
