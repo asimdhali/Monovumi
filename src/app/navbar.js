@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { useAuth } from "./AuthContext";
 import SearchOverlay from "./SearchOverlay";
 
@@ -70,25 +70,34 @@ const drawerLinks = [
   },
 ];
 
-function GuestProfileIcon({ className = "w-full h-full" }) {
+function GuestProfileIcon({ size = 80, className = "" }) {
+  const rawId = useId();
+  const gradientId = `guest-profile-gradient-${rawId.replace(/:/g, "")}`;
+
   return (
     <svg
-      className={className}
+      width={size}
+      height={size}
       viewBox="0 0 80 80"
       xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
     >
       <defs>
-        <linearGradient id="guestProfileGradient" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#4F8CFF" />
           <stop offset="100%" stopColor="#8B5CF6" />
         </linearGradient>
       </defs>
 
-      <circle cx="40" cy="40" r="40" fill="url(#guestProfileGradient)" />
+      {/* রঙিন গোল background */}
+      <circle cx="40" cy="40" r="40" fill={`url(#${gradientId})`} />
 
-      <circle cx="40" cy="29" r="12" fill="white" />
+      {/* মাথা */}
+      <circle cx="40" cy="29" r="12" fill="#FFFFFF" />
 
-      <path d="M18 66c2-13 11-20 22-20s20 7 22 20" fill="white" />
+      {/* শরীর */}
+      <path d="M18 66c2-13 11-20 22-20s20 7 22 20" fill="#FFFFFF" />
     </svg>
   );
 }
@@ -113,7 +122,9 @@ function ProfileMenu() {
       <button
         onClick={() => setOpen(!open)}
         className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden"
-        style={{ boxShadow: "0 0 0 1.5px var(--color-app-accent)" }}
+        style={{
+          boxShadow: "0 0 0 1.5px var(--color-app-accent)",
+        }}
         aria-label="প্রোফাইল মেনু"
       >
         {loading ? (
@@ -126,7 +137,7 @@ function ProfileMenu() {
             referrerPolicy="no-referrer"
           />
         ) : (
-          <GuestProfileIcon />
+          <GuestProfileIcon size={36} className="block w-full h-full" />
         )}
       </button>
 
@@ -149,12 +160,14 @@ function ProfileMenu() {
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <GuestProfileIcon className="w-9 h-9" />
+              <GuestProfileIcon size={36} className="block" />
             )}
+
             <div>
               <p className="text-sm font-semibold text-[var(--color-app-text)]">
                 {profile?.name || user?.displayName || "আপনি"}
               </p>
+
               <p className="text-[11px] text-[var(--color-app-muted)]">
                 {profile?.role === "teacher"
                   ? "👨‍🏫 শিক্ষক মোড"
