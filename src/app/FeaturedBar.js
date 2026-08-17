@@ -519,7 +519,25 @@ function ComposerTrigger({
             }}
           />
         ) : (
-          <div className="w-full h-full bg-[var(--color-app-border)]" />
+          <div className="w-full h-full flex items-center justify-center text-[var(--color-app-muted)]">
+            <svg
+              width="80"
+              height="80"
+              viewBox="0 0 80 80"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#4F8CFF" />
+                  <stop offset="100%" stopColor="#8B5CF6" />
+                </linearGradient>
+              </defs>
+
+              <circle cx="40" cy="40" r="40" fill="url(#g1)" />
+              <circle cx="40" cy="29" r="12" fill="white" />
+              <path d="M18 66c2-13 11-20 22-20s20 7 22 20" fill="white" />
+            </svg>
+          </div>
         )}
       </div>
 

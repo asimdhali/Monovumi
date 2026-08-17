@@ -70,6 +70,29 @@ const drawerLinks = [
   },
 ];
 
+function GuestProfileIcon({ className = "w-full h-full" }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 80 80"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id="guestProfileGradient" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#4F8CFF" />
+          <stop offset="100%" stopColor="#8B5CF6" />
+        </linearGradient>
+      </defs>
+
+      <circle cx="40" cy="40" r="40" fill="url(#guestProfileGradient)" />
+
+      <circle cx="40" cy="29" r="12" fill="white" />
+
+      <path d="M18 66c2-13 11-20 22-20s20 7 22 20" fill="white" />
+    </svg>
+  );
+}
+
 function ProfileMenu() {
   const { user, profile, loading, logout } = useAuth();
   const [open, setOpen] = useState(false);
@@ -95,14 +118,15 @@ function ProfileMenu() {
       >
         {loading ? (
           <div className="w-full h-full animate-pulse bg-[var(--color-app-border)]" />
-        ) : profile?.photoURL ? (
+        ) : user && profile?.photoURL ? (
           <img
             src={profile.photoURL}
             alt={profile.name || "প্রোফাইল"}
             className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="w-full h-full bg-[var(--color-app-border)]" />
+          <GuestProfileIcon />
         )}
       </button>
 
@@ -117,14 +141,15 @@ function ProfileMenu() {
           <div className="flex items-center gap-2.5 px-1 pb-3 mb-2 border-b border-[var(--color-app-border)]">
             {loading ? (
               <div className="w-9 h-9 rounded-full animate-pulse bg-[var(--color-app-border)]" />
-            ) : profile?.photoURL ? (
+            ) : user && profile?.photoURL ? (
               <img
                 src={profile.photoURL}
                 alt={profile.name || "প্রোফাইল"}
                 className="w-9 h-9 rounded-full object-cover"
+                referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-[var(--color-app-border)]" />
+              <GuestProfileIcon className="w-9 h-9" />
             )}
             <div>
               <p className="text-sm font-semibold text-[var(--color-app-text)]">
