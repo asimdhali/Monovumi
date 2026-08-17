@@ -8,6 +8,7 @@ import { useBookDetailed } from "./BookDetailedContext";
 import { useAuth } from "./AuthContext";
 import { usePosts } from "./PostsContext";
 import { subjects, postTypes } from "./data";
+import { useLoginPrompt } from "./LoginPromptContext";
 
 function ThreeDotMenu({ topic, canManage }) {
   const [open, setOpen] = useState(false);
@@ -567,69 +568,15 @@ function ComposerTrigger({
   );
 }
 
-function LoginRequiredModal({ onClose }) {
-  return (
-    <div
-      className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center px-4"
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-2xl bg-[var(--color-app-surface)] border border-[var(--color-app-border)] p-6 shadow-2xl"
-      >
-        <div className="text-center">
-          <div
-            className="mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center"
-            style={{
-              background: "var(--color-app-primary-soft)",
-              color: "var(--color-app-primary)",
-            }}
-          >
-            🔐
-          </div>
-
-          <h3 className="text-lg font-bold text-[var(--color-app-text)] mb-2">
-            পোস্ট করতে লগইন করুন
-          </h3>
-
-          <p className="text-sm leading-relaxed text-[var(--color-app-muted)] mb-5">
-            মনোভূমিতে পোস্ট, মন্তব্য ও অন্যান্য ফিচার ব্যবহার করতে আপনার
-            অ্যাকাউন্টে লগইন করুন।
-          </p>
-
-          <div className="flex gap-2">
-            <button
-              onClick={onClose}
-              className="flex-1 py-2.5 rounded-full text-sm font-medium border border-[var(--color-app-border)] text-[var(--color-app-muted)]"
-            >
-              পরে করব
-            </button>
-
-            <Link
-              href="/login"
-              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white text-center"
-              style={{
-                background: "var(--color-app-primary)",
-              }}
-            >
-              লগইন করুন
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function FeaturedBar() {
   const pathname = usePathname();
   const { content, loading, addTopic } = useBookDetailed();
 
   const { user, profile, canManage, canPost, loading: authLoading } = useAuth();
+  const { openLoginPrompt } = useLoginPrompt();
 
   const [previewTopic, setPreviewTopic] = useState(null);
   const [showComposer, setShowComposer] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
   if (loading) return null;
   if (pathname !== "/") return null;
@@ -649,7 +596,7 @@ export default function FeaturedBar() {
       <div className="max-w-xl mx-auto">
         <ComposerTrigger
           onOpen={() => setShowComposer(true)}
-          onLoginRequired={() => setShowLoginModal(true)}
+          onLoginRequired={openLoginPrompt}
           canPost={canPost}
           profile={profile}
           authLoading={authLoading}
@@ -671,9 +618,7 @@ export default function FeaturedBar() {
             onClose={() => setPreviewTopic(null)}
           />
         )}
-        {showLoginModal && (
-          <LoginRequiredModal onClose={() => setShowLoginModal(false)} />
-        )}
+
         {showComposer && (
           <ComposerModal
             onClose={() => setShowComposer(false)}

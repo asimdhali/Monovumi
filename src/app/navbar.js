@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useId } from "react";
 import { useAuth } from "./AuthContext";
 import SearchOverlay from "./SearchOverlay";
+import { useLoginPrompt } from "./LoginPromptContext";
 
 const taglines = [
   "শিক্ষা, জ্ঞান-বিজ্ঞান অর্জনের ফ্রি প্ল্যাটফর্ম",
@@ -104,6 +105,8 @@ function GuestProfileIcon({ size = 80, className = "" }) {
 
 function ProfileMenu() {
   const { user, profile, loading, logout } = useAuth();
+  const { openLoginPrompt } = useLoginPrompt();
+
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -165,16 +168,30 @@ function ProfileMenu() {
 
             <div>
               <p className="text-sm font-semibold text-[var(--color-app-text)]">
-                {profile?.name || user?.displayName || "আপনি"}
+                {!user
+                  ? "স্বাগতম, অতিথি ✨"
+                  : profile?.name || user?.displayName || "আপনি"}
               </p>
 
-              <p className="text-[11px] text-[var(--color-app-muted)]">
-                {profile?.role === "teacher"
-                  ? "👨‍🏫 শিক্ষক মোড"
-                  : profile?.role === "admin"
-                    ? "👑 Admin মোড"
-                    : "🎓 শিক্ষার্থী মোড"}
-              </p>
+              {!user ? (
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    openLoginPrompt();
+                  }}
+                  className="text-[11px] font-medium text-blue-500 hover:text-blue-600 transition-colors"
+                >
+                  এক্সেস পেতে লগ ইন করুন
+                </button>
+              ) : (
+                <p className="text-[11px] text-[var(--color-app-muted)]">
+                  {profile?.role === "teacher"
+                    ? "👨‍🏫 শিক্ষক মোড"
+                    : profile?.role === "admin"
+                      ? "👑 Admin মোড"
+                      : "🎓 শিক্ষার্থী মোড"}
+                </p>
+              )}
             </div>
           </div>
 

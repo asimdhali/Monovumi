@@ -122,13 +122,13 @@ const PostCard = forwardRef(function PostCard(
 
               {post.activityType === "new" && (
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400">
-                  ✨ নতুন পোস্ট করেছেন
+                  নতুন
                 </span>
               )}
 
               {post.activityType === "major" && (
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-500/15 text-sky-400">
-                  ✏️ আপডেট করেছেন
+                  আপডেট
                 </span>
               )}
 

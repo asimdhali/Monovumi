@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -17,6 +17,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const loginPromiseRef = useRef(null);
 
   // ---------------------------------------------------------
   // Firebase login state
@@ -99,15 +100,31 @@ export function AuthProvider({ children }) {
   // Google Login
   // ---------------------------------------------------------
   async function loginWithGoogle() {
-    const provider = new GoogleAuthProvider();
+    // ইতিমধ্যে login request চললে সেটিই ব্যবহার করব
+    if (loginPromiseRef.current) {
+      return loginPromiseRef.current;
+    }
 
-    provider.setCustomParameters({
-      prompt: "select_account",
-    });
+    const loginPromise = (async () => {
+      try {
+        const provider = new GoogleAuthProvider();
 
-    const result = await signInWithPopup(auth, provider);
+        provider.setCustomParameters({
+          prompt: "select_account",
+        });
 
-    return result.user;
+        const result = await signInWithPopup(auth, provider);
+
+        return result.user;
+      } finally {
+        // popup শেষ হলে আবার নতুন login করা যাবে
+        loginPromiseRef.current = null;
+      }
+    })();
+
+    loginPromiseRef.current = loginPromise;
+
+    return loginPromise;
   }
 
   // ---------------------------------------------------------
