@@ -490,38 +490,16 @@ function FeaturedCarousel({ featuredTopics, canManage, onOpenPreview }) {
   );
 }
 
-function ComposerTrigger({ onOpen, canPost, profile, authLoading }) {
-  if (!canPost) {
-    return (
-      <div className="flex items-center gap-2.5 rounded-full px-3.5 py-3 mt-0 bg-[var(--color-app-surface)] border border-[var(--color-app-border)] opacity-70">
-        <div
-          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{ background: "var(--color-app-border)" }}
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="var(--color-app-muted)"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        </div>
-        <span className="flex-1 text-[13px] text-[var(--color-app-muted)]">
-          পোস্ট করতে লগ ইন করুন...
-        </span>
-      </div>
-    );
-  }
-
+function ComposerTrigger({
+  onOpen,
+  canPost,
+  profile,
+  authLoading,
+  onLoginRequired,
+}) {
   return (
     <button
-      onClick={onOpen}
+      onClick={canPost ? onOpen : onLoginRequired}
       className="w-full flex items-center gap-2.5 rounded-full px-3.5 py-3 mt-1 bg-[var(--color-app-surface)] border border-[var(--color-app-border)] text-left"
     >
       <div
@@ -544,9 +522,11 @@ function ComposerTrigger({ onOpen, canPost, profile, authLoading }) {
           <div className="w-full h-full bg-[var(--color-app-border)]" />
         )}
       </div>
+
       <span className="flex-1 text-[13px] text-[var(--color-app-muted)]">
         শিক্ষা বিপ্লবে অংশ নিন- পোস্ট করুন...
       </span>
+
       <div
         className="w-7 h-7 flex-shrink-0 flex items-center justify-center"
         style={{ color: "var(--color-app-primary)" }}
@@ -569,6 +549,60 @@ function ComposerTrigger({ onOpen, canPost, profile, authLoading }) {
   );
 }
 
+function LoginRequiredModal({ onClose }) {
+  return (
+    <div
+      className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center px-4"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm rounded-2xl bg-[var(--color-app-surface)] border border-[var(--color-app-border)] p-6 shadow-2xl"
+      >
+        <div className="text-center">
+          <div
+            className="mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center"
+            style={{
+              background: "var(--color-app-primary-soft)",
+              color: "var(--color-app-primary)",
+            }}
+          >
+            🔐
+          </div>
+
+          <h3 className="text-lg font-bold text-[var(--color-app-text)] mb-2">
+            পোস্ট করতে লগইন করুন
+          </h3>
+
+          <p className="text-sm leading-relaxed text-[var(--color-app-muted)] mb-5">
+            মনোভূমিতে পোস্ট, মন্তব্য ও অন্যান্য ফিচার ব্যবহার করতে আপনার
+            অ্যাকাউন্টে লগইন করুন।
+          </p>
+
+          <div className="flex gap-2">
+            <button
+              onClick={onClose}
+              className="flex-1 py-2.5 rounded-full text-sm font-medium border border-[var(--color-app-border)] text-[var(--color-app-muted)]"
+            >
+              পরে করব
+            </button>
+
+            <Link
+              href="/login"
+              className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white text-center"
+              style={{
+                background: "var(--color-app-primary)",
+              }}
+            >
+              লগইন করুন
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function FeaturedBar() {
   const pathname = usePathname();
   const { content, loading, addTopic } = useBookDetailed();
@@ -577,6 +611,7 @@ export default function FeaturedBar() {
 
   const [previewTopic, setPreviewTopic] = useState(null);
   const [showComposer, setShowComposer] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   if (loading) return null;
   if (pathname !== "/") return null;
@@ -596,6 +631,7 @@ export default function FeaturedBar() {
       <div className="max-w-xl mx-auto">
         <ComposerTrigger
           onOpen={() => setShowComposer(true)}
+          onLoginRequired={() => setShowLoginModal(true)}
           canPost={canPost}
           profile={profile}
           authLoading={authLoading}
@@ -616,6 +652,9 @@ export default function FeaturedBar() {
             topic={previewTopic}
             onClose={() => setPreviewTopic(null)}
           />
+        )}
+        {showLoginModal && (
+          <LoginRequiredModal onClose={() => setShowLoginModal(false)} />
         )}
         {showComposer && (
           <ComposerModal
