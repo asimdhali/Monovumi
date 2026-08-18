@@ -11,6 +11,7 @@ import { AuthProvider } from "./AuthContext";
 import { BookDetailedProvider } from "./BookDetailedContext";
 import FeaturedBar from "./FeaturedBar";
 import { PostsProvider } from "./PostsContext";
+import { NotificationProvider } from "./NotificationContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,9 +49,11 @@ export default function RootLayout({ children }) {
           <BookDetailedProvider>
             <PostsProvider>
               <LoginPromptProvider>
-                <Navbar />
-                <FeaturedBar />
-                {children}
+                <NotificationProvider>
+                  <Navbar />
+                  <FeaturedBar />
+                  {children}
+                </NotificationProvider>
               </LoginPromptProvider>
             </PostsProvider>
           </BookDetailedProvider>

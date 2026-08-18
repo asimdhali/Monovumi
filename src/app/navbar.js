@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useId } from "react";
 import { useAuth } from "./AuthContext";
 import SearchOverlay from "./SearchOverlay";
 import { useLoginPrompt } from "./LoginPromptContext";
+import { useNotifications } from "./NotificationContext";
 
 const taglines = [
   "শিক্ষা, জ্ঞান-বিজ্ঞান অর্জনের ফ্রি প্ল্যাটফর্ম",
@@ -46,7 +47,7 @@ const navLinks = [
     label: "বই",
     icon: "M12 6.25C10.5 5 8.5 4.5 6 4.5c-1 0-2 .1-3 .4v13.5c1-.3 2-.4 3-.4 2.5 0 4.5.5 6 1.75m0-13.5c1.5-1.25 3.5-1.75 6-1.75 1 0 2 .1 3 .4v13.5c-1-.3-2-.4-3-.4-2.5 0-4.5.5-6 1.75m0-13.5v13.5",
   },
-  {
+  /*{
     href: "/competitions",
     label: "প্রতিযোগিতা",
     icon: "M8 21h8m-4-4v4M7 4h10v3a5 5 0 01-10 0V4zM7 5H4a2 2 0 002 2h1V5zm10 0h3a2 2 0 01-2 2h-1V5z",
@@ -55,7 +56,7 @@ const navLinks = [
     href: "/qa",
     label: "প্রশ্ন",
     icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z",
-  },
+  },*/
   {
     href: "/profile",
     label: "প্রোফাইল",
@@ -425,6 +426,8 @@ function ProfileMenu() {
 ========================= */
 
 function NavIcons({ onSearchClick }) {
+  const { unreadCount } = useNotifications();
+
   return (
     <div className="flex items-center gap-1">
       {/* Search */}
@@ -467,13 +470,17 @@ function NavIcons({ onSearchClick }) {
           />
         </svg>
 
-        <span
-          className="absolute top-1.5 right-1.5 w-[7px] h-[7px] rounded-full"
-          style={{
-            background: "var(--color-app-accent)",
-            border: "2px solid var(--color-app-bg)",
-          }}
-        />
+        {unreadCount > 0 && (
+          <span
+            className="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+            style={{
+              background: "var(--color-app-accent)",
+              border: "2px solid var(--color-app-bg)",
+            }}
+          >
+            {unreadCount > 99 ? "99+" : unreadCount}
+          </span>
+        )}
       </Link>
 
       {/* Profile */}

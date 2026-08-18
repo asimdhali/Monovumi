@@ -159,7 +159,7 @@ export default function BookDetailedPage() {
   }
 
   return (
-    <div className="min-h-screen px-4 py-6">
+    <div className="min-h-screen px-4 pt-6 pb-24">
       {/* Header */}
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between">
