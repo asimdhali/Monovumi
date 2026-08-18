@@ -602,23 +602,6 @@ export default function FeaturedBar() {
           authLoading={authLoading}
         />
 
-        {featuredTopics.length > 0 && (
-          <div className="mt-1">
-            <FeaturedCarousel
-              featuredTopics={featuredTopics}
-              canManage={canManage}
-              onOpenPreview={setPreviewTopic}
-            />
-          </div>
-        )}
-
-        {previewTopic && (
-          <FeaturedPreviewModal
-            topic={previewTopic}
-            onClose={() => setPreviewTopic(null)}
-          />
-        )}
-
         {showComposer && (
           <ComposerModal
             onClose={() => setShowComposer(false)}
