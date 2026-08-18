@@ -21,6 +21,7 @@ function RotatingTagline() {
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % taglines.length);
     }, 4000);
+
     return () => clearInterval(timer);
   }, []);
 
@@ -62,7 +63,6 @@ const navLinks = [
   },
 ];
 
-// সাইড ড্রয়ারের ভেতরের অতিরিক্ত অপশন
 const drawerLinks = [
   {
     href: "/books",
@@ -91,24 +91,108 @@ function GuestProfileIcon({ size = 80, className = "" }) {
         </linearGradient>
       </defs>
 
-      {/* রঙিন গোল background */}
       <circle cx="40" cy="40" r="40" fill={`url(#${gradientId})`} />
 
-      {/* মাথা */}
       <circle cx="40" cy="29" r="12" fill="#FFFFFF" />
 
-      {/* শরীর */}
       <path d="M18 66c2-13 11-20 22-20s20 7 22 20" fill="#FFFFFF" />
     </svg>
   );
 }
 
+/* =========================
+   Theme Icons
+========================= */
+
+function SunIcon() {
+  return (
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <circle cx="12" cy="12" r="4" strokeWidth="2" />
+
+      <path
+        strokeLinecap="round"
+        strokeWidth="2"
+        d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"
+      />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+      />
+    </svg>
+  );
+}
+
+/* =========================
+   Profile Menu
+========================= */
+
 function ProfileMenu() {
   const { user, profile, loading, logout } = useAuth();
+
   const { openLoginPrompt } = useLoginPrompt();
 
   const [open, setOpen] = useState(false);
+
+  const [theme, setTheme] = useState("dark");
+
   const menuRef = useRef(null);
+
+  /* =========================
+     Load saved theme
+  ========================= */
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("monovumi-theme");
+
+    if (savedTheme === "light") {
+      setTheme("light");
+      document.documentElement.classList.add("light");
+    } else {
+      setTheme("dark");
+      document.documentElement.classList.remove("light");
+    }
+  }, []);
+
+  /* =========================
+     Theme Toggle
+  ========================= */
+
+  function toggleTheme() {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+
+    setTheme(nextTheme);
+
+    if (nextTheme === "light") {
+      document.documentElement.classList.add("light");
+      localStorage.setItem("monovumi-theme", "light");
+    } else {
+      document.documentElement.classList.remove("light");
+      localStorage.setItem("monovumi-theme", "dark");
+    }
+  }
+
+  /* =========================
+     Outside Click
+  ========================= */
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -116,19 +200,39 @@ function ProfileMenu() {
         setOpen(false);
       }
     }
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
+
+  /* =========================
+     Logout
+  ========================= */
+
+  async function handleLogout() {
+    try {
+      setOpen(false);
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  }
 
   return (
     <div className="relative" ref={menuRef}>
+      {/* Profile Button */}
+
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpen((prev) => !prev)}
         className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden"
         style={{
           boxShadow: "0 0 0 1.5px var(--color-app-accent)",
         }}
         aria-label="প্রোফাইল মেনু"
+        aria-expanded={open}
       >
         {loading ? (
           <div className="w-full h-full animate-pulse bg-[var(--color-app-border)]" />
@@ -144,36 +248,52 @@ function ProfileMenu() {
         )}
       </button>
 
+      {/* =========================
+          Small Profile Modal
+      ========================= */}
+
       {open && (
         <div
-          className="absolute right-0 mt-2 w-64 rounded-xl shadow-lg border p-3 z-[80]"
+          className="profile-menu-panel absolute right-0 mt-2 w-60 max-w-[calc(100vw-24px)] rounded-2xl shadow-xl border p-3 z-[80]"
           style={{
             background: "var(--color-app-surface)",
             borderColor: "var(--color-app-border)",
           }}
         >
-          <div className="flex items-center gap-2.5 px-1 pb-3 mb-2 border-b border-[var(--color-app-border)]">
+          {/* =====================
+              User Header
+          ===================== */}
+
+          <div className="flex items-center gap-3 px-1 pb-3">
             {loading ? (
-              <div className="w-9 h-9 rounded-full animate-pulse bg-[var(--color-app-border)]" />
+              <div className="w-10 h-10 rounded-full animate-pulse bg-[var(--color-app-border)]" />
             ) : user && profile?.photoURL ? (
               <img
                 src={profile.photoURL}
                 alt={profile.name || "প্রোফাইল"}
-                className="w-9 h-9 rounded-full object-cover"
+                className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <GuestProfileIcon size={36} className="block" />
+              <GuestProfileIcon size={40} className="block flex-shrink-0" />
             )}
 
-            <div>
-              <p className="text-sm font-semibold text-[var(--color-app-text)]">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold truncate text-[var(--color-app-text)]">
                 {!user
                   ? "স্বাগতম, অতিথি ✨"
                   : profile?.name || user?.displayName || "আপনি"}
               </p>
 
-              {!user ? (
+              {user ? (
+                <p className="text-[11px] text-[var(--color-app-muted)] truncate">
+                  {profile?.role === "teacher"
+                    ? "👨‍🏫 শিক্ষক মোড"
+                    : profile?.role === "admin"
+                      ? "👑 Admin মোড"
+                      : "🎓 শিক্ষার্থী মোড"}
+                </p>
+              ) : (
                 <button
                   onClick={() => {
                     setOpen(false);
@@ -181,49 +301,134 @@ function ProfileMenu() {
                   }}
                   className="text-[11px] font-medium text-blue-500 hover:text-blue-600 transition-colors"
                 >
-                  এক্সেস পেতে লগ ইন করুন
+                  লগ ইন করুন
                 </button>
-              ) : (
-                <p className="text-[11px] text-[var(--color-app-muted)]">
-                  {profile?.role === "teacher"
-                    ? "👨‍🏫 শিক্ষক মোড"
-                    : profile?.role === "admin"
-                      ? "👑 Admin মোড"
-                      : "🎓 শিক্ষার্থী মোড"}
-                </p>
               )}
             </div>
           </div>
 
-          <Link
-            href="/profile"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)] transition-colors"
+          {/* Divider */}
+
+          <div className="profile-menu-divider" />
+
+          {/* =====================
+              Day / Night Mode
+          ===================== */}
+
+          <button
+            onClick={toggleTheme}
+            className="profile-menu-item w-full flex items-center justify-between gap-3 px-3 py-2.5 mt-2 rounded-xl text-sm text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)]"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="var(--color-app-primary)"
-              viewBox="0 0 24 24"
+            <div className="flex items-center gap-3">
+              <span
+                className="profile-mode-icon w-8 h-8 rounded-full flex items-center justify-center"
+                style={{
+                  background: "var(--color-app-primary-soft)",
+                  color: "var(--color-app-primary)",
+                }}
+              >
+                {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+              </span>
+
+              <span>{theme === "dark" ? "ডে মোড" : "নাইট মোড"}</span>
+            </div>
+
+            {/* Small status indicator */}
+
+            <span className="text-[10px] text-[var(--color-app-muted)]">
+              {theme === "dark" ? "Night" : "Day"}
+            </span>
+          </button>
+
+          {/* =====================
+              Logout / Login
+          ===================== */}
+
+          {user ? (
+            <button
+              onClick={handleLogout}
+              className="profile-menu-item w-full flex items-center gap-3 px-3 py-2.5 mt-1 rounded-xl text-sm text-red-500 hover:bg-red-500/10"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 12a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 0114 0"
-              />
-            </svg>
-            প্রোফাইল দেখুন
-          </Link>
+              <span className="w-8 h-8 rounded-full flex items-center justify-center bg-red-500/10">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"
+                  />
+
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 17l5-5-5-5M15 12H3"
+                  />
+                </svg>
+              </span>
+
+              <span>লগ আউট</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setOpen(false);
+                openLoginPrompt();
+              }}
+              className="profile-menu-item w-full flex items-center gap-3 px-3 py-2.5 mt-1 rounded-xl text-sm text-[var(--color-app-text)] hover:bg-[var(--color-app-primary-soft)]"
+            >
+              <span
+                className="w-8 h-8 rounded-full flex items-center justify-center"
+                style={{
+                  background: "var(--color-app-primary-soft)",
+                  color: "var(--color-app-primary)",
+                }}
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"
+                  />
+
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 17l5-5-5-5M15 12H3"
+                  />
+                </svg>
+              </span>
+
+              <span>লগ ইন করুন</span>
+            </button>
+          )}
         </div>
       )}
     </div>
   );
 }
 
+/* =========================
+   Navbar Icons
+========================= */
+
 function NavIcons({ onSearchClick }) {
   return (
     <div className="flex items-center gap-1">
+      {/* Search */}
+
       <button
         onClick={onSearchClick}
         className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors flex-shrink-0"
@@ -236,9 +441,13 @@ function NavIcons({ onSearchClick }) {
           viewBox="0 0 24 24"
         >
           <circle cx="11" cy="11" r="7" strokeWidth="2" strokeLinecap="round" />
+
           <path d="M21 21l-4.35-4.35" strokeWidth="2" strokeLinecap="round" />
         </svg>
       </button>
+
+      {/* Notifications */}
+
       <Link
         href="/notifications"
         className="relative w-9 h-9 rounded-full flex items-center justify-center hover:bg-[var(--color-app-primary-soft)] transition-colors flex-shrink-0"
@@ -257,6 +466,7 @@ function NavIcons({ onSearchClick }) {
             d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
           />
         </svg>
+
         <span
           className="absolute top-1.5 right-1.5 w-[7px] h-[7px] rounded-full"
           style={{
@@ -265,43 +475,70 @@ function NavIcons({ onSearchClick }) {
           }}
         />
       </Link>
+
+      {/* Profile */}
+
       <ProfileMenu />
     </div>
   );
 }
 
+/* =========================
+   Main Navbar
+========================= */
+
 export default function Navbar() {
   const pathname = usePathname();
+
   const [drawerOpen, setDrawerOpen] = useState(false);
+
   const [searchOpen, setSearchOpen] = useState(false);
+
   const touchStartX = useRef(null);
 
-  // বাম কিনারা থেকে সোয়াইপ করলে ড্রয়ার খুলবে
+  /* =========================
+     Left Edge Swipe
+  ========================= */
+
   useEffect(() => {
     function handleTouchStart(e) {
       const x = e.touches[0].clientX;
-      if (x < 24) touchStartX.current = x;
-      else touchStartX.current = null;
+
+      if (x < 24) {
+        touchStartX.current = x;
+      } else {
+        touchStartX.current = null;
+      }
     }
+
     function handleTouchMove(e) {
       if (touchStartX.current === null) return;
+
       const x = e.touches[0].clientX;
+
       if (x - touchStartX.current > 60) {
         setDrawerOpen(true);
         touchStartX.current = null;
       }
     }
+
     document.addEventListener("touchstart", handleTouchStart);
+
     document.addEventListener("touchmove", handleTouchMove);
+
     return () => {
       document.removeEventListener("touchstart", handleTouchStart);
+
       document.removeEventListener("touchmove", handleTouchMove);
     };
   }, []);
 
   return (
     <>
-      {/* ডেস্কটপ টপ নেভ */}
+      {/* =========================
+          Desktop Top Navbar
+      ========================= */}
+
       <header className="hidden lg:block sticky top-0 z-50 bg-[var(--color-app-bg)]/95 backdrop-blur-md border-b border-[var(--color-app-border)]">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -324,6 +561,7 @@ export default function Navbar() {
                 />
               </svg>
             </button>
+
             <div className="flex flex-col leading-tight">
               <Link
                 href="/"
@@ -331,13 +569,16 @@ export default function Navbar() {
               >
                 মনোভূমি
               </Link>
+
               <RotatingTagline />
             </div>
           </div>
+
           <div className="flex items-center gap-8">
             <nav className="flex gap-8">
               {navLinks.map((link) => {
                 const active = pathname === link.href;
+
                 return (
                   <Link
                     key={link.href}
@@ -353,12 +594,16 @@ export default function Navbar() {
                 );
               })}
             </nav>
+
             <NavIcons onSearchClick={() => setSearchOpen(true)} />
           </div>
         </div>
       </header>
 
-      {/* মোবাইল টপ বার */}
+      {/* =========================
+          Mobile Top Navbar
+      ========================= */}
+
       <header className="lg:hidden sticky top-0 z-40 bg-[var(--color-app-bg)]/95 backdrop-blur-md border-b border-[var(--color-app-border)]">
         <div className="px-4 h-14 flex items-center gap-2">
           <button
@@ -389,11 +634,15 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* মোবাইল বটম নেভ */}
+      {/* =========================
+          Mobile Bottom Navbar
+      ========================= */}
+
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-[var(--color-app-surface)]/95 backdrop-blur-md border-t border-[var(--color-app-border)]">
         <div className="flex items-stretch h-16">
           {navLinks.map((link) => {
             const active = pathname === link.href;
+
             return (
               <Link
                 key={link.href}
@@ -417,6 +666,7 @@ export default function Navbar() {
                     d={link.icon}
                   />
                 </svg>
+
                 <span
                   className="text-[10px] font-medium"
                   style={{
@@ -433,7 +683,10 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* সাইড ড্রয়ার */}
+      {/* =========================
+          Drawer Overlay
+      ========================= */}
+
       <div
         onClick={() => setDrawerOpen(false)}
         className={`fixed inset-0 bg-black/40 z-[60] transition-opacity duration-300 ${
@@ -442,6 +695,11 @@ export default function Navbar() {
             : "opacity-0 pointer-events-none"
         }`}
       />
+
+      {/* =========================
+          Side Drawer
+      ========================= */}
+
       <aside
         className={`fixed top-0 left-0 bottom-0 z-[70] w-72 bg-[var(--color-app-surface)] shadow-2xl transition-transform duration-300 ${
           drawerOpen ? "translate-x-0" : "-translate-x-full"
@@ -451,6 +709,7 @@ export default function Navbar() {
           <span className="font-[family-name:var(--font-bengali-serif)] text-lg font-bold text-[var(--color-app-primary)]">
             মনোভূমি
           </span>
+
           <button
             onClick={() => setDrawerOpen(false)}
             className="p-1.5 rounded-full hover:bg-[var(--color-app-primary-soft)] transition-colors"
@@ -471,6 +730,7 @@ export default function Navbar() {
             </svg>
           </button>
         </div>
+
         <nav className="p-3">
           {drawerLinks.map((link) => (
             <Link
@@ -492,11 +752,16 @@ export default function Navbar() {
                   d={link.icon}
                 />
               </svg>
+
               {link.label}
             </Link>
           ))}
         </nav>
       </aside>
+
+      {/* =========================
+          Search Overlay
+      ========================= */}
 
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>

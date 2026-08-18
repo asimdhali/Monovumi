@@ -22,6 +22,22 @@
   --color-app-accent-soft: #2a2515;
 }
 
+/* =========================
+   Light Theme
+========================= */
+
+html.light {
+  --color-app-bg: #f7f8f4;
+  --color-app-surface: #ffffff;
+  --color-app-text: #1d211b;
+  --color-app-muted: #73786d;
+  --color-app-border: #e2e5dc;
+  --color-app-primary: #4f8f70;
+  --color-app-primary-soft: #edf5ef;
+  --color-app-accent: #c49a28;
+  --color-app-accent-soft: #faf4df;
+}
+
 @keyframes taglineIn {
   0% {
     opacity: 0;
@@ -445,4 +461,59 @@
 .prose-content ol {
   list-style: decimal;
   margin-left: 24px;
+}
+
+/* =========================
+   Navbar Profile Modal
+========================= */
+
+.profile-menu-panel {
+  animation: profileMenuIn 0.18s ease-out;
+  transform-origin: top right;
+}
+
+@keyframes profileMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Profile menu item */
+.profile-menu-item {
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.profile-menu-item:active {
+  transform: scale(0.98);
+}
+
+/* Profile menu divider */
+.profile-menu-divider {
+  height: 1px;
+  background: var(--color-app-border);
+}
+
+/* Mobile profile menu */
+@media (max-width: 639px) {
+  .profile-menu-panel {
+    width: 220px;
+    max-width: calc(100vw - 24px);
+  }
+}
+
+/* Dark/Light mode button icon animation */
+.profile-mode-icon {
+  transition: transform 0.2s ease;
+}
+
+.profile-menu-item:hover .profile-mode-icon {
+  transform: rotate(12deg);
 }
