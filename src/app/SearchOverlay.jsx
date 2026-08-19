@@ -18,24 +18,10 @@ import { subscribeToAllSubjects } from "./services/bookDetailedService";
 const categories = [
   { id: "all", label: "সব" },
   { id: "book", label: "বই" },
-  { id: "note", label: "নোট" },
-  { id: "qa", label: "প্রশ্নোত্তর" },
-  { id: "competition", label: "প্রতিযোগিতা" },
   { id: "post", label: "পোস্ট" },
 ];
 
-/* =========================================================
-   Trending
-========================================================= */
-
-const trendingTopics = [
-  "সালোকসংশ্লেষণ",
-  "ভগ্নাংশ",
-  "নিউটনের সূত্র",
-  "সমাস",
-  "চর্যাপদ",
-];
-
+/* 
 /* =========================================================
    Text normalization
 ========================================================= */
@@ -739,28 +725,6 @@ export default function SearchOverlay({ open, onClose }) {
                   </div>
                 </div>
               )}
-
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wide mb-2 text-[var(--color-app-muted)]">
-                  জনপ্রিয় বিষয়
-                </p>
-
-                <div className="flex flex-wrap gap-2">
-                  {trendingTopics.map((topic) => (
-                    <button
-                      key={topic}
-                      onClick={() => commitSearch(topic)}
-                      className="px-3.5 py-1.5 rounded-full text-xs font-medium"
-                      style={{
-                        background: "var(--color-app-accent-soft)",
-                        color: "var(--color-app-accent)",
-                      }}
-                    >
-                      🔥 {topic}
-                    </button>
-                  ))}
-                </div>
-              </div>
             </>
           ) : loading ? (
             /* =================================================
