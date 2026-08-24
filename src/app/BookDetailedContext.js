@@ -31,6 +31,9 @@ import {
   buildDeleteVolume,
 } from "./services/bookDetailedLogic";
 
+import { createNotification } from "./services/notificationService";
+import { auth } from "./firebase";
+
 const BookDetailedContext = createContext(null);
 
 const SUBJECT_ORDER = [
@@ -47,6 +50,8 @@ const SUBJECT_ORDER = [
   "মানসিক দক্ষতা",
   "নৈতিকতা ও সুশাসন",
 ];
+
+const ADMIN_UID = "cPAgOCPYovRhadNXvK5uBVMfJ1I3";
 
 export function BookDetailedProvider({ children }) {
   const [content, setContent] = useState({});
@@ -248,6 +253,24 @@ export function BookDetailedProvider({ children }) {
 
       activityType: "new",
     });
+
+    const currentUser = auth.currentUser;
+
+    if (currentUser && currentUser.uid !== ADMIN_UID) {
+      await createNotification({
+        userId: ADMIN_UID,
+
+        type: "new_topic",
+
+        title: "নতুন পোস্ট করা হয়েছে",
+
+        message: `${
+          currentUser.displayName || "একজন ব্যবহারকারী"
+        } "${savedTopic.title}" নামে নতুন একটি পোস্ট করেছে।`,
+
+        link: `/books/${encodeURIComponent(subject)}/${savedPaper.id}/${savedTopic.id}`,
+      });
+    }
   }
 
   async function editTopic(subject, paperId, topicId, updatedFields) {
@@ -299,6 +322,27 @@ export function BookDetailedProvider({ children }) {
 
       activityType: editType,
     });
+
+    const currentUser = auth.currentUser;
+
+    if (currentUser && currentUser.uid !== ADMIN_UID) {
+      await createNotification({
+        userId: ADMIN_UID,
+
+        type: "topic_updated",
+
+        title:
+          editType === "major"
+            ? "একটি পোস্ট আপডেট করা হয়েছে"
+            : "একটি পোস্টে ছোট পরিবর্তন করা হয়েছে",
+
+        message: `${
+          currentUser.displayName || "একজন ব্যবহারকারী"
+        } "${savedTopic.title}" পোস্টটি আপডেট করেছে।`,
+
+        link: `/books/${encodeURIComponent(subject)}/${savedPaper.id}/${savedTopic.id}`,
+      });
+    }
   }
 
   async function deleteTopic(subject, paperId, topicId) {
