@@ -10,7 +10,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "./firebase";
-
+import { createAdminNotification } from "./services/notificationService";
 const PostsContext = createContext(null);
 
 export function PostsProvider({ children }) {
@@ -35,7 +35,7 @@ export function PostsProvider({ children }) {
   }, []);
 
   async function addPost(newPost) {
-    await addDoc(collection(db, "posts"), {
+    const postRef = await addDoc(collection(db, "posts"), {
       ...newPost,
 
       // Admin review না করা পর্যন্ত Public হবে না
@@ -47,6 +47,23 @@ export function PostsProvider({ children }) {
       createdAt: newPost.createdAt || Date.now(),
       updatedAt: Date.now(),
     });
+
+    // পোস্ট সফলভাবে তৈরি হওয়ার পর Admin-কে Notification
+    try {
+      await createAdminNotification({
+        type: "new_post",
+        title: "নতুন পোস্ট এসেছে",
+        message: `${newPost.name || newPost.contributor || "একজন ব্যবহারকারী"} নতুন একটি পোস্ট করেছেন${
+          newPost.title ? `: ${newPost.title}` : "।"
+        }`,
+        link: `/`,
+      });
+    } catch (notificationError) {
+      // Notification ব্যর্থ হলেও পোস্ট সফল থাকবে
+      console.error("Admin post notification error:", notificationError);
+    }
+
+    return postRef.id;
   }
 
   return (
