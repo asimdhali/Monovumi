@@ -12,6 +12,12 @@ import {
 
 import { db } from "../firebase";
 
+// =========================================================
+// Admin UID
+// =========================================================
+
+export const ADMIN_UID = "cPAgOCPYovRhadNXvK5uBVMfJ1I3";
+
 /*
  * নতুন Notification তৈরি
  */
@@ -34,6 +40,24 @@ export async function createNotification({
     link,
     read: false,
     createdAt: serverTimestamp(),
+  });
+}
+
+/*
+ * Admin-এর জন্য Notification তৈরি
+ */
+export async function createAdminNotification({
+  type = "general",
+  title,
+  message,
+  link = "",
+}) {
+  return createNotification({
+    userId: ADMIN_UID,
+    type,
+    title,
+    message,
+    link,
   });
 }
 

@@ -9,6 +9,7 @@ import {
 } from "firebase/auth";
 
 import { auth, db } from "./firebase";
+import { createNotification } from "./services/notificationService";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const AuthContext = createContext(null);
@@ -55,7 +56,20 @@ export function AuthProvider({ children }) {
             updatedAt: Date.now(),
           };
 
+          // নতুন User profile তৈরি
           await setDoc(userRef, newProfile);
+
+          console.log("নতুন ইউজার তৈরি হয়েছে:", currentUser.uid);
+
+          await createNotification({
+            userId: "cPAgOCPYovRhadNXvK5uBVMfJ1I3",
+            type: "new_user",
+            title: "নতুন ব্যবহারকারী লগইন করেছেন",
+            message: `${currentUser.displayName || "একজন নতুন ব্যবহারকারী"} মনোভূমিতে লগইন করেছেন।`,
+            link: `/profile/${currentUser.uid}`,
+          });
+
+          console.log("Admin notification তৈরি করার চেষ্টা করা হয়েছে");
 
           setProfile(newProfile);
         } else {
