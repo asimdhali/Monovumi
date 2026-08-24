@@ -7,6 +7,7 @@ import {
   useState,
   useCallback,
   forwardRef,
+  Suspense,
 } from "react";
 import Link from "next/link";
 
@@ -274,7 +275,7 @@ const PostCard = forwardRef(function PostCard(
   );
 });
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams();
   const postIdFromUrl = searchParams.get("post");
 
@@ -474,5 +475,13 @@ export default function Home() {
         />
       )}
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<HomeFeedSkeleton />}>
+      <HomeContent />
+    </Suspense>
   );
 }
