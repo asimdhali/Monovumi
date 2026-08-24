@@ -9,17 +9,11 @@ import { db } from "./firebase";
 
 import { subjects, books, competitions, questions, posts } from "./data";
 
-import { subscribeToAllSubjects } from "./services/bookDetailedService";
-
 /* =========================================================
    Categories
 ========================================================= */
 
-const categories = [
-  { id: "all", label: "সব" },
-  { id: "book", label: "বই" },
-  { id: "post", label: "পোস্ট" },
-];
+const categories = [{ id: "post", label: "পোস্ট" }];
 
 /* 
 /* =========================================================
@@ -308,14 +302,24 @@ function buildHomeFeedIndex(data) {
     if (!item || typeof item !== "object") return;
 
     const title =
-      item.title || item.name || item.heading || item.type || "পোস্ট";
+      item.title || item.topicTitle || item.heading || item.type || "পোস্ট";
 
     const author =
-      item.authorName || item.author || item.name || item.userName || "";
+      item.authorName || item.contributor || item.author || item.name || "";
 
-    const subject = item.subject || item.category || "";
+    const subject = item.subject || "";
 
-    const href = item.href || item.url || item.path || "/";
+    const paperId = item.paperId || "";
+
+    const topicId = item.topicId || item.id || "";
+
+    const href =
+      item.href ||
+      item.url ||
+      item.path ||
+      (subject && paperId && topicId
+        ? `/books/${encodeURIComponent(subject)}/${paperId}/${topicId}`
+        : "/");
 
     index.push(
       createResult({
@@ -339,14 +343,11 @@ function buildHomeFeedIndex(data) {
 
 export default function SearchOverlay({ open, onClose }) {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("all");
+  const [category, setCategory] = useState("post");
 
   const [recent, setRecent] = useState([]);
 
-  const [detailedBooks, setDetailedBooks] = useState({});
   const [homeFeed, setHomeFeed] = useState({});
-
-  const [loading, setLoading] = useState(false);
 
   const inputRef = useRef(null);
 
@@ -369,25 +370,6 @@ export default function SearchOverlay({ open, onClose }) {
       console.error("Recent search load error:", error);
     }
   }, []);
-
-  /* =======================================================
-     Subscribe to detailed books
-  ======================================================= */
-
-  useEffect(() => {
-    if (!open) return;
-
-    setLoading(true);
-
-    const unsubscribe = subscribeToAllSubjects((data) => {
-      setDetailedBooks(data);
-      setLoading(false);
-    });
-
-    return () => {
-      unsubscribe?.();
-    };
-  }, [open]);
 
   /* =======================================================
      Subscribe to homeFeed
@@ -431,7 +413,7 @@ export default function SearchOverlay({ open, onClose }) {
     }
 
     setQuery("");
-    setCategory("all");
+    setCategory("post");
   }, [open]);
 
   /* =======================================================
@@ -457,14 +439,10 @@ export default function SearchOverlay({ open, onClose }) {
   ======================================================= */
 
   const searchIndex = useMemo(() => {
-    const staticIndex = buildStaticIndex();
-
-    const detailedIndex = buildDetailedBookIndex(detailedBooks);
-
     const homeFeedIndex = buildHomeFeedIndex(homeFeed);
 
-    return [...staticIndex, ...detailedIndex, ...homeFeedIndex];
-  }, [detailedBooks, homeFeed]);
+    return homeFeedIndex;
+  }, [homeFeed]);
 
   /* =======================================================
      Search
@@ -726,18 +704,6 @@ export default function SearchOverlay({ open, onClose }) {
                 </div>
               )}
             </>
-          ) : loading ? (
-            /* =================================================
-               Loading
-            ================================================= */
-
-            <div className="text-center py-14">
-              <div className="mx-auto w-8 h-8 rounded-full border-2 border-[var(--color-app-border)] border-t-[var(--color-app-primary)] animate-spin mb-4" />
-
-              <p className="text-sm text-[var(--color-app-muted)]">
-                সার্চ ডেটা প্রস্তুত হচ্ছে...
-              </p>
-            </div>
           ) : results.length === 0 ? (
             /* =================================================
                No Results

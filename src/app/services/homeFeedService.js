@@ -1,24 +1,24 @@
+import { doc, setDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
-import { collection, doc, setDoc, deleteDoc } from "firebase/firestore";
-
-/**
- * Home Feed-এ একটি পোস্ট যোগ/আপডেট
- */
+/*
+  পোস্ট Home Feed-এ সংরক্ষণ
+*/
 export async function saveHomeFeedPost(post) {
   await setDoc(
     doc(db, "homeFeed", String(post.id)),
     {
       ...post,
-      updatedAt: Date.now(),
     },
-    { merge: true },
+    {
+      merge: true,
+    },
   );
 }
 
-/**
- * Home Feed থেকে পোস্ট ডিলিট
- */
+/*
+  পোস্ট Home Feed থেকে মুছে ফেলা
+*/
 export async function deleteHomeFeedPost(postId) {
   await deleteDoc(doc(db, "homeFeed", String(postId)));
 }

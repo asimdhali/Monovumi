@@ -12,6 +12,8 @@ export function buildHomeFeed(content) {
         feed.push({
           ...topic,
 
+          topicId: topic.id,
+
           subject,
           paperId: paper.id,
           paperTitle: paper.title,

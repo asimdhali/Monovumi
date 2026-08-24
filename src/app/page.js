@@ -8,6 +8,9 @@ import {
   useCallback,
   forwardRef,
 } from "react";
+import Link from "next/link";
+
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { MoreHorizontal, Heart, MessageCircle, Share2 } from "lucide-react";
 import { doc, deleteDoc } from "firebase/firestore";
@@ -208,9 +211,15 @@ const PostCard = forwardRef(function PostCard(
         </div>
       </div>
       {post.title && (
-        <h2 className="text-lg font-bold mb-2 text-[var(--color-app-text)]">
+        <Link
+          href={
+            post.href ||
+            `/books/${encodeURIComponent(post.subject)}/${post.paperId}/${post.id}`
+          }
+          className="block text-lg font-bold mb-2 text-[var(--color-app-text)] hover:text-[var(--color-app-primary)] transition-colors"
+        >
           {post.title}
-        </h2>
+        </Link>
       )}
       <div
         ref={textRef}
@@ -266,6 +275,9 @@ const PostCard = forwardRef(function PostCard(
 });
 
 export default function Home() {
+  const searchParams = useSearchParams();
+  const postIdFromUrl = searchParams.get("post");
+
   const { teacherVerified } = useAuth();
   const { posts } = usePosts();
   const { content, addTopic, editTopic, deleteTopic, loading } =
@@ -303,6 +315,7 @@ export default function Home() {
     }
   }
   const observer = useRef();
+  const postRefs = useRef({});
 
   const lastPostRef = useCallback(
     (node) => {
@@ -359,6 +372,24 @@ export default function Home() {
     return () => unsubscribe();
   }, []);
 
+  // এখানে নতুন কোড
+  useEffect(() => {
+    if (!postIdFromUrl) return;
+
+    const timer = setTimeout(() => {
+      const element = postRefs.current[postIdFromUrl];
+
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [postIdFromUrl, feedPosts]);
+
   return (
     <div className="min-h-screen font-[family-name:var(--font-bengali-sans)] px-4 pb-16">
       {/* মূল ফিড */}
@@ -370,7 +401,17 @@ export default function Home() {
             <>
               {visiblePosts.map((post, index) => (
                 <PostCard
-                  ref={index === visiblePosts.length - 1 ? lastPostRef : null}
+                  ref={(node) => {
+                    // প্রতিটি পোস্টের DOM reference সংরক্ষণ
+                    if (node) {
+                      postRefs.current[post.docId || post.id] = node;
+                    }
+
+                    // শেষ পোস্টে infinite scroll observer
+                    if (index === visiblePosts.length - 1) {
+                      lastPostRef(node);
+                    }
+                  }}
                   key={post.id}
                   post={post}
                   onEdit={(post) => {
@@ -379,9 +420,14 @@ export default function Home() {
                   }}
                   onDelete={handleDeletePost}
                   onCopyLink={(post) => {
+                    const postUrl =
+                      post.href ||
+                      `/books/${encodeURIComponent(post.subject)}/${post.paperId}/${post.id}`;
+
                     navigator.clipboard.writeText(
-                      `${window.location.origin}/?post=${post.id}`,
+                      `${window.location.origin}${postUrl}`,
                     );
+
                     alert("লিংক কপি হয়েছে।");
                   }}
                 />
