@@ -13,7 +13,16 @@ import Link from "next/link";
 
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { MoreHorizontal, BookMarked, Share2 } from "lucide-react";
+import {
+  MoreHorizontal,
+  BookMarked,
+  Share2,
+  Copy,
+  MessageCircle,
+  Send,
+  Facebook,
+  X,
+} from "lucide-react";
 import { doc, deleteDoc } from "firebase/firestore";
 
 import { db } from "./firebase";
@@ -44,11 +53,252 @@ function formatBanglaDate(timestamp) {
     hour12: true,
   });
 }
+
+function ShareModal({ post, onClose, onCopySuccess }) {
+  if (!post) return null;
+
+  const postUrl =
+    post.href ||
+    `/books/${encodeURIComponent(post.subject)}/${post.paperId}/${post.id}`;
+
+  const fullUrl =
+    typeof window !== "undefined" ? `${window.location.origin}${postUrl}` : "";
+
+  const shareText = post.title || "মনোভূমির একটি পোস্ট";
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(fullUrl);
+
+      onCopySuccess?.();
+      onClose();
+    } catch (error) {
+      console.error("Copy link error:", error);
+      alert("লিংক কপি করা যায়নি।");
+    }
+  }
+
+  async function nativeShare() {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareText,
+          text: shareText,
+          url: fullUrl,
+        });
+
+        onClose();
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Share error:", error);
+        }
+      }
+    } else {
+      await copyLink();
+    }
+  }
+
+  function shareTo(url) {
+    window.open(url, "_blank", "noopener,noreferrer");
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 z-[200]" onClick={onClose}>
+      <div
+        className="
+          absolute
+          right-4
+          bottom-20
+          w-[300px]
+          max-w-[calc(100vw-32px)]
+          rounded-2xl
+          border
+          border-[var(--color-app-border)]
+          bg-[var(--color-app-surface)]
+          shadow-2xl
+          p-3
+          animate-in
+          fade-in
+          zoom-in-95
+          duration-150
+        "
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-2 pb-2">
+          <h3 className="text-sm font-bold text-[var(--color-app-text)]">
+            শেয়ার করুন
+          </h3>
+
+          <button
+            onClick={onClose}
+            className="
+              w-7
+              h-7
+              rounded-full
+              flex
+              items-center
+              justify-center
+              text-[var(--color-app-muted)]
+              hover:bg-[var(--color-app-primary-soft)]
+              transition
+            "
+            aria-label="বন্ধ করুন"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Share options */}
+        <div className="grid grid-cols-2 gap-2">
+          {/* Messenger */}
+          <button
+            onClick={() =>
+              shareTo(
+                `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                  fullUrl,
+                )}`,
+              )
+            }
+            className="
+              flex
+              items-center
+              gap-2.5
+              p-2.5
+              rounded-xl
+              hover:bg-[var(--color-app-primary-soft)]
+              transition
+              text-left
+            "
+          >
+            <span className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-base">
+              💬
+            </span>
+
+            <span className="text-xs font-medium text-[var(--color-app-text)]">
+              Messenger
+            </span>
+          </button>
+
+          {/* WhatsApp */}
+          <button
+            onClick={() =>
+              shareTo(
+                `https://wa.me/?text=${encodeURIComponent(
+                  `${shareText}\n${fullUrl}`,
+                )}`,
+              )
+            }
+            className="
+              flex
+              items-center
+              gap-2.5
+              p-2.5
+              rounded-xl
+              hover:bg-[var(--color-app-primary-soft)]
+              transition
+              text-left
+            "
+          >
+            <span className="w-9 h-9 shrink-0 rounded-full bg-emerald-500 flex items-center justify-center text-white text-base">
+              🟢
+            </span>
+
+            <span className="text-xs font-medium text-[var(--color-app-text)]">
+              WhatsApp
+            </span>
+          </button>
+
+          {/* Facebook */}
+          <button
+            onClick={() =>
+              shareTo(
+                `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                  fullUrl,
+                )}`,
+              )
+            }
+            className="
+              flex
+              items-center
+              gap-2.5
+              p-2.5
+              rounded-xl
+              hover:bg-[var(--color-app-primary-soft)]
+              transition
+              text-left
+            "
+          >
+            <span className="w-9 h-9 shrink-0 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
+              f
+            </span>
+
+            <span className="text-xs font-medium text-[var(--color-app-text)]">
+              Facebook
+            </span>
+          </button>
+
+          {/* Copy link */}
+          <button
+            onClick={copyLink}
+            className="
+              flex
+              items-center
+              gap-2.5
+              p-2.5
+              rounded-xl
+              hover:bg-[var(--color-app-primary-soft)]
+              transition
+              text-left
+            "
+          >
+            <span className="w-9 h-9 shrink-0 rounded-full bg-[var(--color-app-primary-soft)] flex items-center justify-center">
+              <Copy className="w-4 h-4 text-[var(--color-app-primary)]" />
+            </span>
+
+            <span className="text-xs font-medium text-[var(--color-app-text)]">
+              লিংক কপি করুন
+            </span>
+          </button>
+        </div>
+
+        {/* Other apps */}
+        <button
+          onClick={nativeShare}
+          className="
+            w-full
+            flex
+            items-center
+            gap-2.5
+            mt-1
+            p-2.5
+            rounded-xl
+            hover:bg-[var(--color-app-primary-soft)]
+            transition
+            text-left
+          "
+        >
+          <span className="w-9 h-9 shrink-0 rounded-full bg-[var(--color-app-primary-soft)] flex items-center justify-center">
+            <Share2 className="w-4 h-4 text-[var(--color-app-primary)]" />
+          </span>
+
+          <span className="text-xs font-medium text-[var(--color-app-text)]">
+            অন্যান্য অ্যাপে শেয়ার করুন
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const PostCard = forwardRef(function PostCard(
-  { post, onEdit, onDelete, onCopyLink, isRevised, onRevisionAdded },
+  { post, onEdit, onDelete, onCopyLink, onShare, isRevised, onRevisionAdded },
   ref,
 ) {
-  const { user } = useAuth();
+  const { user, approved, role } = useAuth();
+  const canManagePost =
+    approved === true && (role === "admin" || role === "teacher");
   const [expanded, setExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -171,18 +421,28 @@ const PostCard = forwardRef(function PostCard(
           {menuOpen && (
             <div className="absolute right-0 mt-1 w-44 rounded-xl overflow-hidden border border-[var(--color-app-border)] bg-[var(--color-app-surface)] shadow-xl z-20">
               <button
+                disabled={!canManagePost}
                 onClick={() => {
+                  if (!canManagePost) return;
+
                   setMenuOpen(false);
                   onEdit(post);
                 }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-[var(--color-app-primary-soft)] transition"
+                className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition ${
+                  canManagePost
+                    ? "hover:bg-[var(--color-app-primary-soft)]"
+                    : "opacity-40 cursor-not-allowed"
+                }`}
               >
                 ✏️
                 <span>Edit</span>
               </button>
 
               <button
+                disabled={!canManagePost}
                 onClick={() => {
+                  if (!canManagePost) return;
+
                   setMenuOpen(false);
 
                   const ok = window.confirm(
@@ -193,21 +453,14 @@ const PostCard = forwardRef(function PostCard(
                     onDelete(post);
                   }
                 }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left text-red-400 hover:bg-red-500/10 transition"
+                className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition ${
+                  canManagePost
+                    ? "text-red-400 hover:bg-red-500/10"
+                    : "text-[var(--color-app-muted)] opacity-40 cursor-not-allowed"
+                }`}
               >
                 🗑️
                 <span>Delete</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setMenuOpen(false);
-                  onCopyLink(post);
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-[var(--color-app-primary-soft)] transition"
-              >
-                📋
-                <span>Copy Link</span>
               </button>
             </div>
           )}
@@ -289,7 +542,7 @@ const PostCard = forwardRef(function PostCard(
         </button>
 
         <button
-          onClick={() => onCopyLink(post)}
+          onClick={() => onShare(post)}
           className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-app-muted)] hover:text-[var(--color-app-accent)] transition-colors"
         >
           <Share2 className="w-[17px] h-[17px]" />
@@ -324,6 +577,8 @@ function HomeContent() {
   const [feedLoading, setFeedLoading] = useState(true);
 
   const [revisionPostIds, setRevisionPostIds] = useState(new Set());
+  const [sharePost, setSharePost] = useState(null);
+  const [showCopyToast, setShowCopyToast] = useState(false);
 
   const allPosts = feedPosts;
 
@@ -438,6 +693,14 @@ function HomeContent() {
     return () => clearTimeout(timer);
   }, [postIdFromUrl, feedPosts]);
 
+  function showCopiedToast() {
+    setShowCopyToast(true);
+
+    setTimeout(() => {
+      setShowCopyToast(false);
+    }, 2500);
+  }
+
   return (
     <div className="min-h-screen font-[family-name:var(--font-bengali-sans)] px-4 pb-16">
       {/* মূল ফিড */}
@@ -476,6 +739,9 @@ function HomeContent() {
                     setShowComposer(true);
                   }}
                   onDelete={handleDeletePost}
+                  onShare={(post) => {
+                    setSharePost(post);
+                  }}
                   onCopyLink={(post) => {
                     const postUrl =
                       post.href ||
@@ -529,6 +795,47 @@ function HomeContent() {
             setEditingTopic(null);
           }}
         />
+      )}
+
+      {sharePost && (
+        <ShareModal
+          post={sharePost}
+          onClose={() => setSharePost(null)}
+          onCopySuccess={showCopiedToast}
+        />
+      )}
+
+      {showCopyToast && (
+        <div
+          className="
+      fixed
+      left-1/2
+      bottom-6
+      -translate-x-1/2
+      z-[300]
+      flex
+      items-center
+      gap-2
+      px-4
+      py-3
+      rounded-2xl
+      shadow-xl
+      border
+      border-[var(--color-app-border)]
+      bg-[var(--color-app-surface)]
+      text-[var(--color-app-text)]
+      animate-in
+      fade-in
+      slide-in-from-bottom-4
+      duration-200
+    "
+        >
+          <span className="flex w-6 h-6 items-center justify-center rounded-full bg-emerald-500 text-white text-sm font-bold">
+            ✓
+          </span>
+
+          <span className="text-sm font-medium">লিংক কপি হয়েছে</span>
+        </div>
       )}
     </div>
   );
