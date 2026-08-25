@@ -13,10 +13,11 @@ import Link from "next/link";
 
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { MoreHorizontal, Heart, MessageCircle, Share2 } from "lucide-react";
+import { MoreHorizontal, BookMarked, Share2 } from "lucide-react";
 import { doc, deleteDoc } from "firebase/firestore";
 
 import { db } from "./firebase";
+import { addRevision } from "./services/revisionService";
 
 import { subjects, postTypes } from "./data";
 import { useAuth } from "./AuthContext";
@@ -47,10 +48,10 @@ const PostCard = forwardRef(function PostCard(
   { post, onEdit, onDelete, onCopyLink },
   ref,
 ) {
+  const { user } = useAuth();
   const [expanded, setExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [liked, setLiked] = useState(false);
   const [followed, setFollowed] = useState(false);
   const textRef = useRef(null);
   const menuRef = useRef(null);
@@ -252,21 +253,30 @@ const PostCard = forwardRef(function PostCard(
 
       <div className="flex items-center justify-between pt-3 border-t border-[var(--color-app-border)]">
         <button
-          onClick={() => setLiked(!liked)}
-          className="flex items-center gap-1.5 text-sm font-medium transition-colors"
-          style={{ color: liked ? "#e0637a" : "var(--color-app-muted)" }}
+          onClick={async () => {
+            if (!user?.uid) {
+              alert("রিভিশনে যোগ করতে প্রথমে লগইন করুন।");
+              return;
+            }
+
+            try {
+              await addRevision(user.uid, post);
+              alert("পোস্টটি রিভিশনে যোগ হয়েছে।");
+            } catch (error) {
+              console.error("Revision add error:", error);
+              alert("রিভিশনে যোগ করা যায়নি।");
+            }
+          }}
+          className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-app-muted)] hover:text-[var(--color-app-primary)] transition-colors"
         >
-          <Heart
-            className="w-[17px] h-[17px]"
-            fill={liked ? "currentColor" : "none"}
-          />
-          {post.likes + (liked ? 1 : 0)}
+          <BookMarked className="w-[17px] h-[17px]" />
+          রিভিশন
         </button>
-        <button className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-app-muted)] hover:text-[var(--color-app-primary)] transition-colors">
-          <MessageCircle className="w-[17px] h-[17px]" />
-          মন্তব্য
-        </button>
-        <button className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-app-muted)] hover:text-[var(--color-app-accent)] transition-colors">
+
+        <button
+          onClick={() => onCopyLink(post)}
+          className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-app-muted)] hover:text-[var(--color-app-accent)] transition-colors"
+        >
           <Share2 className="w-[17px] h-[17px]" />
           শেয়ার
         </button>

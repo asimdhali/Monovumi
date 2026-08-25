@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../AuthContext";
+import { getUserRevisions, removeRevision } from "../services/revisionService";
 
 function InfoRow({ icon, label, value }) {
   if (!value) return null;
@@ -68,6 +69,32 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
 
   const [draft, setDraft] = useState(null);
+  const [revisions, setRevisions] = useState([]);
+  const [revisionLoading, setRevisionLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user?.uid) {
+      setRevisions([]);
+      setRevisionLoading(false);
+      return;
+    }
+
+    async function loadRevisions() {
+      try {
+        setRevisionLoading(true);
+
+        const data = await getUserRevisions(user.uid);
+
+        setRevisions(data);
+      } catch (error) {
+        console.error("Revision load error:", error);
+      } finally {
+        setRevisionLoading(false);
+      }
+    }
+
+    loadRevisions();
+  }, [user?.uid]);
 
   if (loading) {
     return (
@@ -381,6 +408,146 @@ export default function ProfilePage() {
             <InterestTags interests={profile.interests} />
           </div>
         )}
+
+        {/* ================= আমার রিভিশন ================= */}
+
+        <div
+          className="w-full rounded-2xl border p-4 mt-4 bg-[var(--color-app-surface)]"
+          style={{
+            borderColor: "var(--color-app-border)",
+          }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-[var(--color-app-text)]">
+              📚 আমার রিভিশন
+            </h3>
+
+            {!revisionLoading && revisions.length > 0 && (
+              <span className="text-[11px] text-[var(--color-app-muted)]">
+                {revisions.length}টি
+              </span>
+            )}
+          </div>
+
+          {revisionLoading ? (
+            <div className="space-y-3">
+              {[1, 2].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-xl p-3 animate-pulse"
+                  style={{
+                    background: "var(--color-app-bg)",
+                  }}
+                >
+                  <div
+                    className="h-4 w-3/4 rounded mb-2"
+                    style={{
+                      background: "var(--color-app-border)",
+                    }}
+                  />
+
+                  <div
+                    className="h-3 w-full rounded"
+                    style={{
+                      background: "var(--color-app-border)",
+                    }}
+                  />
+
+                  <div
+                    className="h-3 w-1/2 rounded mt-2"
+                    style={{
+                      background: "var(--color-app-border)",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : revisions.length === 0 ? (
+            <div className="text-center py-6">
+              <div className="text-3xl mb-2">📖</div>
+
+              <p className="text-sm text-[var(--color-app-muted)]">
+                এখনো কোনো পোস্ট রিভিশনে যোগ করা হয়নি।
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {revisions.map((revision) => (
+                <div
+                  key={revision.docId}
+                  className="rounded-xl border p-3"
+                  style={{
+                    background: "var(--color-app-bg)",
+                    borderColor: "var(--color-app-border)",
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      {revision.title && (
+                        <p className="text-sm font-semibold text-[var(--color-app-text)]">
+                          {revision.title}
+                        </p>
+                      )}
+
+                      <p
+                        className={`text-[12px] leading-relaxed text-[var(--color-app-muted)] ${
+                          revision.title ? "mt-1" : ""
+                        }`}
+                      >
+                        {revision.content
+                          ?.replace(/<[^>]*>/g, "")
+                          .slice(0, 150)}
+                        {revision.content?.replace(/<[^>]*>/g, "").length > 150
+                          ? "..."
+                          : ""}
+                      </p>
+
+                      {(revision.subject || revision.paperTitle) && (
+                        <p className="text-[10px] mt-2 text-[var(--color-app-muted)]">
+                          📖 {revision.subject}
+                          {revision.paperTitle
+                            ? ` › ${revision.paperTitle}`
+                            : ""}
+                        </p>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={async () => {
+                        const ok = window.confirm(
+                          "এই পোস্টটি রিভিশন থেকে মুছে ফেলবেন?",
+                        );
+
+                        if (!ok) return;
+
+                        try {
+                          await removeRevision(revision.docId);
+
+                          setRevisions((prev) =>
+                            prev.filter(
+                              (item) => item.docId !== revision.docId,
+                            ),
+                          );
+                        } catch (error) {
+                          console.error("Revision remove error:", error);
+
+                          alert("রিভিশন থেকে মুছে ফেলা যায়নি।");
+                        }
+                      }}
+                      className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm hover:bg-red-500/10"
+                      style={{
+                        color: "var(--color-app-muted)",
+                      }}
+                      aria-label="রিভিশন মুছুন"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* ================= LOGOUT ================= */}
 
