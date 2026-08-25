@@ -78,6 +78,20 @@ export async function getUserRevisions(userId) {
 }
 
 // =========================================================
+// কোন কোন পোস্ট Revision-এ আছে তার ID তালিকা
+// =========================================================
+
+export async function getRevisionPostIds(userId) {
+  if (!userId) return [];
+
+  const q = query(collection(db, "revisions"), where("userId", "==", userId));
+
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map((docSnap) => docSnap.data().postId);
+}
+
+// =========================================================
 // Revision মুছে ফেলা
 // =========================================================
 

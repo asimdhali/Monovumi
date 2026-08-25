@@ -17,7 +17,7 @@ import { MoreHorizontal, BookMarked, Share2 } from "lucide-react";
 import { doc, deleteDoc } from "firebase/firestore";
 
 import { db } from "./firebase";
-import { addRevision } from "./services/revisionService";
+import { addRevision, getRevisionPostIds } from "./services/revisionService";
 
 import { subjects, postTypes } from "./data";
 import { useAuth } from "./AuthContext";
@@ -45,7 +45,7 @@ function formatBanglaDate(timestamp) {
   });
 }
 const PostCard = forwardRef(function PostCard(
-  { post, onEdit, onDelete, onCopyLink },
+  { post, onEdit, onDelete, onCopyLink, isRevised, onRevisionAdded },
   ref,
 ) {
   const { user } = useAuth();
@@ -53,6 +53,7 @@ const PostCard = forwardRef(function PostCard(
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [followed, setFollowed] = useState(false);
+
   const textRef = useRef(null);
   const menuRef = useRef(null);
 
@@ -259,18 +260,32 @@ const PostCard = forwardRef(function PostCard(
               return;
             }
 
+            if (isRevised) {
+              return;
+            }
+
             try {
               await addRevision(user.uid, post);
+
+              onRevisionAdded(post.id);
+
               alert("পোস্টটি রিভিশনে যোগ হয়েছে।");
             } catch (error) {
               console.error("Revision add error:", error);
               alert("রিভিশনে যোগ করা যায়নি।");
             }
           }}
-          className="flex items-center gap-1.5 text-sm font-medium text-[var(--color-app-muted)] hover:text-[var(--color-app-primary)] transition-colors"
+          className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${
+            isRevised
+              ? "text-emerald-500"
+              : "text-[var(--color-app-muted)] hover:text-[var(--color-app-primary)]"
+          }`}
         >
-          <BookMarked className="w-[17px] h-[17px]" />
-          রিভিশন
+          <BookMarked
+            className={`w-[17px] h-[17px] ${isRevised ? "fill-current" : ""}`}
+          />
+
+          {isRevised ? "রিভিশনে আছে" : "রিভিশন"}
         </button>
 
         <button
@@ -289,7 +304,7 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const postIdFromUrl = searchParams.get("post");
 
-  const { teacherVerified } = useAuth();
+  const { user, teacherVerified } = useAuth();
   const { posts } = usePosts();
   const { content, addTopic, editTopic, deleteTopic, loading } =
     useBookDetailed();
@@ -307,6 +322,8 @@ function HomeContent() {
   const [feedPosts, setFeedPosts] = useState([]);
   const [lastDoc, setLastDoc] = useState(null);
   const [feedLoading, setFeedLoading] = useState(true);
+
+  const [revisionPostIds, setRevisionPostIds] = useState(new Set());
 
   const allPosts = feedPosts;
 
@@ -359,6 +376,26 @@ function HomeContent() {
     },
     [feedLoading, loadingMore, lastDoc],
   );
+
+  useEffect(() => {
+    async function loadRevisionPostIds() {
+      if (!user?.uid) {
+        setRevisionPostIds(new Set());
+        return;
+      }
+
+      try {
+        const postIds = await getRevisionPostIds(user.uid);
+
+        setRevisionPostIds(new Set(postIds));
+      } catch (error) {
+        console.error("Revision IDs load error:", error);
+        setRevisionPostIds(new Set());
+      }
+    }
+
+    loadRevisionPostIds();
+  }, [user?.uid]);
 
   useEffect(() => {
     async function loadFeed() {
@@ -425,6 +462,15 @@ function HomeContent() {
                   }}
                   key={post.id}
                   post={post}
+                  isRevised={revisionPostIds.has(post.id)}
+
+                  onRevisionAdded={(postId) => {
+                    setRevisionPostIds((prev) => {
+                      const updated = new Set(prev);
+                      updated.add(postId);
+                      return updated;
+                    });
+                  }}
                   onEdit={(post) => {
                     setEditingTopic(post);
                     setShowComposer(true);
