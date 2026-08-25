@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useAuth } from "../AuthContext";
 import { getUserRevisions, removeRevision } from "../services/revisionService";
 
@@ -482,7 +483,13 @@ export default function ProfilePage() {
                   }}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
+                    <Link
+                      href={
+                        revision.href ||
+                        `/books/${encodeURIComponent(revision.subject)}/${revision.paperId}/${revision.postId}`
+                      }
+                      className="min-w-0 flex-1 block"
+                    >
                       {revision.title && (
                         <p className="text-sm font-semibold text-[var(--color-app-text)]">
                           {revision.title}
@@ -510,7 +517,7 @@ export default function ProfilePage() {
                             : ""}
                         </p>
                       )}
-                    </div>
+                    </Link>
 
                     <button
                       onClick={async () => {
