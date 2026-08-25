@@ -1,6 +1,7 @@
 "use client";
 
 import { migrateHomeFeed } from "./services/migrateHomeFeedService";
+import { createActivity } from "./services/activityService";
 
 import {
   saveHomeFeedPost,
@@ -241,6 +242,34 @@ export function BookDetailedProvider({ children }) {
       return;
     }
 
+    const currentUser = auth.currentUser;
+
+    if (currentUser) {
+      await createActivity({
+        type: "topic_created",
+
+        actorId: currentUser.uid,
+        actorName: currentUser.displayName || "",
+        actorEmail: currentUser.email || "",
+        actorPhotoURL: currentUser.photoURL || "",
+
+        targetType: "topic",
+        targetId: String(savedTopic.id),
+
+        subject,
+        paperId: String(savedPaper.id),
+
+        title: savedTopic.title || "",
+
+        metadata: {
+          paperTitle: savedPaper.title || "",
+          era: savedTopic.era || "",
+          chapter: savedTopic.chapter || "",
+        },
+      });
+      console.log("Activity তৈরি হয়েছে");
+    }
+
     await saveHomeFeedPost({
       ...savedTopic,
 
@@ -249,24 +278,25 @@ export function BookDetailedProvider({ children }) {
 
       paperTitle: savedPaper.title,
 
-      activityTime: savedTopic.updatedAt,
+      activityTime: now,
 
-      activityType: "new",
+      activityType: editType,
     });
-
-    const currentUser = auth.currentUser;
 
     if (currentUser && currentUser.uid !== ADMIN_UID) {
       await createNotification({
         userId: ADMIN_UID,
 
-        type: "new_topic",
+        type: "topic_updated",
 
-        title: "নতুন পোস্ট করা হয়েছে",
+        title:
+          editType === "major"
+            ? "একটি পোস্ট আপডেট করা হয়েছে"
+            : "একটি পোস্টে ছোট পরিবর্তন করা হয়েছে",
 
         message: `${
           currentUser.displayName || "একজন ব্যবহারকারী"
-        } "${savedTopic.title}" নামে নতুন একটি পোস্ট করেছে।`,
+        } "${savedTopic.title}" পোস্টটি আপডেট করেছে।`,
 
         link: `/books/${encodeURIComponent(subject)}/${savedPaper.id}/${savedTopic.id}`,
       });
@@ -310,6 +340,34 @@ export function BookDetailedProvider({ children }) {
       return;
     }
 
+    const currentUser = auth.currentUser;
+
+    if (currentUser) {
+      await createActivity({
+        type: editType === "major" ? "topic_updated" : "topic_minor_updated",
+
+        actorId: currentUser.uid,
+        actorName: currentUser.displayName || "",
+        actorEmail: currentUser.email || "",
+        actorPhotoURL: currentUser.photoURL || "",
+
+        targetType: "topic",
+        targetId: String(savedTopic.id),
+
+        subject,
+        paperId: String(savedPaper.id),
+
+        title: savedTopic.title || "",
+
+        metadata: {
+          paperTitle: savedPaper.title || "",
+          era: savedTopic.era || "",
+          chapter: savedTopic.chapter || "",
+          editType,
+        },
+      });
+    }
+
     await saveHomeFeedPost({
       ...savedTopic,
 
@@ -322,8 +380,6 @@ export function BookDetailedProvider({ children }) {
 
       activityType: editType,
     });
-
-    const currentUser = auth.currentUser;
 
     if (currentUser && currentUser.uid !== ADMIN_UID) {
       await createNotification({
