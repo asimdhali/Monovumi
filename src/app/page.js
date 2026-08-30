@@ -580,6 +580,20 @@ function HomeContent() {
   const [sharePost, setSharePost] = useState(null);
   const [showCopyToast, setShowCopyToast] = useState(false);
 
+  useEffect(() => {
+    if (!sharePost) return;
+
+    const handleScroll = () => {
+      setSharePost(null);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [sharePost]);
+
   const allPosts = feedPosts;
 
   const filteredPosts = allPosts.filter(
