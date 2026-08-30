@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect } from "react";
 import TopicHeader from "../../../components/TopicHeader";
 import TopicContent from "../../../components/TopicContent";
 import { useBookDetailed } from "../../../../BookDetailedContext";
@@ -19,11 +19,20 @@ export default function TopicPage({ params }) {
 
   const paper = subjectData?.papers?.find((paper) => paper.id === paperId);
 
+  useEffect(() => {
+    document.title = "প্রোফাইল — মনোভূমি";
+  }, []);
+
   if (loading) {
     return <HomeFeedSkeleton />;
   }
 
   const topic = paper?.topics?.find((topic) => String(topic.id) === topicId);
+  useEffect(() => {
+    if (topic) {
+      document.title = `${topic.title} — ${subject} — মনোভূমি`;
+    }
+  }, [topic, subject]);
   const sortedTopics = [...(paper?.topics || [])].sort(
     (a, b) => (a.sortOrder || 0) - (b.sortOrder || 0),
   );

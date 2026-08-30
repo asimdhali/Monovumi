@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 
 import SortableTopic from "../components/SortableTopic";
@@ -40,6 +40,10 @@ export default function SubjectPage({ params }) {
   const { subject: rawSubject } = use(params);
 
   const subject = decodeURIComponent(rawSubject);
+
+  useEffect(() => {
+    document.title = `${subject} — মনোভূমি`;
+  }, [subject]);
 
   const {
     content,
