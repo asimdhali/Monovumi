@@ -257,9 +257,7 @@ function buildDetailedBookIndex(data) {
             icon: "📘",
             title: topic.title,
             subtitle: `${topic.era || ""} · ${subject}`,
-            href: `/book-detailed/${encodeURIComponent(
-              subject,
-            )}/${paper.id}#topic-${topic.id}`,
+            href: `/books/${encodeURIComponent(subject)}/${paper.id}/${topic.id}`,
             content: extractSearchText(topic),
           }),
         );
@@ -348,6 +346,7 @@ export default function SearchOverlay({ open, onClose }) {
   const [recent, setRecent] = useState([]);
 
   const [homeFeed, setHomeFeed] = useState({});
+  const [detailedBookContent, setDetailedBookContent] = useState({});
 
   const inputRef = useRef(null);
 
@@ -400,6 +399,34 @@ export default function SearchOverlay({ open, onClose }) {
   }, [open]);
 
   /* =======================================================
+   Subscribe to bookDetailedContent
+======================================================= */
+
+  useEffect(() => {
+    if (!open) return;
+
+    const unsubscribe = onSnapshot(
+      collection(db, "bookDetailedContent"),
+      (snapshot) => {
+        const data = {};
+
+        snapshot.docs.forEach((docSnap) => {
+          data[docSnap.id] = docSnap.data();
+        });
+
+        setDetailedBookContent(data);
+      },
+      (error) => {
+        console.error("bookDetailedContent search listener error:", error);
+      },
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [open]);
+
+  /* =======================================================
      Focus search box
   ======================================================= */
 
@@ -441,8 +468,10 @@ export default function SearchOverlay({ open, onClose }) {
   const searchIndex = useMemo(() => {
     const homeFeedIndex = buildHomeFeedIndex(homeFeed);
 
-    return homeFeedIndex;
-  }, [homeFeed]);
+    const detailedBookIndex = buildDetailedBookIndex(detailedBookContent);
+
+    return [...detailedBookIndex, ...homeFeedIndex];
+  }, [homeFeed, detailedBookContent]);
 
   /* =======================================================
      Search

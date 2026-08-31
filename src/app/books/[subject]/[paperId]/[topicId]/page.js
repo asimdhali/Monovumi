@@ -17,56 +17,96 @@ export default function TopicPage({ params }) {
 
   const subjectData = content?.[subject];
 
-  const paper = subjectData?.papers?.find((paper) => paper.id === paperId);
+  const paper = subjectData?.papers?.find(
+    (paper) => String(paper.id) === String(paperId),
+  );
 
-  useEffect(() => {
-    document.title = "প্রোফাইল — মনোভূমি";
-  }, []);
+  const topic = paper?.topics?.find(
+    (topic) => String(topic.id) === String(topicId),
+  );
 
-  if (loading) {
-    return <HomeFeedSkeleton />;
-  }
-
-  const topic = paper?.topics?.find((topic) => String(topic.id) === topicId);
+  // ---------------------------------------------------------
+  // Page title
+  // ---------------------------------------------------------
   useEffect(() => {
     if (topic) {
       document.title = `${topic.title} — ${subject} — মনোভূমি`;
+    } else {
+      document.title = "টপিক — মনোভূমি";
     }
   }, [topic, subject]);
+
+  // ---------------------------------------------------------
+  // Sorted topics
+  // ---------------------------------------------------------
   const sortedTopics = [...(paper?.topics || [])].sort(
     (a, b) => (a.sortOrder || 0) - (b.sortOrder || 0),
   );
+
+  // ---------------------------------------------------------
+  // Related topics
+  // ---------------------------------------------------------
   const relatedTopics = sortedTopics.filter(
     (t) =>
       String(t.id) !== String(topicId) &&
       (t.chapter === topic?.chapter || t.era === topic?.era),
   );
 
-  const currentIndex = sortedTopics.findIndex((t) => String(t.id) === topicId);
+  // ---------------------------------------------------------
+  // Current topic index
+  // ---------------------------------------------------------
+  const currentIndex = sortedTopics.findIndex(
+    (t) => String(t.id) === String(topicId),
+  );
 
+  // ---------------------------------------------------------
+  // Previous topic
+  // ---------------------------------------------------------
   const previousTopic =
     currentIndex > 0 ? sortedTopics[currentIndex - 1] : null;
 
+  // ---------------------------------------------------------
+  // Next topic
+  // ---------------------------------------------------------
   const nextTopic =
-    currentIndex < sortedTopics.length - 1
+    currentIndex >= 0 && currentIndex < sortedTopics.length - 1
       ? sortedTopics[currentIndex + 1]
       : null;
 
-  if (!topic) {
-    return <div className="max-w-3xl mx-auto p-6">Topic পাওয়া যায়নি।</div>;
+  // ---------------------------------------------------------
+  // Loading
+  // ---------------------------------------------------------
+  if (loading) {
+    return <HomeFeedSkeleton />;
   }
 
+  // ---------------------------------------------------------
+  // Topic not found
+  // ---------------------------------------------------------
+  if (!topic) {
+    return (
+      <div className="max-w-3xl mx-auto p-6 text-[var(--color-app-text)]">
+        Topic পাওয়া যায়নি।
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------------
+  // Topic page
+  // ---------------------------------------------------------
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-5">
       <TopicHeader subject={subject} paperId={paperId} topic={topic} />
 
       <TopicContent content={topic.content} />
+
       <TopicNavigation
         subject={subject}
         paperId={paperId}
         previousTopic={previousTopic}
         nextTopic={nextTopic}
       />
+
       <RelatedTopics
         subject={subject}
         paperId={paperId}

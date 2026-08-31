@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useBookDetailed } from "../BookDetailedContext";
+import { useAuth } from "../AuthContext";
 
 const subjectIcons = {
   বাংলা: "📖",
@@ -53,6 +54,8 @@ export default function BookDetailedPage() {
     changeSubjectIcon,
     removeSubject,
   } = useBookDetailed();
+
+  const { user, canManage, loading: authLoading } = useAuth();
 
   const [showModal, setShowModal] = useState(false);
   const [subjectName, setSubjectName] = useState("");
@@ -174,18 +177,20 @@ export default function BookDetailedPage() {
           </div>
 
           {/* + Button */}
-          <button
-            onClick={() => {
-              setSubjectName("");
-              setSelectedIcon("📚");
-              setError("");
-              setShowModal(true);
-            }}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-2xl font-bold bg-[var(--color-app-primary)] text-white hover:opacity-90 transition"
-            aria-label="নতুন বিষয় যোগ করুন"
-          >
-            +
-          </button>
+          {canManage && (
+            <button
+              onClick={() => {
+                setSubjectName("");
+                setSelectedIcon("📚");
+                setError("");
+                setShowModal(true);
+              }}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-2xl font-bold bg-[var(--color-app-primary)] text-white hover:opacity-90 transition"
+              aria-label="নতুন বিষয় যোগ করুন"
+            >
+              +
+            </button>
+          )}
         </div>
 
         {/* Subject Cards */}
@@ -202,16 +207,26 @@ export default function BookDetailedPage() {
                 <button
                   onClick={(e) => {
                     e.preventDefault();
+
+                    if (!canManage) return;
+
                     setMenuSubject(menuSubject === subject ? null : subject);
                   }}
-                  className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-app-muted)] hover:bg-[var(--color-app-primary-soft)]"
-                  aria-label="বিষয় অপশন"
+                  disabled={!canManage}
+                  className={`absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center transition ${
+                    canManage
+                      ? "text-[var(--color-app-muted)] hover:bg-[var(--color-app-primary-soft)]"
+                      : "text-[var(--color-app-muted)] opacity-40 cursor-not-allowed"
+                  }`}
+                  aria-label={
+                    canManage ? "বিষয় অপশন" : "ম্যানেজ করার অনুমতি নেই"
+                  }
                 >
                   ⋮
                 </button>
 
                 {/* Menu */}
-                {menuSubject === subject && (
+                {menuSubject === subject && canManage && (
                   <div className="absolute top-10 right-2 z-30 w-44 rounded-xl border border-[var(--color-app-border)] bg-[var(--color-app-surface)] shadow-xl overflow-hidden">
                     <button
                       onClick={() => {
