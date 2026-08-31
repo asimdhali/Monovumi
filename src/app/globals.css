@@ -93,10 +93,6 @@ html.light {
   margin-top: 0.25rem;
 }
 
-.ProseMirror p {
-  line-height: 2;
-}
-
 .ProseMirror:empty::before {
   content: "এখানে লেখা শুরু করুন...";
   color: #777;
@@ -125,6 +121,7 @@ html.light {
 }
 
 .ProseMirror p {
+  line-height: 1.8;
   margin: 0.25rem 0;
 }
 
@@ -172,8 +169,8 @@ html.light {
 
 .tiptap {
   outline: none;
-  min-height: 340px;
-  font-size: 18px;
+  min-height: 50px;
+  font-size: 16px;
   line-height: 1.8;
 }
 
