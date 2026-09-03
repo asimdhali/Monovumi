@@ -32,48 +32,55 @@ export default function ComposerModal({
     initialTopic?.chapter || prefillChapter,
   );
 
-  const [subject, setSubject] = useState(
-    initialTopic?.subject || "বাংলা সাহিত্য",
-  );
+  const [subject, setSubject] = useState(initialTopic?.subject || "");
 
   const [showLocationModal, setShowLocationModal] = useState(false);
 
   const [postLocation, setPostLocation] = useState(
-    initialTopic?.postLocation || "",
+    initialTopic?.postLocation || null,
   );
 
-  const [paperId, setPaperId] = useState(initialTopic?.paperId || "first");
+  const [paperId, setPaperId] = useState(initialTopic?.paperId || "");
 
   const canPublish =
     content.trim().length >= 10 &&
     title.trim().length > 0 &&
-    era.trim().length > 0;
+    postLocation?.subject &&
+    postLocation?.chapter &&
+    postLocation?.paperId;
 
-  function handlePublish() {
+  async function handlePublish() {
     if (!canPublish) return;
 
-    onSubmit({
-      subject,
-      paperId,
-      postLocation,
+    try {
+      await onSubmit({
+        subject: postLocation?.subject || subject,
+        paperId: postLocation?.paperId || paperId,
+        postLocation,
 
-      title: title.trim(),
-      content: content.trim(),
+        title: title.trim(),
+        content: content.trim(),
 
-      era: era.trim(),
-      chapter: chapter.trim() || "",
+        era: era.trim(),
+        chapter: chapter.trim() || "",
 
-      contributor: authorName.trim() || "",
+        contributor: authorName.trim() || "",
 
-      contributorAvatar:
-        initialTopic?.contributorAvatar ||
-        initialTopic?.avatar ||
-        profile?.photoURL ||
-        user?.photoURL ||
-        "",
-    });
+        contributorAvatar:
+          initialTopic?.contributorAvatar ||
+          initialTopic?.avatar ||
+          profile?.photoURL ||
+          user?.photoURL ||
+          "",
+      });
 
-    onClose();
+      // Firestore save সফল হওয়ার পরেই modal বন্ধ হবে
+      onClose();
+    } catch (error) {
+      console.error("পোস্ট সংরক্ষণ করতে সমস্যা:", error);
+
+      alert(error?.message || "পোস্ট সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।");
+    }
   }
 
   return (
@@ -219,7 +226,7 @@ export default function ComposerModal({
               <div className="min-w-0">
                 <p className="text-[14px] font-semibold text-[var(--color-app-text)]">
                   {postLocation
-                    ? `${postLocation.subject} / ${postLocation.volume} / ${postLocation.topicTitle}`
+                    ? `${postLocation.subject} / ${postLocation.chapter}`
                     : "পোস্ট লোকেশন নির্বাচন করুন"}
                 </p>
 
@@ -253,6 +260,25 @@ export default function ComposerModal({
           onClose={() => setShowLocationModal(false)}
           onSelect={(location) => {
             setPostLocation(location);
+
+            // Location থেকে subject নেওয়া হবে
+            if (location?.subject) {
+              setSubject(location.subject);
+            }
+
+            // নির্বাচিত Books-এর অধ্যায়/Volume-এর নাম
+            if (location?.chapter) {
+              setEra(location.chapter);
+            }
+
+            // Location থেকে paperId নেওয়া হবে
+            if (location?.paperId) {
+              setPaperId(location.paperId);
+            }
+
+            // গুরুত্বপূর্ণ:
+            // এখানে setChapter(location.chapter) করা যাবে না
+
             setShowLocationModal(false);
           }}
         />

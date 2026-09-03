@@ -217,6 +217,34 @@ export function BookDetailedProvider({ children }) {
     const updatedPapers = buildAddTopic(subjectData.papers, paperId, newTopic);
 
     await savePapers(subject, updatedPapers);
+
+    const savedPaper = updatedPapers.find(
+      (paper) => String(paper.id) === String(paperId),
+    );
+
+    if (!savedPaper) {
+      return;
+    }
+
+    const savedTopic = savedPaper.topics.find(
+      (topic) => String(topic.id) === String(newTopic.id),
+    );
+
+    if (!savedTopic) {
+      return;
+    }
+
+    await saveHomeFeedPost({
+      ...savedTopic,
+
+      subject,
+      paperId: savedPaper.id,
+      paperTitle: savedPaper.title,
+
+      activityTime: savedTopic.createdAt || savedTopic.updatedAt || Date.now(),
+
+      activityType: "new",
+    });
   }
 
   async function editTopic(subject, paperId, topicId, updatedFields) {

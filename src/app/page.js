@@ -34,6 +34,7 @@ import ComposerModal from "./books/components/ComposerModal";
 import { useBookDetailed } from "./BookDetailedContext";
 import { usePosts } from "./PostsContext";
 import { buildHomeFeed } from "./services/homeFeedHelper";
+import { saveHomeFeedPost } from "./services/homeFeedService";
 import {
   getInitialHomeFeed,
   getNextHomeFeed,
@@ -668,14 +669,20 @@ function HomeContent() {
 
   useEffect(() => {
     async function loadFeed() {
-      setFeedLoading(true);
+      try {
+        setFeedLoading(true);
 
-      const result = await getInitialHomeFeed();
+        const result = await getInitialHomeFeed();
 
-      setFeedPosts(result.posts);
-      setLastDoc(result.lastDoc);
-
-      setFeedLoading(false);
+        setFeedPosts(result.posts);
+        setLastDoc(result.lastDoc);
+      } catch (error) {
+        console.error("Home Feed load error:", error);
+        setFeedPosts([]);
+        setLastDoc(null);
+      } finally {
+        setFeedLoading(false);
+      }
     }
 
     loadFeed();
@@ -795,18 +802,62 @@ function HomeContent() {
           }}
 
           onSubmit={async (data) => {
-            console.log(editingTopic);
-            if (editingTopic) {
-              await editTopic(
-                editingTopic.subject,
-                editingTopic.paperId,
-                editingTopic.originalId || editingTopic.id,
-                data,
-              );
-            }
+            try {
+              if (editingTopic) {
+                // পুরোনো পোস্ট সম্পাদনা
+                await editTopic(
+                  editingTopic.subject,
+                  editingTopic.paperId,
+                  editingTopic.originalId || editingTopic.id,
+                  data,
+                );
+              } else {
+                // নতুন পোস্ট
+                const newPost = {
+                  id: Date.now(),
+                  ...data,
+                  featured: false,
+                  createdAt: Date.now(),
+                  activityTime: Date.now(),
+                  activityType: "new",
+                };
 
-            setShowComposer(false);
-            setEditingTopic(null);
+                // ১. Books-এর নির্দিষ্ট Chapter/Paper-এ save
+                await addTopic(data.subject, data.paperId, newPost);
+
+                // ২. একই পোস্ট Home Feed-এ save
+                await saveHomeFeedPost({
+                  ...newPost,
+
+                  // Home Feed-এর জন্য প্রয়োজনীয় তথ্য
+                  subject: data.subject,
+                  paperId: data.paperId,
+
+                  // ComposerModal থেকে paperTitle না এলে খালি থাকবে
+                  paperTitle: data.paperTitle || "",
+
+                  // পোস্টের সময়
+                  activityTime: newPost.createdAt,
+
+                  // পোস্টের ধরন
+                  activityType: "new",
+
+                  // Home Feed থেকে পোস্টে ক্লিক করলে
+                  // যেন একই Books পোস্টে যেতে পারে
+                  href: `/books/${encodeURIComponent(
+                    data.subject,
+                  )}/${data.paperId}/${newPost.id}`,
+                });
+              }
+
+              setShowComposer(false);
+              setEditingTopic(null);
+              setComposerEra("");
+              setComposerChapter("");
+            } catch (error) {
+              console.error("Home post submit error:", error);
+              alert("পোস্ট প্রকাশ করা যায়নি।");
+            }
           }}
         />
       )}

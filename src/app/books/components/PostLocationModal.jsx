@@ -37,10 +37,10 @@ export default function PostLocationModal({ onClose, onSelect }) {
     const chapterMap = new Map();
 
     papers.forEach((paper) => {
-      const topics = Array.isArray(paper.topics) ? paper.topics : [];
+      const volumes = Array.isArray(paper.volumes) ? paper.volumes : [];
 
-      topics.forEach((topic) => {
-        const chapterName = (topic.era || "").trim();
+      volumes.forEach((volume) => {
+        const chapterName = (volume.title || "").trim();
 
         if (!chapterName) return;
 
@@ -48,7 +48,7 @@ export default function PostLocationModal({ onClose, onSelect }) {
 
         if (!chapterMap.has(key)) {
           chapterMap.set(key, {
-            id: `chapter-${key}`,
+            id: volume.id || `chapter-${key}`,
             title: chapterName,
             paperId: paper.id,
           });
@@ -58,46 +58,14 @@ export default function PostLocationModal({ onClose, onSelect }) {
 
     return Array.from(chapterMap.values());
   }, [content, selectedSubject]);
-
   // =========================================
-  // TOPICS
-  // নির্বাচিত অধ্যায়ের topics
+  // SELECT CHAPTER
   // =========================================
-  const topics = useMemo(() => {
-    if (!selectedSubject || !selectedChapter) return [];
-
-    const papers = content?.[selectedSubject]?.papers || [];
-
-    const allTopics = [];
-
-    papers.forEach((paper) => {
-      const paperTopics = Array.isArray(paper.topics) ? paper.topics : [];
-
-      paperTopics.forEach((topic) => {
-        // গুরুত্বপূর্ণ:
-        // অধ্যায়টি topic.era-তে রাখা আছে
-        if ((topic.era || "").trim() === selectedChapter.title.trim()) {
-          allTopics.push({
-            ...topic,
-            paperId: paper.id,
-          });
-        }
-      });
-    });
-
-    return allTopics;
-  }, [content, selectedSubject, selectedChapter]);
-
-  // =========================================
-  // SELECT TOPIC
-  // =========================================
-  function handleTopicSelect(topic) {
+  function handleChapterSelect(chapter) {
     const location = {
       subject: selectedSubject,
-      chapter: selectedChapter.title,
-      topicId: topic.id,
-      topicTitle: topic.title || "",
-      paperId: topic.paperId,
+      chapter: chapter.title,
+      paperId: chapter.paperId,
     };
 
     onSelect?.(location);
@@ -361,7 +329,7 @@ export default function PostLocationModal({ onClose, onSelect }) {
                     <button
                       key={`${chapter.paperId}-${chapter.id}`}
                       type="button"
-                      onClick={() => setSelectedChapter(chapter)}
+                      onClick={() => handleChapterSelect(chapter)}
                       className="
                         w-full
                         flex
@@ -391,124 +359,7 @@ export default function PostLocationModal({ onClose, onSelect }) {
                 </div>
               )}
             </>
-          ) : (
-            /* =================================
-               STEP 3
-               TOPIC
-            ================================= */
-            <>
-              {/* Breadcrumb */}
-              <div
-                className="
-                  flex
-                  items-center
-                  gap-1
-                  px-2
-                  pb-3
-                  text-[11px]
-                "
-              >
-                <button
-                  type="button"
-                  onClick={goBackToSubjects}
-                  className="text-[var(--color-app-primary)]"
-                >
-                  বিষয়
-                </button>
-
-                <ChevronRight
-                  className="
-                    w-3
-                    h-3
-                    text-[var(--color-app-muted)]
-                  "
-                />
-
-                <button
-                  type="button"
-                  onClick={goBackToChapters}
-                  className="text-[var(--color-app-primary)]"
-                >
-                  {selectedSubject}
-                </button>
-
-                <ChevronRight
-                  className="
-                    w-3
-                    h-3
-                    text-[var(--color-app-muted)]
-                  "
-                />
-
-                <span
-                  className="
-                    text-[var(--color-app-text)]
-                  "
-                >
-                  {selectedChapter.title}
-                </span>
-              </div>
-
-              <p
-                className="
-                  px-2
-                  pb-2
-                  text-[11px]
-                  font-semibold
-                  text-[var(--color-app-muted)]
-                "
-              >
-                টপিক নির্বাচন করুন
-              </p>
-
-              {topics.length === 0 ? (
-                <div className="px-3 py-8 text-center">
-                  <p
-                    className="
-                      text-[13px]
-                      text-[var(--color-app-muted)]
-                    "
-                  >
-                    এই অধ্যায়ে এখনো কোনো টপিক নেই।
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {topics.map((topic, index) => (
-                    <button
-                      key={`${topic.paperId}-${topic.id}-${index}`}
-                      type="button"
-                      onClick={() => handleTopicSelect(topic)}
-                      className="
-                        w-full
-                        flex
-                        items-center
-                        justify-between
-                        px-3
-                        py-3
-                        rounded-xl
-                        text-left
-                        text-[13.5px]
-                        text-[var(--color-app-text)]
-                        hover:bg-[var(--color-app-primary-soft)]
-                        transition
-                      "
-                    >
-                      <span>{topic.title || "নামহীন টপিক"}</span>
-
-                      <ChevronRight
-                        className="
-                          w-4
-                          h-4
-                          text-[var(--color-app-muted)]
-                        "
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

@@ -20,7 +20,10 @@ export function buildVolumeGroups(topics, volumes = []) {
 
   // Topic থেকে volume/chapter তৈরি
   sortedTopics.forEach((topic) => {
-    const era = topic.era || "অন্যান্য";
+    const era = (topic.era || "").trim();
+
+    // অধ্যায়/volume ছাড়া কোনো নতুন volume তৈরি করা হবে না
+    if (!era) return;
 
     let volume = volumeGroups.find((v) => v.era === era);
 
@@ -34,14 +37,14 @@ export function buildVolumeGroups(topics, volumes = []) {
       volumeGroups.push(volume);
     }
 
-    const chapterKey = topic.chapter || "__none__";
+    const chapterKey = (topic.chapter || "").trim() || "__none__";
 
     let chapter = volume.chapters.find((c) => c.key === chapterKey);
 
     if (!chapter) {
       chapter = {
         key: chapterKey,
-        title: topic.chapter || null,
+        title: (topic.chapter || "").trim() || null,
         topics: [],
       };
 

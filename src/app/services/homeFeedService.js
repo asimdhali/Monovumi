@@ -5,6 +5,8 @@ import { db } from "../firebase";
   পোস্ট Home Feed-এ সংরক্ষণ
 */
 export async function saveHomeFeedPost(post) {
+  console.log("Saving Home Feed post:", post);
+
   await setDoc(
     doc(db, "homeFeed", String(post.id)),
     {
@@ -14,6 +16,8 @@ export async function saveHomeFeedPost(post) {
       merge: true,
     },
   );
+
+  console.log("Home Feed post saved successfully:", post.id);
 }
 
 /*

@@ -1,6 +1,7 @@
 "use client";
 
 import ComposerModal from "./books/components/ComposerModal";
+import { saveHomeFeedPost } from "./services/homeFeedService";
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -609,9 +610,45 @@ export default function FeaturedBar() {
             prefillEra=""
             prefillChapter=""
             onSubmit={async (topic) => {
-              await addTopic(topic.subject, topic.paperId, topic);
+              const newPost = {
+                ...topic,
 
-              setShowComposer(false);
+                // নতুন পোস্টের ID
+                id: Date.now(),
+
+                // পোস্টের সময়
+                createdAt: Date.now(),
+                activityTime: Date.now(),
+
+                // নতুন পোস্ট
+                activityType: "new",
+
+                // Featured নয়
+                featured: false,
+              };
+
+              console.log("Saving Home Feed post:", newPost);
+
+              // ১. Books-এর নির্দিষ্ট Paper-এ Save
+              await addTopic(newPost.subject, newPost.paperId, newPost);
+
+              // ২. Home Feed-এ Save
+              await saveHomeFeedPost({
+                ...newPost,
+
+                subject: newPost.subject,
+                paperId: newPost.paperId,
+
+                // paperTitle থাকলে সেটি যাবে
+                paperTitle: newPost.paperTitle || "",
+
+                // Home Feed থেকে ক্লিক করলে Books-এর পোস্টে যাবে
+                href: `/books/${encodeURIComponent(
+                  newPost.subject,
+                )}/${newPost.paperId}/${newPost.id}`,
+              });
+
+              console.log("Home Feed post saved successfully:", newPost.id);
             }}
           />
         )}
