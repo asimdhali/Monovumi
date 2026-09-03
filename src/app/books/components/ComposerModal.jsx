@@ -12,6 +12,7 @@ export default function ComposerModal({
   prefillEra = "",
   prefillChapter = "",
   initialTopic = null,
+  lockedPostLocation = null,
 }) {
   const { user, profile, loading: authLoading } = useAuth();
 
@@ -37,7 +38,7 @@ export default function ComposerModal({
   const [showLocationModal, setShowLocationModal] = useState(false);
 
   const [postLocation, setPostLocation] = useState(
-    initialTopic?.postLocation || null,
+    initialTopic?.postLocation || lockedPostLocation || null,
   );
 
   const [paperId, setPaperId] = useState(initialTopic?.paperId || "");
@@ -183,24 +184,29 @@ export default function ComposerModal({
         <div className="mt-5 mb-4">
           <button
             type="button"
-            onClick={() => setShowLocationModal(true)}
+            disabled={!!lockedPostLocation}
+            onClick={() => {
+              if (!lockedPostLocation) {
+                setShowLocationModal(true);
+              }
+            }}
             className="
-      w-full
-      flex
-      items-center
-      justify-between
-      gap-3
-      px-3.5
-      py-3
-      rounded-xl
-      border
-      border-[var(--color-app-border)]
-      bg-[var(--color-app-surface)]
-      text-left
-      transition-colors
-      hover:border-[var(--color-app-primary)]
-      hover:bg-[var(--color-app-primary-soft)]
-    "
+  w-full
+  flex
+  items-center
+  justify-between
+  gap-3
+  px-3.5
+  py-3
+  rounded-xl
+  border
+  border-[var(--color-app-border)]
+  bg-[var(--color-app-surface)]
+  text-left
+  transition-colors
+  disabled:opacity-100
+  disabled:cursor-not-allowed
+"
           >
             <div className="flex items-center gap-3 min-w-0">
               <span
@@ -232,14 +238,16 @@ export default function ComposerModal({
 
                 <p className="text-[11px] text-[var(--color-app-muted)] mt-0.5 truncate">
                   {postLocation
-                    ? "লোকেশন পরিবর্তন করতে ক্লিক করুন"
+                    ? lockedPostLocation
+                      ? "🔒 এই অধ্যায়ের পোস্ট — লোকেশন পরিবর্তন করা যাবে না"
+                      : "লোকেশন পরিবর্তন করতে ক্লিক করুন"
                     : "যেমন- বিসিএস/বাংলা সাহিত্য/প্রাচীন কাল/চর্যাপদ"}
                 </p>
               </div>
             </div>
 
             <span className="flex-shrink-0 text-lg text-[var(--color-app-muted)]">
-              ›
+              {lockedPostLocation ? "🔒" : "›"}
             </span>
           </button>
         </div>

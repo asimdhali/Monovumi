@@ -746,6 +746,15 @@ export default function SubjectPage({ params }) {
           mode={editingComposerTopic ? "edit" : "create"}
           prefillEra={composerEra}
           prefillChapter={composerChapter}
+          lockedPostLocation={
+            !editingComposerTopic && composerEra
+              ? {
+                  subject,
+                  paperId,
+                  chapter: composerEra,
+                }
+              : null
+          }
           onClose={() => {
             setShowComposer(false);
             setComposerEra("");
