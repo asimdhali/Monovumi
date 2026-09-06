@@ -747,13 +747,19 @@ export default function SubjectPage({ params }) {
           prefillEra={composerEra}
           prefillChapter={composerChapter}
           lockedPostLocation={
-            !editingComposerTopic && composerEra
-              ? {
+            editingComposerTopic
+              ? editingComposerTopic.postLocation || {
                   subject,
                   paperId,
-                  chapter: composerEra,
+                  chapter: editingComposerTopic.era || composerEra,
                 }
-              : null
+              : composerEra
+                ? {
+                    subject,
+                    paperId,
+                    chapter: composerEra,
+                  }
+                : null
           }
           onClose={() => {
             setShowComposer(false);

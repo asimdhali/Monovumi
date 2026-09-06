@@ -796,6 +796,20 @@ function HomeContent() {
           initialTopic={editingTopic}
           prefillEra={composerEra}
           prefillChapter={composerChapter}
+
+          lockedPostLocation={
+            editingTopic
+              ? {
+                  subject: editingTopic.subject,
+                  paperId: editingTopic.paperId,
+                  chapter:
+                    editingTopic.postLocation?.chapter ||
+                    editingTopic.era ||
+                    "",
+                }
+              : null
+          }
+
           onClose={() => {
             setShowComposer(false);
             setEditingTopic(null);
